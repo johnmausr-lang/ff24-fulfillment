@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
 import "./global.css";
+import Header from "@/components/Header"; // Импорт Header
+import Footer from "@/components/Footer"; // Импорт Footer
 
 // Настройка шрифта Manrope
 const manrope = Manrope({ subsets: ["cyrillic", "latin"] });
@@ -18,9 +20,9 @@ export default function RootLayout({
   return (
     <html lang="ru" className={manrope.className}>
       <body>
-        {/* Здесь будет Header */}
+        <Header /> {/* Размещаем Header */}
         <main>{children}</main>
-        {/* Здесь будет Footer */}
+        <Footer /> {/* Размещаем Footer */}
       </body>
     </html>
   );
