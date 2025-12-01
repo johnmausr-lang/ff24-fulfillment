@@ -2,14 +2,16 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation'; // <-- 1. ИМПОРТ useRouter
 import { User, Lock, ArrowRight, Loader2 } from 'lucide-react';
-import Logo from '@/components/Logo'; // Используем наш логотип
+import Logo from '@/components/Logo'; 
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter(); // <-- 2. ИНИЦИАЛИЗАЦИЯ
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,9 +24,11 @@ const LoginPage: React.FC = () => {
       
       // Имитация успешного входа
       if (email === 'client@ff24.ru' && password === 'test1234') {
-        // В реальном проекте: перенаправление на /dashboard
         console.log('Успешный вход! Перенаправление...');
-        // window.location.href = '/dashboard'; 
+        
+        // 3. АКТИВАЦИЯ ПЕРЕНАПРАВЛЕНИЯ
+        router.push('/dashboard'); 
+        
       } else {
         setError('Неверный логин или пароль. Попробуйте снова.');
       }
