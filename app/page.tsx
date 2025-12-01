@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import { Truck, Zap, Lock, DollarSign } from 'lucide-react';
 import FadeInDiv from '@/components/FadeInDiv';
-import PriceCalculator from '@/components/PriceCalculator'; // Импорт калькулятора
+import PriceCalculator from '@/components/PriceCalculator';
+import ProcessTimeline from '@/components/ProcessTimeline'; // Импорт нового компонента
 
 // Иконки и данные для секции Преимуществ
 const advantageData = [
@@ -57,11 +58,9 @@ const HomePage = () => {
         </FadeInDiv>
 
         <FadeInDiv delay={600} className="flex justify-center space-x-4">
-          {/* Главный CTA: Рассчитать стоимость */}
           <Link href="#calculator" className="neon-button text-lg">
             Рассчитать цену за 1 минуту
           </Link>
-          {/* Вторичный CTA */}
           <Link 
             href="#contacts" 
             className="px-8 py-3 text-lg font-bold border border-primary/30 rounded-lg text-primary hover:bg-primary/10 transition-colors duration-300"
@@ -101,7 +100,12 @@ const HomePage = () => {
       <PriceCalculator />
       
       {/* ------------------------------------------------------------------- */}
-      {/* Здесь будут следующие секции: Процесс, Интеграции и т.д. */}
+      {/* 4. Секция ПРОЦЕСС РАБОТЫ (PROCESS) */}
+      {/* ------------------------------------------------------------------- */}
+      <ProcessTimeline />
+      
+      {/* ------------------------------------------------------------------- */}
+      {/* Здесь будут следующие секции: Интеграции, Контакты и т.д. */}
       {/* ------------------------------------------------------------------- */}
     </div>
   );
