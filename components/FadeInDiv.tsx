@@ -5,10 +5,11 @@ import React, { useRef, useEffect, useState } from 'react';
 // Компонент для плавного появления элементов при прокрутке
 interface FadeInDivProps {
   children: React.ReactNode;
-  delay?: number; // Задержка в миллисекундах
+  delay?: number; 
+  className?: string; // <-- ИСПРАВЛЕНИЕ: Добавление className в интерфейс
 }
 
-const FadeInDiv: React.FC<FadeInDivProps> = ({ children, delay = 0 }) => {
+const FadeInDiv: React.FC<FadeInDivProps> = ({ children, delay = 0, className }) => { // <-- ИСПРАВЛЕНИЕ: Деструктуризация className
   const ref = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -43,6 +44,7 @@ const FadeInDiv: React.FC<FadeInDivProps> = ({ children, delay = 0 }) => {
   return (
     <div
       ref={ref}
+      className={className} // <-- ИСПРАВЛЕНИЕ: Передача className корневому div
       style={{ 
         opacity: isVisible ? 1 : 0, 
         transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
