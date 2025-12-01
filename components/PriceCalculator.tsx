@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import Link from 'next/link'; // <-- ИСПРАВЛЕНИЕ: Добавление импорта Link
 import { Package, ShoppingCart, TrendingUp } from 'lucide-react';
 import FadeInDiv from './FadeInDiv'; // Для анимации
 
