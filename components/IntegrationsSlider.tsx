@@ -1,8 +1,9 @@
+'use client'; // <-- ИСПРАВЛЕНИЕ: Компонент должен быть клиентским для использования <style jsx>
+
 import React from 'react';
 import FadeInDiv from './FadeInDiv'; 
 
 // Данные для логотипов маркетплейсов (Mock-up)
-// В реальном проекте здесь будут использоваться компоненты Next/Image с реальными логотипами
 const marketplaceLogos = [
   { name: 'Wildberries', color: 'bg-[#C11776]', text: 'text-white' },
   { name: 'Ozon', color: 'bg-[#005FEA]', text: 'text-white' },
