@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Импорт шрифта Manrope
+  Используется Google Fonts, чтобы гарантировать
+  оптимизированную загрузку в Next.js
+*/
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap');
+
+
+@layer base {
+  :root {
+    /* Цвета из ТЗ: Фиолетовый и Неоново-салатовый */
+    --color-primary-default: #4A148C; /* Глубокий фиолетовый */
+    --color-primary-light: #5E35B1; /* Светлее для фона */
+    
+    --color-accent-default: #ADFF2F; /* Ярко-салатовый / Green Yellow */
+    --color-accent-dark: #8BC34A; /* Более спокойный оттенок для контраста */
+    
+    --color-background: #F7F7F7; /* Мягкий светло-серый */
+    --color-content: #1C1C1C; /* Почти черный */
+  }
+
+  body {
+    @apply bg-background text-content font-sans;
+  }
+}
+
+/* Базовые компоненты для анимаций
+  и обеспечения производительности
+*/
+@layer components {
+  .neon-button {
+    @apply 
+      bg-accent transition-all duration-300 ease-in-out 
+      font-bold rounded-lg px-8 py-3 text-content hover:shadow-neon 
+      hover:scale-[1.03];
+  }
+
+  .section-container {
+    @apply container mx-auto px-4 sm:px-6 lg:px-8 py-16;
+  }
+}
