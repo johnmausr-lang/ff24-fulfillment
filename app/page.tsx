@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Truck, Zap, Lock, DollarSign } from 'lucide-react';
 import FadeInDiv from '@/components/FadeInDiv';
+import PriceCalculator from '@/components/PriceCalculator'; // Импорт калькулятора
 
 // Иконки и данные для секции Преимуществ
 const advantageData = [
@@ -56,7 +57,7 @@ const HomePage = () => {
         </FadeInDiv>
 
         <FadeInDiv delay={600} className="flex justify-center space-x-4">
-          {/* Главный CTA (акцентный цвет) */}
+          {/* Главный CTA: Рассчитать стоимость */}
           <Link href="#calculator" className="neon-button text-lg">
             Рассчитать цену за 1 минуту
           </Link>
@@ -95,7 +96,12 @@ const HomePage = () => {
       </section>
       
       {/* ------------------------------------------------------------------- */}
-      {/* Здесь будут следующие секции: Калькулятор, Процесс, Интеграции и т.д. */}
+      {/* 3. Секция КАЛЬКУЛЯТОР (CALCULATOR) */}
+      {/* ------------------------------------------------------------------- */}
+      <PriceCalculator />
+      
+      {/* ------------------------------------------------------------------- */}
+      {/* Здесь будут следующие секции: Процесс, Интеграции и т.д. */}
       {/* ------------------------------------------------------------------- */}
     </div>
   );
