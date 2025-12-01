@@ -3,42 +3,38 @@ import { Truck, Zap, Lock, DollarSign } from 'lucide-react';
 import FadeInDiv from '@/components/FadeInDiv';
 import PriceCalculator from '@/components/PriceCalculator';
 import ProcessTimeline from '@/components/ProcessTimeline';
-import IntegrationsSlider from '@/components/IntegrationsSlider'; // Импорт нового компонента
+import IntegrationsSlider from '@/components/IntegrationsSlider';
+import ContactForm from '@/components/ContactForm'; // Импорт нового компонента
 
-// Иконки и данные для секции Преимуществ
+// Иконки и данные для секции Преимуществ (для полноты кода)
 const advantageData = [
-  // ... (оставим для краткости, код не меняется)
+  {
+    icon: Truck,
+    title: 'Мгновенная обработка',
+    description: 'Приемка и отправка заказов в течение 24 часов. Никаких задержек — только скорость!',
+    color: 'border-accent/50 text-accent',
+  },
+  {
+    icon: DollarSign,
+    title: 'Прозрачные тарифы',
+    description: 'Справедливая и понятная цена, которая не изменится. Рассчитайте стоимость прямо на сайте.',
+    color: 'border-primary/50 text-primary',
+  },
+  {
+    icon: Zap,
+    title: 'Интеграция с маркетплейсами',
+    description: 'Полная автоматизация обмена данными с Wildberries, Ozon и Яндекс.Маркет.',
+    color: 'border-accent/50 text-accent',
+  },
+  {
+    icon: Lock,
+    title: 'Контроль и надежность',
+    description: 'Система видеонаблюдения и строгое соблюдение WMS-стандартов для сохранности вашего товара.',
+    color: 'border-primary/50 text-primary',
+  },
 ];
 
 const HomePage = () => {
-  // ... (логика advantageData)
-  const advantageData = [
-    {
-      icon: Truck,
-      title: 'Мгновенная обработка',
-      description: 'Приемка и отправка заказов в течение 24 часов. Никаких задержек — только скорость!',
-      color: 'border-accent/50 text-accent',
-    },
-    {
-      icon: DollarSign,
-      title: 'Прозрачные тарифы',
-      description: 'Справедливая и понятная цена, которая не изменится. Рассчитайте стоимость прямо на сайте.',
-      color: 'border-primary/50 text-primary',
-    },
-    {
-      icon: Zap,
-      title: 'Интеграция с маркетплейсами',
-      description: 'Полная автоматизация обмена данными с Wildberries, Ozon и Яндекс.Маркет.',
-      color: 'border-accent/50 text-accent',
-    },
-    {
-      icon: Lock,
-      title: 'Контроль и надежность',
-      description: 'Система видеонаблюдения и строгое соблюдение WMS-стандартов для сохранности вашего товара.',
-      color: 'border-primary/50 text-primary',
-    },
-  ];
-
   return (
     <div>
       {/* ------------------------------------------------------------------- */}
@@ -114,10 +110,12 @@ const HomePage = () => {
       {/* 5. Секция ИНТЕГРАЦИИ (INTEGRATIONS) */}
       {/* ------------------------------------------------------------------- */}
       <IntegrationsSlider />
-      
+
       {/* ------------------------------------------------------------------- */}
-      {/* Здесь будут следующие секции: Контакты и т.д. */}
+      {/* 6. Секция КОНТАКТЫ (CONTACTS) */}
       {/* ------------------------------------------------------------------- */}
+      <ContactForm />
+
     </div>
   );
 };
