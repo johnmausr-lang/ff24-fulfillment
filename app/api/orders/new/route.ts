@@ -1,51 +1,46 @@
-// app/api/orders/new/route.ts
-
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
-import { MoySkladClient, ApiError } from "@/lib/ms-client";
+import { MoySkladClient } from "@/lib/ms-client";
 import { MOYSKLAD_TOKEN } from "@/lib/config";
 
-const COOKIE_NAME = "ff24_token";
 const JWT_SECRET = process.env.JWT_SECRET!;
+const COOKIE_NAME = "ff24_token";
 
 export async function POST(req: NextRequest) {
   try {
-    const token = req.cookies.get(COOKIE_NAME)?.value;
-    if (!token) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    const cookie = req.cookies.get(COOKIE_NAME);
+    if (!cookie)
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
-    const payload: any = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(cookie.value, JWT_SECRET) as any;
+    const clientId = decoded.id;
 
-    const { positions } = await req.json();
+    const body = await req.json();
+
+    console.log("🔵 NEW SUPPLY REQUEST BODY:", body);
+
+    if (!body.positions || !Array.isArray(body.positions)) {
+      return NextResponse.json(
+        { message: "Неверные позиции заказа" },
+        { status: 400 }
+      );
+    }
 
     const ms = new MoySkladClient(MOYSKLAD_TOKEN);
 
-    const body = {
-      name: `Заказ от клиента ${payload.email}`,
-      agent: {
-        meta: {
-          href: `${ms["apiUrl"]}/entity/counterparty/${payload.id}`,
-          type: "counterparty",
-          mediaType: "application/json",
-        },
-      },
-      positions: positions.map((p: any) => ({
-        quantity: p.quantity,
-        assortment: {
-          meta: {
-            href: `${ms["apiUrl"]}/entity/product/${p.productId}`,
-            type: "product",
-            mediaType: "application/json",
-          },
-        },
-      })),
-    };
+    const result = await ms.createSupply(clientId, body);
 
-    const url = `${ms["apiUrl"]}/entity/customerorder`;
-    const created = await ms["http"].post(url, body);
+    console.log("🟢 SUPPLY CREATED:", result);
 
-    return NextResponse.json({ ok: true, id: created.id });
-  } catch (err) {
-    console.error("CREATE ORDER ERROR:", err);
-    return NextResponse.json({ message: "Server error" }, { status: 500 });
+    return NextResponse.json(
+      { ok: true, supply: result },
+      { status: 200 }
+    );
+  } catch (e: any) {
+    console.error("❌ SUPPLY API ERROR:", e);
+    return NextResponse.json(
+      { message: e.message || "Server error", details: e.details },
+      { status: e.status || 500 }
+    );
   }
 }
