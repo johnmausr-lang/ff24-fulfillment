@@ -4,22 +4,23 @@ import type { NextRequest } from 'next/server';
 export function middleware(req: NextRequest) {
     const token = req.cookies.get('auth_token')?.value;
 
-    const isAuthPage = req.nextUrl.pathname.startsWith('/login');
-    const isProtected = req.nextUrl.pathname.startsWith('/dashboard');
+    const isLogin = req.nextUrl.pathname.startsWith('/login');
+    const isDashboard = req.nextUrl.pathname.startsWith('/dashboard');
 
-    // Если пользователь НЕ авторизован → пускаем только на /login
-    if (!token && isProtected) {
+    // Неавторизованный — блокируем dashboard
+    if (!token && isDashboard) {
         return NextResponse.redirect(new URL('/login', req.url));
     }
 
-    // Если пользователь УЖЕ авторизован → не пускаем на /login
-    if (token && isAuthPage) {
+    // Авторизованный — блокируем /login
+    if (token && isLogin) {
         return NextResponse.redirect(new URL('/dashboard', req.url));
     }
 
     return NextResponse.next();
 }
 
+// Middleware будет работать только здесь:
 export const config = {
-    matcher: ['/login', '/dashboard/:path*']
+    matcher: ['/login', '/dashboard/:path*'],
 };
