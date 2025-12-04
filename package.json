@@ -1,6 +1,5 @@
 {
   "name": "ff24-fulfillment-site",
-  // ... другие поля
   "dependencies": {
     "next": "14.2.5",
     "react": "^18",
