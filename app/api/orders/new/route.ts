@@ -1,14 +1,15 @@
+// app/api/orders/new/route.ts
+
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import { MoySkladClient } from "@/lib/ms-client";
 import { MOYSKLAD_TOKEN } from "@/lib/config";
 
 const JWT_SECRET = process.env.JWT_SECRET!;
-const COOKIE_NAME = "ff24_token";
 
 export async function POST(req: NextRequest) {
   try {
-    const cookie = req.cookies.get(COOKIE_NAME);
+    const cookie = req.cookies.get("ff24_token");
     if (!cookie)
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
@@ -17,30 +18,24 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
 
-    console.log("🔵 NEW SUPPLY REQUEST BODY:", body);
-
-    if (!body.positions || !Array.isArray(body.positions)) {
-      return NextResponse.json(
-        { message: "Неверные позиции заказа" },
-        { status: 400 }
-      );
-    }
+    console.log("📦 NEW ORDER BODY:", body);
 
     const ms = new MoySkladClient(MOYSKLAD_TOKEN);
 
-    const result = await ms.createSupply(clientId, body);
+    // ⬇⬇⬇ ВАЖНО — теперь создаём CustomerOrder, не Supply
+    const result = await ms.createCustomerOrder(clientId, {
+      positions: body.positions,
+      workInstructions: body.workInstructions ?? "",
+    });
 
-    console.log("🟢 SUPPLY CREATED:", result);
+    console.log("🟢 CUSTOMER ORDER CREATED:", result);
 
+    return NextResponse.json({ ok: true, order: result });
+  } catch (e) {
+    console.error("❌ ERROR CREATING ORDER:", e);
     return NextResponse.json(
-      { ok: true, supply: result },
-      { status: 200 }
-    );
-  } catch (e: any) {
-    console.error("❌ SUPPLY API ERROR:", e);
-    return NextResponse.json(
-      { message: e.message || "Server error", details: e.details },
-      { status: e.status || 500 }
+      { message: "Server error", error: String(e) },
+      { status: 500 }
     );
   }
 }
