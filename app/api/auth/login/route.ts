@@ -10,9 +10,13 @@ const COOKIE_NAME = "ff24_token";
 
 export const POST = async (req: NextRequest) => {
   try {
-    const { email } = await req.json();
+    const body = await req.json();
+    console.log("🔵 LOGIN REQUEST BODY:", body);
+
+    const { email } = body;
 
     if (!email || typeof email !== "string") {
+      console.error("❌ Email отсутствует или неверного формата");
       return NextResponse.json(
         { message: "Укажите корректный email" },
         { status: 400 }
@@ -20,16 +24,26 @@ export const POST = async (req: NextRequest) => {
     }
 
     const normalizedEmail = email.trim().toLowerCase();
+    console.log("🔵 Normalized email:", normalizedEmail);
 
+    // Принудительно НЕ даём Next.js ломать Accept
     const ms = new MoySkladClient(MOYSKLAD_TOKEN);
+
+    console.log("🔵 Запрос в МойСклад: поиск контрагента…");
+
     const counterparty = await ms.findCounterparty(normalizedEmail);
 
+    console.log("🔵 Ответ МойСклад:", counterparty);
+
     if (!counterparty) {
+      console.warn("⚠ Контрагент не найден:", normalizedEmail);
       return NextResponse.json(
         { message: "Клиент с таким email не найден в МойСклад." },
         { status: 404 }
       );
     }
+
+    console.log("✅ Найден контрагент:", counterparty.id, counterparty.name);
 
     const token = jwt.sign(
       {
@@ -40,6 +54,8 @@ export const POST = async (req: NextRequest) => {
       JWT_SECRET,
       { expiresIn: "7d" }
     );
+
+    console.log("🔵 JWT создан");
 
     const res = NextResponse.json(
       {
@@ -60,15 +76,22 @@ export const POST = async (req: NextRequest) => {
       maxAge: 60 * 60 * 24 * 7,
     });
 
+    console.log("✅ Cookie установлена");
+
     return res;
-  } catch (err) {
-    console.error(err);
+  } catch (err: any) {
+    console.error("❌ LOGIN API ERROR:", err);
+
     if (err instanceof ApiError) {
-      return NextResponse.json({ message: err.message }, { status: err.status });
+      console.error("❌ ApiError details:", err.details);
+      return NextResponse.json(
+        { message: err.message, details: err.details },
+        { status: err.status }
+      );
     }
 
     return NextResponse.json(
-      { message: "Ошибка сервера" },
+      { message: "Ошибка сервера", error: String(err) },
       { status: 500 }
     );
   }
