@@ -1,5 +1,15 @@
 import React from 'react';
 import { Package, TrendingUp, DollarSign, Truck } from 'lucide-react';
+import LogoutButton from '@/components/LogoutButton';
+
+export default function DashboardPage() {
+    return (
+        <div>
+            <h1>Личный кабинет</h1>
+            <LogoutButton />
+        </div>
+    );
+}
 
 // Данные для карточек метрик (Mock-up)
 const dashboardMetrics = [
