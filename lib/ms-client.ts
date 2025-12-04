@@ -11,9 +11,9 @@ import {
 
 import { ClientData, OrderData, OrderPositionData } from "./models";
 
-// --------------------------------------------
-// Класс ошибки API
-// --------------------------------------------
+/* ================================================================
+   КЛАСС ОШИБОК
+================================================================ */
 export class ApiError extends Error {
   constructor(message: string, public status: number = 500) {
     super(message);
@@ -21,9 +21,9 @@ export class ApiError extends Error {
   }
 }
 
-// --------------------------------------------
-// Низкоуровневый HTTP клиент
-// --------------------------------------------
+/* ================================================================
+   НИЗКОУРОВНЕВЫЙ HTTP-КЛИЕНТ ДЛЯ ЗАПРОСОВ К МОЙСКЛАД
+================================================================ */
 class MsHttpClient {
   private headers: Record<string, string>;
 
@@ -36,20 +36,25 @@ class MsHttpClient {
   }
 
   private async request(url: string, options: RequestInit = {}) {
+    console.log("MS API REQUEST:", url);
+
     const res = await fetch(url, {
       ...options,
       headers: { ...this.headers, ...options.headers },
     });
 
+    // Нет тела
     if (res.status === 204) return null;
 
+    // Ошибка
     if (!res.ok) {
       const text = await res.text();
-      console.error("MS ERROR:", res.status, text);
+      console.error("❌ MS API ERROR", res.status, text);
       throw new ApiError(`Ошибка API МойСклад (${res.status})`, res.status);
     }
 
     const type = res.headers.get("content-type");
+
     if (type?.includes("application/json")) return res.json();
     return null;
   }
@@ -67,9 +72,9 @@ class MsHttpClient {
   }
 }
 
-// ============================================
-// 🔥 ОСНОВНОЙ КЛИЕНТ МОЙСКЛАД
-// ============================================
+/* ================================================================
+   ОСНОВНОЙ МОЙСКЛАД КЛИЕНТ
+================================================================ */
 export class MoySkladClient {
   private apiUrl = MS_API_URL;
   private http: MsHttpClient;
@@ -78,73 +83,64 @@ export class MoySkladClient {
     this.http = new MsHttpClient(token);
   }
 
-  // --------------------------------------------
-  // ✔ Умный поиск контрагента по телефону
-  // Работает 100% даже если формат телефона нестандартный
-  // --------------------------------------------
+  /* ------------------------------------------------------------
+     🔍 Поиск клиента по телефону
+     (filter=phone~ работает только если телефон есть в card)
+  ------------------------------------------------------------ */
   async findCounterpartyByPhone(phone: string): Promise<any | null> {
-    const digits = phone.replace(/\D/g, ""); // оставляем только цифры
+    const digits = phone.replace(/\D/g, "");
 
-    // 1. Прямая попытка поиска через filter
-    const filterUrl = `${this.apiUrl}/entity/counterparty?filter=phone=~${digits}`;
-    const filterData = await this.http.get(filterUrl);
-
-    if (filterData?.rows?.length) {
-      return filterData.rows[0];
-    }
-
-    // 2. Если filter не сработал — делаем fallback: загружаем всех
-    const all = await this.http.get(`${this.apiUrl}/entity/counterparty`);
-    if (!all?.rows?.length) return null;
-
-    const found = all.rows.find((row: any) => {
-      if (!row.phone) return false;
-      const p = row.phone.replace(/\D/g, "");
-      return p.endsWith(digits) || p.includes(digits);
-    });
-
-    return found || null;
-  }
-
-  // --------------------------------------------
-  // 🔍 Поиск по строке
-  // --------------------------------------------
-  async findCounterparty(query: string): Promise<any | null> {
-    const url = `${this.apiUrl}/entity/counterparty?search=${encodeURIComponent(query)}`;
+    const url = `${this.apiUrl}/entity/counterparty?filter=phone~${digits}`;
     const data = await this.http.get(url);
+
     if (!data?.rows?.length) return null;
+
     return data.rows[0];
   }
 
-  // --------------------------------------------
-  // 🔍 Получить контрагента по ID
-  // --------------------------------------------
-  async getCounterparty(id: string): Promise<any> {
-    const url = `${this.apiUrl}/entity/counterparty/${id}`;
-    return this.http.get(url);
+  /* ------------------------------------------------------------
+     🔍 Поиск клиента по email (через search)
+  ------------------------------------------------------------ */
+  async findCounterparty(query: string): Promise<any | null> {
+    const url = `${this.apiUrl}/entity/counterparty?search=${encodeURIComponent(
+      query
+    )}`;
+
+    const data = await this.http.get(url);
+
+    return data?.rows?.[0] ?? null;
   }
 
-  // --------------------------------------------
-  // 📦 Проверка остатков
-  // --------------------------------------------
+  /* ------------------------------------------------------------
+     Получить клиента по ID
+  ------------------------------------------------------------ */
+  async getCounterparty(id: string): Promise<any> {
+    return this.http.get(`${this.apiUrl}/entity/counterparty/${id}`);
+  }
+
+  /* ------------------------------------------------------------
+     📦 Проверка остатков товаров на складе
+  ------------------------------------------------------------ */
   async checkInventory(): Promise<any[]> {
     const url = `${this.apiUrl}/report/stock/bystore?store.id=${STORE_ID}`;
+
     const data = await this.http.get(url);
 
     if (!data?.rows) return [];
-    return data.rows.map((r: any) => ({
-      name: r.assortment?.name || "",
-      code: r.assortment?.article || "",
-      stock: r.stock || 0,
-      reserve: r.reserve || 0,
-      inTransit: r.inTransit || 0,
-      productId: r.assortment?.id || "",
+
+    return data.rows.map((row: any) => ({
+      name: row.assortment?.name || "",
+      code: row.assortment?.article || "",
+      stock: row.stock || 0,
+      reserve: row.reserve || 0,
+      inTransit: row.inTransit || 0,
+      productId: row.assortment?.id || "",
     }));
   }
 
-  // --------------------------------------------
-  // 🧾 Создание контрагента
-  // --------------------------------------------
+  /* ------------------------------------------------------------
+     🧾 Создание контрагента
+  ------------------------------------------------------------ */
   async createCounterparty(client: ClientData): Promise<any> {
     const url = `${this.apiUrl}/entity/counterparty`;
     const body = {
@@ -155,16 +151,19 @@ export class MoySkladClient {
       legalAddress: client.address,
       companyType: client.org_type === "LEGAL" ? "legal" : "individual",
     };
+
     return this.http.post(url, body);
   }
 
-  // --------------------------------------------
-  // 🧾 Создание поставки
-  // --------------------------------------------
+  /* ------------------------------------------------------------
+     📦 Создание заявки на поставку
+  ------------------------------------------------------------ */
   async createSupply(clientId: string, order: OrderData): Promise<any> {
+    const base = this.apiUrl;
+
     const clientMeta = {
       meta: {
-        href: `${this.apiUrl}/entity/counterparty/${clientId}`,
+        href: `${base}/entity/counterparty/${clientId}`,
         type: "counterparty",
         mediaType: "application/json",
       },
@@ -172,7 +171,7 @@ export class MoySkladClient {
 
     const orgMeta = {
       meta: {
-        href: `${this.apiUrl}/entity/organization/${ORGANIZATION_ID}`,
+        href: `${base}/entity/organization/${ORGANIZATION_ID}`,
         type: "organization",
         mediaType: "application/json",
       },
@@ -180,7 +179,7 @@ export class MoySkladClient {
 
     const storeMeta = {
       meta: {
-        href: `${this.apiUrl}/entity/store/${STORE_ID}`,
+        href: `${base}/entity/store/${STORE_ID}`,
         type: "store",
         mediaType: "application/json",
       },
@@ -209,12 +208,12 @@ export class MoySkladClient {
       positions,
     };
 
-    return this.http.post(`${this.apiUrl}/entity/supply`, body);
+    return this.http.post(`${base}/entity/supply`, body);
   }
 
-  // --------------------------------------------
-  // 🧾 Создание товара
-  // --------------------------------------------
+  /* ------------------------------------------------------------
+     🏷 Создание товара
+  ------------------------------------------------------------ */
   private async createProduct(pos: OrderPositionData): Promise<any> {
     const url = `${this.apiUrl}/entity/product`;
     const body = {
