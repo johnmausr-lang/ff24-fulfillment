@@ -9,24 +9,23 @@ import {
   MS_COLOR_ID,
 } from "./config";
 
-import { ClientData, OrderData, OrderPositionData } from "./models";
+import {
+  OrderCreatePayload,
+  OrderCreatePosition,
+} from "./models";
 
 // ==================================================
 // Класс ошибки API
 // ==================================================
 export class ApiError extends Error {
-  constructor(
-    message: string,
-    public status: number = 500,
-    public details?: any
-  ) {
+  constructor(message: string, public status: number = 500, public details?: any) {
     super(message);
     this.name = "ApiError";
   }
 }
 
 // ==================================================
-// Низкоуровневый HTTP-клиент
+// Низкоуровневый HTTP клиент
 // ==================================================
 class MsHttpClient {
   private headers: Record<string, string>;
@@ -58,7 +57,11 @@ class MsHttpClient {
     });
 
     if (!res.ok) {
-      throw new ApiError(`Ошибка API МойСклад (${res.status})`, res.status, text);
+      throw new ApiError(
+        `Ошибка API МойСклад (${res.status})`,
+        res.status,
+        text
+      );
     }
 
     try {
@@ -68,15 +71,15 @@ class MsHttpClient {
     }
   }
 
-  get(url: string, options?: RequestInit) {
-    return this.request(url, { method: "GET", ...options });
+  get(url: string, opts?: RequestInit) {
+    return this.request(url, { method: "GET", ...opts });
   }
 
-  post(url: string, body: any, options?: RequestInit) {
+  post(url: string, body: any, opts?: RequestInit) {
     return this.request(url, {
       method: "POST",
       body: JSON.stringify(body),
-      ...options,
+      ...opts,
     });
   }
 }
@@ -93,46 +96,52 @@ export class MoySkladClient {
   }
 
   // --------------------------------------------------
-  // ПОИСК КОНТРАГЕНТА ПО EMAIL / НАЗВАНИЮ
+  // 🔍 Поиск контрагента (email / строка)
   // --------------------------------------------------
   async findCounterparty(query: string) {
-    const url = `${this.apiUrl}/entity/counterparty?search=${encodeURIComponent(
-      query
-    )}`;
+    const url = `${this.apiUrl}/entity/counterparty?search=${encodeURIComponent(query)}`;
     const data = await this.http.get(url);
     return data?.rows?.[0] ?? null;
   }
 
   // --------------------------------------------------
-  // ПОИСК КОНТРАГЕНТА ПО ТЕЛЕФОНУ
-  // --------------------------------------------------
-  async findCounterpartyByPhone(phone: string) {
-    const digits = phone.replace(/\D/g, "");
-    const url = `${this.apiUrl}/entity/counterparty?filter=phone~${digits}`;
-    const data = await this.http.get(url);
-    return data?.rows?.[0] ?? null;
-  }
-
-  // --------------------------------------------------
-  // ПОЛУЧИТЬ КОНТРАГЕНТА ПО ID
+  // 📄 Получить контрагента по ID
   // --------------------------------------------------
   async getCounterpartyById(id: string) {
-    const url = `${this.apiUrl}/entity/counterparty/${id}`;
-    return this.http.get(url);
+    return this.http.get(`${this.apiUrl}/entity/counterparty/${id}`);
   }
 
   // --------------------------------------------------
-  // СОЗДАТЬ ТОВАР (если отсутствует)
+  // 📦 Остатки товаров на складе
   // --------------------------------------------------
-  private async createProduct(pos: OrderPositionData) {
+  async checkInventory(): Promise<any[]> {
+    const url = `${this.apiUrl}/report/stock/bystore?store.id=${STORE_ID}`;
+    const data = await this.http.get(url);
+
+    if (!data?.rows) return [];
+
+    return data.rows.map((row: any) => ({
+      productId: row.assortment?.id ?? "",
+      name: row.assortment?.name ?? "",
+      code: row.assortment?.article ?? "",
+      stock: row.stock ?? 0,
+      reserve: row.reserve ?? 0,
+      inTransit: row.inTransit ?? 0,
+    }));
+  }
+
+  // --------------------------------------------------
+  // 🏷 Создание товара для позиции
+  // --------------------------------------------------
+  private async createProduct(position: OrderCreatePosition) {
     const url = `${this.apiUrl}/entity/product`;
 
     const body = {
-      name: `${pos.name} (${pos.color})`,
-      article: pos.vendorCode,
+      name: `${position.name} (${position.color})`,
+      article: position.vendorCode,
       attributes: [
-        { id: MS_SIZE_ID, value: pos.size },
-        { id: MS_COLOR_ID, value: pos.color },
+        { id: MS_SIZE_ID, value: position.size },
+        { id: MS_COLOR_ID, value: position.color },
       ],
     };
 
@@ -140,20 +149,20 @@ export class MoySkladClient {
   }
 
   // --------------------------------------------------
-  // СОЗДАНИЕ ЗАКАЗА ПОКУПАТЕЛЯ (customerorder)
+  // 🧾 Создание заказа покупателя (customerorder)
   // --------------------------------------------------
-  async createCustomerOrder(counterpartyId: string, order: OrderData) {
+  async createCustomerOrder(clientId: string, payload: OrderCreatePayload) {
     const url = `${this.apiUrl}/entity/customerorder`;
 
-    const counterpartyMeta = {
+    const agentMeta = {
       meta: {
-        href: `${this.apiUrl}/entity/counterparty/${counterpartyId}`,
+        href: `${this.apiUrl}/entity/counterparty/${clientId}`,
         type: "counterparty",
         mediaType: "application/json",
       },
     };
 
-    const orgMeta = {
+    const organizationMeta = {
       meta: {
         href: `${this.apiUrl}/entity/organization/${ORGANIZATION_ID}`,
         type: "organization",
@@ -169,37 +178,29 @@ export class MoySkladClient {
       },
     };
 
-    // --- создаём товары, собираем позиции ---
+    // Создание товаров перед добавлением в заказ
     const positions = await Promise.all(
-      order.positions.map(async (pos) => {
-        const product = await this.createProduct(pos);
+      payload.positions.map(async (pos) => {
+        const createdProduct = await this.createProduct(pos);
 
         return {
           quantity: pos.quantity,
-          price: 100 * 100,
-          assortment: { meta: product.meta },
+          price: 100,
+          assortment: { meta: createdProduct.meta },
         };
       })
     );
 
-    const brand = order.positions[0]?.brand || "Не указан";
-
     const body = {
-      agent: counterpartyMeta,
-      organization: orgMeta,
+      name: `Заказ ${Date.now()}`,
+      description: payload.comment || "",
+      agent: agentMeta,
+      organization: organizationMeta,
       store: storeMeta,
       applicable: false,
-
-      // ⬅️ Твой COMMENT хранится в description
-      description: order.comment || order.workInstructions || "",
-
       attributes: [
-        {
-          id: MS_BRAND_ID,
-          value: brand,
-        },
+        { id: MS_BRAND_ID, value: payload.positions?.[0]?.brand || "" },
       ],
-
       positions,
     };
 
