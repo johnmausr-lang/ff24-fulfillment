@@ -2,111 +2,124 @@
 
 import { useState } from "react";
 
+type Position = {
+  name: string;
+  vendorCode: string;
+  color: string;
+  size: string;
+  quantity: number;
+  brand: string;
+};
+
 export default function NewOrderPage() {
-  const [positions, setPositions] = useState([
+  const [positions, setPositions] = useState<Position[]>([
     { name: "", vendorCode: "", color: "", size: "", quantity: 1, brand: "" },
   ]);
 
-  const addPosition = () => {
+  const [comment, setComment] = useState("");
+  const [isSending, setIsSending] = useState(false);
+
+  const updatePosition = (i: number, key: keyof Position, value: any) => {
+    const copy = [...positions];
+    copy[i] = { ...copy[i], [key]: value };
+    setPositions(copy);
+  };
+
+  const addRow = () => {
     setPositions([
       ...positions,
       { name: "", vendorCode: "", color: "", size: "", quantity: 1, brand: "" },
     ]);
   };
 
-  const updatePosition = (i: number, key: string, value: any) => {
-    const copy = [...positions];
-    copy[i][key] = value;
-    setPositions(copy);
-  };
+  const submit = async () => {
+    setIsSending(true);
 
-  const submitForm = async () => {
-    const res = await fetch("/api/orders/new", {
+    const response = await fetch("/api/orders/create", {
       method: "POST",
-      body: JSON.stringify({ positions }),
+      body: JSON.stringify({
+        positions,
+        comment,
+      }),
     });
 
-    const data = await res.json();
-    console.log("Ответ API:", data);
+    const data = await response.json();
+    setIsSending(false);
 
     if (data.ok) {
-      alert("Заявка создана!");
+      alert("Заказ создан!");
+      window.location.href = "/dashboard/orders";
     } else {
       alert("Ошибка: " + data.message);
     }
   };
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-6">Создание новой заявки</h1>
+    <div className="p-6 max-w-3xl mx-auto">
+      <h1 className="text-3xl font-bold mb-6">Создать заказ</h1>
 
       {positions.map((p, i) => (
-        <div key={i} className="border p-4 mb-4 rounded bg-white shadow">
-          <h3 className="font-semibold mb-2">Позиция {i + 1}</h3>
-
-          <div className="grid grid-cols-2 gap-4 mb-2">
-            <input
-              placeholder="Название"
-              className="border p-2 rounded"
-              value={p.name}
-              onChange={(e) => updatePosition(i, "name", e.target.value)}
-            />
-
-            <input
-              placeholder="Артикул"
-              className="border p-2 rounded"
-              value={p.vendorCode}
-              onChange={(e) =>
-                updatePosition(i, "vendorCode", e.target.value)
-              }
-            />
-
-            <input
-              placeholder="Цвет"
-              className="border p-2 rounded"
-              value={p.color}
-              onChange={(e) => updatePosition(i, "color", e.target.value)}
-            />
-
-            <input
-              placeholder="Размер"
-              className="border p-2 rounded"
-              value={p.size}
-              onChange={(e) => updatePosition(i, "size", e.target.value)}
-            />
-
-            <input
-              type="number"
-              placeholder="Количество"
-              className="border p-2 rounded"
-              value={p.quantity}
-              onChange={(e) =>
-                updatePosition(i, "quantity", Number(e.target.value))
-              }
-            />
-
-            <input
-              placeholder="Бренд"
-              className="border p-2 rounded"
-              value={p.brand}
-              onChange={(e) => updatePosition(i, "brand", e.target.value)}
-            />
-          </div>
+        <div key={i} className="grid grid-cols-6 gap-4 mb-4 border p-4 rounded-lg">
+          <input
+            className="border p-2"
+            placeholder="Название"
+            value={p.name}
+            onChange={(e) => updatePosition(i, "name", e.target.value)}
+          />
+          <input
+            className="border p-2"
+            placeholder="Артикул"
+            value={p.vendorCode}
+            onChange={(e) => updatePosition(i, "vendorCode", e.target.value)}
+          />
+          <input
+            className="border p-2"
+            placeholder="Цвет"
+            value={p.color}
+            onChange={(e) => updatePosition(i, "color", e.target.value)}
+          />
+          <input
+            className="border p-2"
+            placeholder="Размер"
+            value={p.size}
+            onChange={(e) => updatePosition(i, "size", e.target.value)}
+          />
+          <input
+            type="number"
+            className="border p-2"
+            placeholder="Кол-во"
+            value={p.quantity}
+            onChange={(e) => updatePosition(i, "quantity", Number(e.target.value))}
+          />
+          <input
+            className="border p-2"
+            placeholder="Бренд"
+            value={p.brand}
+            onChange={(e) => updatePosition(i, "brand", e.target.value)}
+          />
         </div>
       ))}
 
       <button
-        onClick={addPosition}
-        className="bg-gray-200 px-4 py-2 rounded mr-4"
+        className="px-4 py-2 bg-gray-200 rounded mb-4"
+        onClick={addRow}
       >
         + Добавить позицию
       </button>
 
+      <textarea
+        className="w-full border p-3 mb-4"
+        placeholder="Комментарий к заказу"
+        value={comment}
+        onChange={(e) => setComment(e.target.value)}
+      />
+
       <button
-        onClick={submitForm}
-        className="bg-blue-600 text-white px-6 py-2 rounded"
+        onClick={submit}
+        disabled={isSending}
+        className="px-6 py-3 bg-indigo-600 text-white rounded-lg"
       >
-        Создать заявку
+        {isSending ? "Создание..." : "Создать заказ"}
       </button>
     </div>
   );
