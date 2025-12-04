@@ -11,9 +11,9 @@ import {
 
 import { ClientData, OrderData, OrderPositionData } from "./models";
 
-/* ================================================================
-   Класс ошибок
-================================================================ */
+// ==================================================
+// Класс ошибки API
+// ==================================================
 export class ApiError extends Error {
   constructor(message: string, public status: number = 500, public details?: any) {
     super(message);
@@ -21,65 +21,48 @@ export class ApiError extends Error {
   }
 }
 
-/* ================================================================
-   Низкоуровневый HTTP клиент с МАКСИМАЛЬНЫМИ ЛОГАМИ
-================================================================ */
+// ==================================================
+// Низкоуровневый HTTP клиент
+// ==================================================
 class MsHttpClient {
   private headers: Record<string, string>;
 
   constructor(private token: string) {
     this.headers = {
       Authorization: `Bearer ${this.token}`,
-      "Content-Type": "application/json",
-      Accept: "application/json",
+      "Content-Type": "application/json;charset=utf-8",
+      Accept: "application/json;charset=utf-8",
     };
   }
 
   private async request(url: string, options: RequestInit = {}) {
-    const finalOptions = {
+    console.log("🔵 MS REQUEST:", {
+      url,
+      method: options.method || "GET",
+    });
+
+    const res = await fetch(url, {
       ...options,
-      headers: { ...this.headers, ...(options.headers || {}) },
-    };
-
-    // 🔥 Логируем ПОЛНЫЙ запрос
-    console.log("📤 MS API REQUEST →", {
-      url,
-      method: finalOptions.method,
-      headers: finalOptions.headers,
-      body: finalOptions.body ?? null,
+      headers: { ...this.headers, ...options.headers },
     });
 
-    let response: Response;
-    try {
-      response = await fetch(url, finalOptions);
-    } catch (err) {
-      console.error("❌ FETCH ERROR:", err);
-      throw new ApiError("Ошибка сети при запросе к МойСклад", 500, err);
-    }
+    const responseText = await res.text();
 
-    const text = await response.text();
-
-    // 🔥 Логируем ПОЛНЫЙ ответ
-    console.log("📥 MS API RESPONSE ←", {
-      url,
-      status: response.status,
-      ok: response.ok,
-      raw: text,
-      contentType: response.headers.get("content-type"),
+    console.log("🟡 MS RESPONSE:", {
+      status: res.status,
+      body: responseText,
     });
 
-    if (!response.ok) {
-      throw new ApiError(
-        `Ошибка API МойСклад (${response.status})`,
-        response.status,
-        text // сохраняем тело ответа
-      );
+    if (res.status === 204) return null;
+
+    if (!res.ok) {
+      throw new ApiError(`Ошибка API МойСклад (${res.status})`, res.status, responseText);
     }
 
     try {
-      return JSON.parse(text);
+      return JSON.parse(responseText);
     } catch {
-      return text;
+      return null;
     }
   }
 
@@ -96,9 +79,9 @@ class MsHttpClient {
   }
 }
 
-/* ================================================================
-   Основной API-клиент МойСклад
-================================================================ */
+// ==================================================
+// Основной клиент МойСклад
+// ==================================================
 export class MoySkladClient {
   private apiUrl = MS_API_URL;
   private http: MsHttpClient;
@@ -107,147 +90,139 @@ export class MoySkladClient {
     this.http = new MsHttpClient(token);
   }
 
-  /* ------------------------------------------------------------
-     🔍 Поиск клиента по телефону
-  ------------------------------------------------------------ */
-  async findCounterpartyByPhone(phone: string): Promise<any | null> {
+  // --------------------------------------------------
+  // 🔍 Поиск контрагента по телефону
+  // --------------------------------------------------
+  async findCounterpartyByPhone(phone: string) {
     const digits = phone.replace(/\D/g, "");
-
     const url = `${this.apiUrl}/entity/counterparty?filter=phone~${digits}`;
 
-    console.log("🔎 Ищем контрагента по телефону:", digits);
+    console.log("📞 Поиск по телефону:", digits);
 
     const data = await this.http.get(url);
-
-    console.log("🔎 Результат поиска phone~:", {
-      digits,
-      found: data?.rows?.length || 0,
-      rows: data?.rows,
-    });
 
     return data?.rows?.[0] ?? null;
   }
 
-  /* ------------------------------------------------------------
-     🔍 Поиск клиента по email / поиску
-  ------------------------------------------------------------ */
-  async findCounterparty(query: string): Promise<any | null> {
-    const url = `${this.apiUrl}/entity/counterparty?search=${encodeURIComponent(
-      query
-    )}`;
+  // --------------------------------------------------
+  // 🔍 Поиск контрагента по строке (email, название)
+  // --------------------------------------------------
+  async findCounterparty(query: string) {
+    const url = `${this.apiUrl}/entity/counterparty?search=${encodeURIComponent(query)}`;
 
-    console.log("🔎 Ищем контрагента через search:", query);
+    console.log("🔍 Поиск по строке:", query);
 
     const data = await this.http.get(url);
-
-    console.log("🔎 Результат поиска search:", {
-      query,
-      found: data?.rows?.length || 0,
-      rows: data?.rows,
-    });
 
     return data?.rows?.[0] ?? null;
   }
 
-  /* ------------------------------------------------------------
-     Получить клиента по ID
-  ------------------------------------------------------------ */
-  async getCounterparty(id: string): Promise<any> {
-    console.log("🔎 getCounterparty:", id);
-    return this.http.get(`${this.apiUrl}/entity/counterparty/${id}`);
+  // --------------------------------------------------
+  // 📄 Получить контрагента по ID
+  // --------------------------------------------------
+  async getCounterparty(id: string) {
+    const url = `${this.apiUrl}/entity/counterparty/${id}`;
+    return this.http.get(url);
   }
 
-  /* ------------------------------------------------------------
-     📦 Проверка остатков
-  ------------------------------------------------------------ */
+  // --------------------------------------------------
+  // 📦 Остатки товаров на складе
+  // --------------------------------------------------
   async checkInventory(): Promise<any[]> {
     const url = `${this.apiUrl}/report/stock/bystore?store.id=${STORE_ID}`;
-
-    console.log("📦 Получаем остатки товаров...");
-
     const data = await this.http.get(url);
 
-    console.log("📦 Остатков получено:", data?.rows?.length || 0);
+    if (!data?.rows) return [];
 
-    return (
-      data?.rows?.map((row: any) => ({
-        name: row.assortment?.name || "",
-        code: row.assortment?.article || "",
-        stock: row.stock || 0,
-        reserve: row.reserve || 0,
-        inTransit: row.inTransit || 0,
-        productId: row.assortment?.id || "",
-      })) ?? []
-    );
+    return data.rows.map((row: any) => ({
+      name: row.assortment?.name ?? "",
+      code: row.assortment?.article ?? "",
+      stock: row.stock ?? 0,
+      reserve: row.reserve ?? 0,
+      inTransit: row.inTransit ?? 0,
+      productId: row.assortment?.id ?? "",
+    }));
   }
 
-  /* ------------------------------------------------------------
-     Создание контрагента
-  ------------------------------------------------------------ */
-  async createCounterparty(client: ClientData): Promise<any> {
-    console.log("🧾 Создаём контрагента:", client);
+  // --------------------------------------------------
+  // 👤 Создание контрагента
+  // --------------------------------------------------
+  async createCounterparty(client: ClientData) {
+    const url = `${this.apiUrl}/entity/counterparty`;
 
-    return this.http.post(`${this.apiUrl}/entity/counterparty`, {
+    const body = {
       name: client.full_name,
       phone: client.phone,
       email: client.email,
       inn: client.inn,
       legalAddress: client.address,
       companyType: client.org_type === "LEGAL" ? "legal" : "individual",
-    });
+    };
+
+    return this.http.post(url, body);
   }
 
-  /* ------------------------------------------------------------
-     Создание заявки
-  ------------------------------------------------------------ */
-  async createSupply(clientId: string, order: OrderData): Promise<any> {
-    console.log("📦 Создаём заявку на поставку:", { clientId, order });
+  // --------------------------------------------------
+  // 🧾 Создание заявки на поставку
+  // --------------------------------------------------
+  async createSupply(clientId: string, order: OrderData) {
+    const url = `${this.apiUrl}/entity/supply`;
 
-    const base = this.apiUrl;
+    const clientMeta = {
+      meta: {
+        href: `${this.apiUrl}/entity/counterparty/${clientId}`,
+        type: "counterparty",
+        mediaType: "application/json",
+      },
+    };
 
-    return this.http.post(`${base}/entity/supply`, {
-      agent: {
-        meta: {
-          href: `${base}/entity/counterparty/${clientId}`,
-          type: "counterparty",
-          mediaType: "application/json",
-        },
+    const orgMeta = {
+      meta: {
+        href: `${this.apiUrl}/entity/organization/${ORGANIZATION_ID}`,
+        type: "organization",
+        mediaType: "application/json",
       },
-      organization: {
-        meta: {
-          href: `${base}/entity/organization/${ORGANIZATION_ID}`,
-          type: "organization",
-          mediaType: "application/json",
-        },
+    };
+
+    const storeMeta = {
+      meta: {
+        href: `${this.apiUrl}/entity/store/${STORE_ID}`,
+        type: "store",
+        mediaType: "application/json",
       },
-      store: {
-        meta: {
-          href: `${base}/entity/store/${STORE_ID}`,
-          type: "store",
-          mediaType: "application/json",
-        },
-      },
-      description: order.workInstructions || "Нет инструкций",
+    };
+
+    const positions = await Promise.all(
+      order.positions.map(async (pos) => {
+        const product = await this.createProduct(pos);
+        return {
+          quantity: pos.quantity,
+          price: 100,
+          assortment: { meta: product.meta },
+        };
+      })
+    );
+
+    const brand = order.positions?.[0]?.brand ?? "Не указан";
+
+    const body = {
+      agent: clientMeta,
+      organization: orgMeta,
+      store: storeMeta,
+      description: order.workInstructions ?? "Нет инструкций",
       applicable: false,
-      attributes: [{ id: MS_BRAND_ID, value: order.positions[0]?.brand }],
-      positions: await Promise.all(
-        order.positions.map(async (pos) => {
-          const product = await this.createProduct(pos);
-          return {
-            quantity: pos.quantity,
-            price: 100,
-            assortment: { meta: product.meta },
-          };
-        })
-      ),
-    });
+      attributes: [{ id: MS_BRAND_ID, value: brand }],
+      positions,
+    };
+
+    return this.http.post(url, body);
   }
 
-  /* ------------------------------------------------------------
-     Создание товара
-  ------------------------------------------------------------ */
-  private async createProduct(pos: OrderPositionData): Promise<any> {
-    console.log("🏷 Создаём товар:", pos);
+  // --------------------------------------------------
+  // 🏷 Создание товара
+  // --------------------------------------------------
+  private async createProduct(pos: OrderPositionData) {
+    const url = `${this.apiUrl}/entity/product`;
 
     const body = {
       name: `${pos.name} (${pos.color})`,
@@ -258,6 +233,6 @@ export class MoySkladClient {
       ],
     };
 
-    return this.http.post(`${this.apiUrl}/entity/product`, body);
+    return this.http.post(url, body);
   }
 }
