@@ -69,7 +69,7 @@ class MsHttpClient {
 }
 
 // ============================================
-// 🔥 ОСНОВНОЙ КЛИЕНТ МОЙСКЛАД
+// 🔥 МОЙСКЛАД: ОСНОВНОЙ КЛАСС
 // ============================================
 export class MoySkladClient {
   private apiUrl = MS_API_URL;
@@ -81,23 +81,41 @@ export class MoySkladClient {
 
   // --------------------------------------------
   // 🔍 Поиск контрагента по телефону
+  // Рабочий вариант без ошибки 400
   // --------------------------------------------
   async findCounterpartyByPhone(phone: string): Promise<any | null> {
-    const digits = phone.replace(/\D/g, ""); // нормализация
+    const digits = phone.replace(/\D/g, "");
 
-    const url = `${this.apiUrl}/entity/counterparty?filter=phone~${digits}`;
-    const data = await this.http.get(url);
+    const filters = [
+      `phone=~${digits}`,
+      `phone=~+${digits}`,
+      `phone=~7${digits.slice(1)}`,
+      `phone=~8${digits.slice(1)}`,
+    ];
 
-    if (!data?.rows?.length) return null;
+    for (const filter of filters) {
+      const url = `${this.apiUrl}/entity/counterparty?filter=${encodeURIComponent(
+        filter
+      )}`;
 
-    return data.rows[0];
+      try {
+        const data = await this.http.get(url);
+        if (data?.rows?.length) return data.rows[0];
+      } catch (err) {
+        console.warn("Ошибка поиска по фильтру:", filter);
+      }
+    }
+
+    return null;
   }
 
   // --------------------------------------------
-  // 🔍 Поиск контрагента по строке
+  // 🔍 Универсальный поиск
   // --------------------------------------------
   async findCounterparty(query: string): Promise<any | null> {
-    const url = `${this.apiUrl}/entity/counterparty?search=${encodeURIComponent(query)}`;
+    const url = `${this.apiUrl}/entity/counterparty?search=${encodeURIComponent(
+      query
+    )}`;
     const data = await this.http.get(url);
 
     if (!data?.rows?.length) return null;
@@ -105,19 +123,17 @@ export class MoySkladClient {
   }
 
   // --------------------------------------------
-  // 🔍 Получить контрагента по ID
+  // Получить контрагента по ID
   // --------------------------------------------
   async getCounterparty(id: string): Promise<any> {
-    const url = `${this.apiUrl}/entity/counterparty/${id}`;
-    return this.http.get(url);
+    return this.http.get(`${this.apiUrl}/entity/counterparty/${id}`);
   }
 
   // --------------------------------------------
-  // 📦 Проверка остатков товаров на складе
+  // 📦 Остатки товаров
   // --------------------------------------------
   async checkInventory(): Promise<any[]> {
     const url = `${this.apiUrl}/report/stock/bystore?store.id=${STORE_ID}`;
-
     const data = await this.http.get(url);
 
     if (!data?.rows) return [];
@@ -136,21 +152,18 @@ export class MoySkladClient {
   // 🛒 Создание контрагента
   // --------------------------------------------
   async createCounterparty(client: ClientData): Promise<any> {
-    const url = `${this.apiUrl}/entity/counterparty`;
-    const body = {
+    return this.http.post(`${this.apiUrl}/entity/counterparty`, {
       name: client.full_name,
       phone: client.phone,
       email: client.email,
       inn: client.inn,
       legalAddress: client.address,
       companyType: client.org_type === "LEGAL" ? "legal" : "individual",
-    };
-
-    return this.http.post(url, body);
+    });
   }
 
   // --------------------------------------------
-  // 🏷 Создание заявки на поставку
+  // 🏷 Создание заявки
   // --------------------------------------------
   async createSupply(clientId: string, order: OrderData): Promise<any> {
     const clientMeta = {
@@ -190,7 +203,7 @@ export class MoySkladClient {
 
     const brand = order.positions[0]?.brand || "Не указан";
 
-    const body = {
+    return this.http.post(`${this.apiUrl}/entity/supply`, {
       agent: clientMeta,
       organization: orgMeta,
       store: storeMeta,
@@ -198,25 +211,20 @@ export class MoySkladClient {
       applicable: false,
       attributes: [{ id: MS_BRAND_ID, value: brand }],
       positions,
-    };
-
-    return this.http.post(`${this.apiUrl}/entity/supply`, body);
+    });
   }
 
   // --------------------------------------------
   // 🏷 Создание товара
   // --------------------------------------------
   private async createProduct(pos: OrderPositionData): Promise<any> {
-    const url = `${this.apiUrl}/entity/product`;
-    const body = {
+    return this.http.post(`${this.apiUrl}/entity/product`, {
       name: `${pos.name} (${pos.color})`,
       article: pos.vendorCode,
       attributes: [
         { id: MS_SIZE_ID, value: pos.size },
         { id: MS_COLOR_ID, value: pos.color },
       ],
-    };
-
-    return this.http.post(url, body);
+    });
   }
 }
