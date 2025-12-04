@@ -9,17 +9,16 @@ const JWT_SECRET = process.env.JWT_SECRET!;
 
 export async function GET(req: NextRequest) {
   try {
-    const token = req.cookies.get("ff24_token")?.value;
-
-    if (!token) {
+    const cookie = req.cookies.get("ff24_token");
+    if (!cookie)
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
 
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    const decoded = jwt.verify(cookie.value, JWT_SECRET) as any;
 
     const ms = new MoySkladClient(MOYSKLAD_TOKEN);
 
-    const profile = await ms.getCounterparty(decoded.id);
+    // ⬇⬇⬇ исправлено
+    const profile = await ms.getCounterpartyById(decoded.id);
 
     return NextResponse.json(
       { ok: true, profile },
@@ -27,6 +26,9 @@ export async function GET(req: NextRequest) {
     );
   } catch (e) {
     console.error("PROFILE API ERROR:", e);
-    return NextResponse.json({ message: "Server error" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Server error" },
+      { status: 500 }
+    );
   }
 }
