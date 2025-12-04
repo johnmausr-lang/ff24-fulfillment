@@ -1,34 +1,51 @@
-// app/api/orders/create/route.ts
-
 import { NextRequest, NextResponse } from "next/server";
-import { MoySkladClient } from "@/lib/ms-client";
 import jwt from "jsonwebtoken";
+import { MoySkladClient, ApiError } from "@/lib/ms-client";
 import { MOYSKLAD_TOKEN } from "@/lib/config";
 
 const JWT_SECRET = process.env.JWT_SECRET!;
+const COOKIE_NAME = "ff24_token";
 
 export async function POST(req: NextRequest) {
   try {
-    const cookie = req.cookies.get("ff24_token");
-    if (!cookie) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    const cookie = req.cookies.get(COOKIE_NAME);
 
-    const decoded = jwt.verify(cookie.value, JWT_SECRET) as any;
+    if (!cookie) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    const decoded = jwt.verify(cookie.value, JWT_SECRET) as {
+      id: string;
+      email: string;
+    };
+
+    const clientId = decoded.id;
 
     const body = await req.json();
 
-    const payload = {
-      clientId: decoded.id,
-      order: body,  // передали заказ полностью
-    };
+    console.log("📦 ПОЛУЧЕН ЗАКАЗ:", JSON.stringify(body, null, 2));
 
     const ms = new MoySkladClient(MOYSKLAD_TOKEN);
 
-    const response = await ms.createCustomerOrder(payload.clientId, payload.order);
+    // Вызов МойСклад API
+    const result = await ms.createCustomerOrder(clientId, {
+      positions: body.positions,
+      comment: body.comment,
+    });
 
-    return NextResponse.json({ ok: true, order: response }, { status: 200 });
+    console.log("🟢 СОЗДАН ЗАКАЗ:", result);
 
-  } catch (e) {
-    console.error("ORDER API ERROR:", e);
+    return NextResponse.json({ ok: true, order: result }, { status: 200 });
+  } catch (e: any) {
+    console.error("❌ ORDER CREATE API ERROR:", e);
+
+    if (e instanceof ApiError) {
+      return NextResponse.json(
+        { message: e.message, details: e.details },
+        { status: e.status }
+      );
+    }
+
     return NextResponse.json({ message: "Server error" }, { status: 500 });
   }
 }
