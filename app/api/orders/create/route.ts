@@ -1,3 +1,5 @@
+// app/api/orders/create/route.ts
+
 import { NextRequest, NextResponse } from "next/server";
 import { MoySkladClient } from "@/lib/ms-client";
 import jwt from "jsonwebtoken";
@@ -11,43 +13,22 @@ export async function POST(req: NextRequest) {
     if (!cookie) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
     const decoded = jwt.verify(cookie.value, JWT_SECRET) as any;
+
     const body = await req.json();
 
-    const { items } = body;
-
-    if (!items || !Array.isArray(items)) {
-      return NextResponse.json({ message: "items[] required" }, { status: 400 });
-    }
+    const payload = {
+      clientId: decoded.id,
+      order: body,  // передали заказ полностью
+    };
 
     const ms = new MoySkladClient(MOYSKLAD_TOKEN);
 
-    const payload = {
-      agent: {
-        meta: {
-          href: `https://api.moysklad.ru/api/remap/1.2/entity/counterparty/${decoded.id}`,
-          type: "counterparty",
-          mediaType: "application/json"
-        }
-      },
-      positions: items.map((p: any) => ({
-        quantity: p.quantity,
-        price: p.price * 100, // копейки!
-        assortment: {
-          meta: {
-            href: `https://api.moysklad.ru/api/remap/1.2/entity/product/${p.productId}`,
-            type: "product",
-            mediaType: "application/json"
-          }
-        }
-      }))
-    };
-
-    const response = await ms.createCustomerOrder(payload);
+    const response = await ms.createCustomerOrder(payload.clientId, payload.order);
 
     return NextResponse.json({ ok: true, order: response }, { status: 200 });
 
   } catch (e) {
-    console.error("ORDER CREATE ERROR:", e);
+    console.error("ORDER API ERROR:", e);
     return NextResponse.json({ message: "Server error" }, { status: 500 });
   }
 }
