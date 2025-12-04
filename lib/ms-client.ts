@@ -10,8 +10,10 @@ import {
 } from "./config";
 
 import {
-  OrderCreatePayload,
-  OrderCreatePosition,
+  ClientData,
+  OrderData,
+  OrderPositionData,
+  CustomerOrderPayload,
 } from "./models";
 
 // ==================================================
@@ -25,7 +27,7 @@ export class ApiError extends Error {
 }
 
 // ==================================================
-// Низкоуровневый HTTP клиент
+// Низкоуровневый HTTP-клиент
 // ==================================================
 class MsHttpClient {
   private headers: Record<string, string>;
@@ -56,12 +58,10 @@ class MsHttpClient {
       body: text,
     });
 
+    if (res.status === 204) return null;
+
     if (!res.ok) {
-      throw new ApiError(
-        `Ошибка API МойСклад (${res.status})`,
-        res.status,
-        text
-      );
+      throw new ApiError(`Ошибка API МойСклад (${res.status})`, res.status, text);
     }
 
     try {
@@ -71,15 +71,14 @@ class MsHttpClient {
     }
   }
 
-  get(url: string, opts?: RequestInit) {
-    return this.request(url, { method: "GET", ...opts });
+  get(url: string) {
+    return this.request(url, { method: "GET" });
   }
 
-  post(url: string, body: any, opts?: RequestInit) {
+  post(url: string, body: any) {
     return this.request(url, {
       method: "POST",
       body: JSON.stringify(body),
-      ...opts,
     });
   }
 }
@@ -96,11 +95,15 @@ export class MoySkladClient {
   }
 
   // --------------------------------------------------
-  // 🔍 Поиск контрагента (email / строка)
+  // 🔍 Поиск контрагента по EMAIL / имени / коду
   // --------------------------------------------------
   async findCounterparty(query: string) {
     const url = `${this.apiUrl}/entity/counterparty?search=${encodeURIComponent(query)}`;
+
+    console.log("🔍 Поиск контрагента:", query);
+
     const data = await this.http.get(url);
+
     return data?.rows?.[0] ?? null;
   }
 
@@ -108,32 +111,33 @@ export class MoySkladClient {
   // 📄 Получить контрагента по ID
   // --------------------------------------------------
   async getCounterpartyById(id: string) {
-    return this.http.get(`${this.apiUrl}/entity/counterparty/${id}`);
+    const url = `${this.apiUrl}/entity/counterparty/${id}`;
+    return this.http.get(url);
   }
 
   // --------------------------------------------------
   // 📦 Остатки товаров на складе
   // --------------------------------------------------
-  async checkInventory(): Promise<any[]> {
+  async checkInventory() {
     const url = `${this.apiUrl}/report/stock/bystore?store.id=${STORE_ID}`;
-    const data = await this.http.get(url);
 
+    const data = await this.http.get(url);
     if (!data?.rows) return [];
 
     return data.rows.map((row: any) => ({
-      productId: row.assortment?.id ?? "",
-      name: row.assortment?.name ?? "",
-      code: row.assortment?.article ?? "",
-      stock: row.stock ?? 0,
-      reserve: row.reserve ?? 0,
-      inTransit: row.inTransit ?? 0,
+      id: row.assortment?.id,
+      name: row.assortment?.name,
+      code: row.assortment?.code,
+      stock: row.stock,
+      reserve: row.reserve,
+      inTransit: row.inTransit,
     }));
   }
 
   // --------------------------------------------------
-  // 🏷 Создание товара для позиции
+  // 🧾 Создание *товара* если его нет
   // --------------------------------------------------
-  private async createProduct(position: OrderCreatePosition) {
+  private async createProduct(position: OrderPositionData) {
     const url = `${this.apiUrl}/entity/product`;
 
     const body = {
@@ -149,12 +153,13 @@ export class MoySkladClient {
   }
 
   // --------------------------------------------------
-  // 🧾 Создание заказа покупателя (customerorder)
+  // 🧾 Создание CustomerOrder (заказ клиента)
   // --------------------------------------------------
-  async createCustomerOrder(clientId: string, payload: OrderCreatePayload) {
+  async createCustomerOrder(clientId: string, order: CustomerOrderPayload) {
     const url = `${this.apiUrl}/entity/customerorder`;
 
-    const agentMeta = {
+    // ---- ссылки
+    const clientMeta = {
       meta: {
         href: `${this.apiUrl}/entity/counterparty/${clientId}`,
         type: "counterparty",
@@ -162,7 +167,7 @@ export class MoySkladClient {
       },
     };
 
-    const organizationMeta = {
+    const orgMeta = {
       meta: {
         href: `${this.apiUrl}/entity/organization/${ORGANIZATION_ID}`,
         type: "organization",
@@ -178,32 +183,52 @@ export class MoySkladClient {
       },
     };
 
-    // Создание товаров перед добавлением в заказ
+    // ---- создаём товары (если их не было)
     const positions = await Promise.all(
-      payload.positions.map(async (pos) => {
-        const createdProduct = await this.createProduct(pos);
-
+      order.positions.map(async (pos) => {
+        const product = await this.createProduct(pos);
         return {
           quantity: pos.quantity,
           price: 100,
-          assortment: { meta: createdProduct.meta },
+          assortment: {
+            meta: product.meta,
+          },
         };
       })
     );
 
     const body = {
-      name: `Заказ ${Date.now()}`,
-      description: payload.comment || "",
-      agent: agentMeta,
-      organization: organizationMeta,
+      agent: clientMeta,
+      organization: orgMeta,
       store: storeMeta,
+      description: order.workInstructions ?? "",
       applicable: false,
       attributes: [
-        { id: MS_BRAND_ID, value: payload.positions?.[0]?.brand || "" },
+        { id: MS_BRAND_ID, value: order.positions?.[0]?.brand ?? "Не указан" },
       ],
       positions,
     };
 
     return this.http.post(url, body);
+  }
+
+  // --------------------------------------------------
+  // 📄 Получить список заказов клиента
+  // --------------------------------------------------
+  async getCustomerOrders(clientId: string) {
+    const url = `${this.apiUrl}/entity/customerorder?filter=agent=${clientId}`;
+
+    console.log("📦 ЗАПРОС ЗАКАЗОВ:", url);
+
+    const data = await this.http.get(url);
+    if (!data?.rows) return [];
+
+    return data.rows.map((x: any) => ({
+      id: x.id,
+      name: x.name,
+      created: x.created,
+      sum: x.sum ?? 0,
+      state: x.state?.name ?? "Не указан",
+    }));
   }
 }
