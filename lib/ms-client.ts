@@ -6,13 +6,10 @@ import {
   MS_BRAND_ID,
   MS_SIZE_ID,
   MS_COLOR_ID,
-  PDF_TEMPLATE_ID,
   STORE_ID
 } from "./config";
 
 import { ClientData, OrderData, OrderPositionData } from "./models";
-
-// --- Вспомогательные типы и классы ---
 
 export class ApiError extends Error {
   constructor(message: string, public status: number = 500) {
@@ -21,7 +18,6 @@ export class ApiError extends Error {
   }
 }
 
-// Упрощенный HTTP клиент
 class MsHttpClient {
   private headers: Record<string, string>;
 
@@ -42,8 +38,8 @@ class MsHttpClient {
     if (res.status === 204) return null;
 
     if (!res.ok) {
-      const err = await res.text();
-      console.error(`Ошибка MS ${res.status}: ${err}`);
+      const errorText = await res.text();
+      console.error(`Ошибка MS ${res.status}: ${errorText}`);
       throw new ApiError(`Ошибка при обращении к МойСклад: ${res.status}`, res.status);
     }
 
@@ -55,7 +51,7 @@ class MsHttpClient {
     return null;
   }
 
-  post(url: string, body: any, options?: RequestInit): Promise<any> {
+  post(url: string, body: any, options?: RequestInit) {
     return this.request(url, {
       method: "POST",
       body: JSON.stringify(body),
@@ -63,15 +59,13 @@ class MsHttpClient {
     });
   }
 
-  get(url: string, options?: RequestInit): Promise<any> {
+  get(url: string, options?: RequestInit) {
     return this.request(url, {
       method: "GET",
       ...options
     });
   }
 }
-
-// --- MoySklad Client ---
 
 export class MoySkladClient {
   private apiUrl = MS_API_URL;
@@ -81,25 +75,39 @@ export class MoySkladClient {
     this.http = new MsHttpClient(token);
   }
 
-  // ----------------------------------------
-  // 🔥 ДОБАВЛЕННЫЙ МЕТОД (исправляет ошибку)
-  // ----------------------------------------
+  // -----------------------------------------
+  // 🔥 Добавленный метод — он ОБЯЗАТЕЛЬНО должен быть здесь
+  // -----------------------------------------
+  async checkInventory(): Promise<any[]> {
+    const url = `${this.apiUrl}/report/stock/bystore?store.id=${STORE_ID}`;
+
+    const data = await this.http.get(url);
+
+    if (!data?.rows) return [];
+
+    return data.rows.map((row: any) => ({
+      name: row.assortment?.name || "",
+      code: row.assortment?.article || "",
+      stock: row.stock || 0,
+      reserve: row.reserve || 0,
+      inTransit: row.inTransit || 0
+    }));
+  }
+
+  // Поиск контрагента
   async findCounterparty(query: string): Promise<any | null> {
     const url = `${this.apiUrl}/entity/counterparty?search=${encodeURIComponent(query)}`;
     const data = await this.http.get(url);
 
     if (!data?.rows?.length) return null;
-
     return data.rows[0];
   }
 
-  // Получение контрагента
   async getCounterparty(id: string) {
     const url = `${this.apiUrl}/entity/counterparty/${id}`;
     return this.http.get(url);
   }
 
-  // Создание контрагента
   async createCounterparty(client: ClientData) {
     const url = `${this.apiUrl}/entity/counterparty`;
     const body = {
@@ -110,11 +118,9 @@ export class MoySkladClient {
       legalAddress: client.address,
       companyType: client.org_type === "LEGAL" ? "legal" : "individual"
     };
-
     return this.http.post(url, body);
   }
 
-  // Создание заявки на поставку
   async createSupply(clientId: string, order: OrderData) {
     const clientMeta = {
       meta: {
@@ -140,16 +146,13 @@ export class MoySkladClient {
       }
     };
 
-    // позиции
     const positions = await Promise.all(
       order.positions.map(async (pos) => {
         const product = await this.createProduct(pos);
         return {
           quantity: pos.quantity,
           price: 100,
-          assortment: {
-            meta: product.meta
-          }
+          assortment: { meta: product.meta }
         };
       })
     );
@@ -173,7 +176,6 @@ export class MoySkladClient {
     return this.http.post(url, body);
   }
 
-  // Создание товара
   private async createProduct(pos: OrderPositionData) {
     const url = `${this.apiUrl}/entity/product`;
     const body = {
@@ -184,38 +186,6 @@ export class MoySkladClient {
         { id: MS_COLOR_ID, value: pos.color }
       ]
     };
-
     return this.http.post(url, body);
-  }
-}
-
-// --- Dadata Client ---
-
-export class DadataClient {
-  private token: string;
-  private apiUrl =
-    "https://suggestions.dadata.ru/suggestions/api/4_1/rs/findById/party";
-
-  constructor(token: string) {
-    this.token = token;
-  }
-
-  async getByInn(inn: string) {
-    const res = await fetch(this.apiUrl, {
-      method: "POST",
-      headers: {
-        Authorization: `Token ${this.token}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ query: inn })
-    });
-
-    if (!res.ok) {
-      console.error(`Ошибка Dadata ${res.status}: ${await res.text()}`);
-      return null;
-    }
-
-    const data = await res.json();
-    return data.suggestions?.[0]?.data || null;
   }
 }
