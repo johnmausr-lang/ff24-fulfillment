@@ -1,13 +1,13 @@
-// app/api/inventory/list/route.ts (Исправленная версия)
+// app/api/inventory/list/route.ts
 
 import { MOYSKLAD_TOKEN } from '@/lib/config';
 import { MoySkladClient } from '@/lib/ms-client';
 import { NextRequest, NextResponse } from 'next/server';
-import { withAuth } from '@/lib/auth'; // <-- Используем защитник маршрута
+import { withAuth } from '@/lib/auth'; // <-- Корректный импорт обертки с авторизацией
 
-// Используем паттерн withAuth для автоматической проверки токена
-const handler = async (req: NextRequest, payload: { counterpartyId: string }) => {
-    // ID клиента теперь берется из полезной нагрузки токена
+// Обработчик, который вызывается ТОЛЬКО после успешной проверки токена
+const handler = async (req: NextRequest, payload: { id: string, phone: string }) => {
+    // ID клиента берется из полезной нагрузки JWT-токена
     const counterpartyId = payload.id; 
     
     const msClient = new MoySkladClient(MOYSKLAD_TOKEN);
@@ -20,11 +20,11 @@ const handler = async (req: NextRequest, payload: { counterpartyId: string }) =>
         productName: item.name,
         code: item.code || '—',
         stock: item.stock, 
-        inTransit: item.reserve || 0,
+        inTransit: item.reserve || 0, 
     }));
 
     return NextResponse.json(formattedInventory, { status: 200 });
 };
 
-// Экспортируем защищенный обработчик
+// Экспортируем защищенный обработчик, используя withAuth
 export const GET = withAuth(handler as any);
