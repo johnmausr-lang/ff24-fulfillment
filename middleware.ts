@@ -1,26 +1,24 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+
+const COOKIE_NAME = "ff24_token";
 
 export function middleware(req: NextRequest) {
-    const token = req.cookies.get('auth_token')?.value;
+  const token = req.cookies.get(COOKIE_NAME)?.value;
 
-    const isLogin = req.nextUrl.pathname.startsWith('/login');
-    const isDashboard = req.nextUrl.pathname.startsWith('/dashboard');
-
-    // Неавторизованный — блокируем dashboard
-    if (!token && isDashboard) {
-        return NextResponse.redirect(new URL('/login', req.url));
+  if (req.nextUrl.pathname.startsWith("/dashboard")) {
+    if (!token) {
+      return NextResponse.redirect(new URL("/login", req.url));
     }
+  }
 
-    // Авторизованный — блокируем /login
-    if (token && isLogin) {
-        return NextResponse.redirect(new URL('/dashboard', req.url));
+  if (req.nextUrl.pathname === "/login") {
+    if (token) {
+      return NextResponse.redirect(new URL("/dashboard", req.url));
     }
-
-    return NextResponse.next();
+  }
 }
 
-// Middleware будет работать только здесь:
 export const config = {
-    matcher: ['/login', '/dashboard/:path*'],
+  matcher: ["/dashboard/:path*", "/login"],
 };
