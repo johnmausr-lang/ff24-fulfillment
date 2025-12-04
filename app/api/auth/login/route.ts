@@ -1,51 +1,55 @@
-// lib/auth.ts
+// app/api/auth/login/route.ts
 
-import { NextRequest } from 'next/server';
-import jwt from 'jsonwebtoken';
-import { ApiError } from './ms-client';
+import { MOYSKLAD_TOKEN } from '@/lib/config';
+import { MoySkladClient, ApiError } from '@/lib/ms-client';
+import { ClientDataSchema } from '@/lib/models';
+import { NextRequest, NextResponse } from 'next/server';
+import jwt from 'jsonwebtoken'; 
 
+// Секретный ключ, должен быть задан в .env или Vercel
 const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_key'; 
 
-// Интерфейс для данных, хранящихся в токене
-interface TokenPayload {
-    id: string; 
-    phone: string;
-}
-
-// Проверяет токен из заголовка Authorization
-export const verifyToken = (req: NextRequest): TokenPayload => {
-    const authHeader = req.headers.get('Authorization');
+export const POST = async (req: NextRequest) => {
+  try {
+    const body = await req.json();
     
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        throw new ApiError('Отсутствует токен авторизации', 401);
+    // 1. Валидация данных (теперь строго типизирована через Zod)
+    const validation = ClientDataSchema.pick({ phone: true, email: true }).safeParse(body);
+    if (!validation.success) {
+        return NextResponse.json({ message: 'Неверный формат данных: требуется телефон или email.' }, { status: 400 });
+    }
+    const { phone, email } = validation.data;
+    
+    // Вход по телефону или email
+    const loginValue = phone || email; 
+
+    const msClient = new MoySkladClient(MOYSKLAD_TOKEN);
+
+    // 2. Поиск контрагента в МойСклад
+    const counterparty = await msClient.findCounterparty(loginValue);
+
+    if (!counterparty) {
+      return NextResponse.json({ message: 'Клиент не найден в базе МойСклад.' }, { status: 404 });
     }
     
-    const token = authHeader.split(' ')[1];
-    
-    try {
-        const payload = jwt.verify(token, JWT_SECRET) as TokenPayload;
-        // Проверяем, что ID клиента присутствует
-        if (!payload.id) {
-             throw new ApiError('Недействительный токен (отсутствует ID клиента)', 401);
-        }
-        return payload;
-    } catch (error) {
-        console.error('JWT Verification Error:', error);
-        throw new ApiError('Недействительный или истекший токен', 401);
-    }
-};
+    // 3. Выдача JWT-токена
+    const token = jwt.sign(
+        { id: counterparty.id, phone: loginValue }, 
+        JWT_SECRET, 
+        { expiresIn: '7d' }
+    );
 
-// Защищает API-маршрут (паттерн middleware)
-export const withAuth = (handler: (req: NextRequest, payload: TokenPayload) => Promise<Response>) => {
-    return async (req: NextRequest) => {
-        try {
-            const payload = verifyToken(req);
-            return handler(req, payload);
-        } catch (error) {
-            if (error instanceof ApiError) {
-                return new Response(JSON.stringify({ message: error.message }), { status: error.status, headers: { 'Content-Type': 'application/json' } });
-            }
-            return new Response(JSON.stringify({ message: 'Внутренняя ошибка сервера' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
-        }
-    };
+    return NextResponse.json({ 
+        token, 
+        counterpartyId: counterparty.id,
+        name: counterparty.name 
+    }, { status: 200 });
+
+  } catch (e) {
+    if (e instanceof ApiError) {
+        return NextResponse.json({ message: e.message }, { status: e.status });
+    }
+    console.error('Login error:', e);
+    return NextResponse.json({ message: 'Ошибка сервера' }, { status: 500 });
+  }
 };
