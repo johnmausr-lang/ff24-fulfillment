@@ -1,57 +1,51 @@
-// app/api/auth/login/route.ts
+// lib/auth.ts
 
-import { MOYSKLAD_TOKEN } from '@/lib/config';
-import { MoySkladClient, ApiError } from '@/lib/ms-client';
-import { ClientDataSchema } from '@/lib/models';
-// Предполагаем, что вы используете 'jsonwebtoken' для выдачи токенов
-import jwt from 'jsonwebtoken'; 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
+import jwt from 'jsonwebtoken';
+import { ApiError } from './ms-client';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_key'; // Секретный ключ!
+const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_key'; 
 
-export const POST = async (req: NextRequest) => {
-  try {
-    const body = await req.json();
+// Интерфейс для данных, хранящихся в токене
+interface TokenPayload {
+    id: string; 
+    phone: string;
+}
+
+// Проверяет токен из заголовка Authorization
+export const verifyToken = (req: NextRequest): TokenPayload => {
+    const authHeader = req.headers.get('Authorization');
     
-    // 1. Валидация данных (теперь строго типизирована через Zod)
-    const validation = ClientDataSchema.pick({ phone: true, email: true }).safeParse(body);
-    if (!validation.success) {
-        return NextResponse.json({ message: 'Неверный формат данных' }, { status: 400 });
-    }
-    const { phone, email } = validation.data;
-    
-    const msClient = new MoySkladClient(MOYSKLAD_TOKEN);
-
-    // 2. Поиск контрагента в МойСклад (логика из find_counterparty)
-    const counterparty = await msClient.findCounterparty(phone, email);
-
-    if (!counterparty) {
-      return NextResponse.json({ message: 'Клиент не найден в базе МойСклад.' }, { status: 404 });
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        throw new ApiError('Отсутствует токен авторизации', 401);
     }
     
-    // В реальном проекте: здесь должна быть проверка пароля (которого нет в МС).
-    // Так как МС не хранит пароли, обычно используется отдельная БД/СУБД
-    // или логин по коду (как в боте). Для упрощения сейчас считаем, что 
-    // если клиент найден, он авторизован.
+    const token = authHeader.split(' ')[1];
     
-    // 3. Выдача JWT-токена
-    const token = jwt.sign(
-        { id: counterparty.id, phone: phone }, 
-        JWT_SECRET, 
-        { expiresIn: '7d' }
-    );
-
-    return NextResponse.json({ 
-        token, 
-        counterpartyId: counterparty.id,
-        name: counterparty.name 
-    }, { status: 200 });
-
-  } catch (e) {
-    if (e instanceof ApiError) {
-        return NextResponse.json({ message: e.message }, { status: e.status });
+    try {
+        const payload = jwt.verify(token, JWT_SECRET) as TokenPayload;
+        // Проверяем, что ID клиента присутствует
+        if (!payload.id) {
+             throw new ApiError('Недействительный токен (отсутствует ID клиента)', 401);
+        }
+        return payload;
+    } catch (error) {
+        console.error('JWT Verification Error:', error);
+        throw new ApiError('Недействительный или истекший токен', 401);
     }
-    console.error('Login error:', e);
-    return NextResponse.json({ message: 'Ошибка сервера' }, { status: 500 });
-  }
+};
+
+// Защищает API-маршрут (паттерн middleware)
+export const withAuth = (handler: (req: NextRequest, payload: TokenPayload) => Promise<Response>) => {
+    return async (req: NextRequest) => {
+        try {
+            const payload = verifyToken(req);
+            return handler(req, payload);
+        } catch (error) {
+            if (error instanceof ApiError) {
+                return new Response(JSON.stringify({ message: error.message }), { status: error.status, headers: { 'Content-Type': 'application/json' } });
+            }
+            return new Response(JSON.stringify({ message: 'Внутренняя ошибка сервера' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+        }
+    };
 };
