@@ -30,8 +30,8 @@ class MsHttpClient {
   constructor(private token: string) {
     this.headers = {
       Authorization: `Bearer ${this.token}`,
+      "Accept": "application/json;charset=utf-8",
       "Content-Type": "application/json;charset=utf-8",
-      Accept: "application/json;charset=utf-8",
     };
   }
 
@@ -56,7 +56,11 @@ class MsHttpClient {
     if (res.status === 204) return null;
 
     if (!res.ok) {
-      throw new ApiError(`Ошибка API МойСклад (${res.status})`, res.status, responseText);
+      throw new ApiError(
+        `Ошибка API МойСклад (${res.status})`,
+        res.status,
+        responseText
+      );
     }
 
     try {
@@ -83,11 +87,22 @@ class MsHttpClient {
 // Основной клиент МойСклад
 // ==================================================
 export class MoySkladClient {
-  private apiUrl = MS_API_URL;
+  public apiUrl = MS_API_URL;
   private http: MsHttpClient;
 
   constructor(token: string) {
     this.http = new MsHttpClient(token);
+  }
+
+  // --------------------------------------------------
+  // 🔍 Поиск контрагента по email / строке
+  // --------------------------------------------------
+  async findCounterparty(query: string) {
+    const url = `${this.apiUrl}/entity/counterparty?search=${encodeURIComponent(query)}`;
+    console.log("🔍 Поиск контрагента:", query);
+
+    const data = await this.http.get(url);
+    return data?.rows?.[0] ?? null;
   }
 
   // --------------------------------------------------
@@ -100,33 +115,21 @@ export class MoySkladClient {
     console.log("📞 Поиск по телефону:", digits);
 
     const data = await this.http.get(url);
-
-    return data?.rows?.[0] ?? null;
-  }
-
-  // --------------------------------------------------
-  // 🔍 Поиск контрагента по строке (email, название)
-  // --------------------------------------------------
-  async findCounterparty(query: string) {
-    const url = `${this.apiUrl}/entity/counterparty?search=${encodeURIComponent(query)}`;
-
-    console.log("🔍 Поиск по строке:", query);
-
-    const data = await this.http.get(url);
-
     return data?.rows?.[0] ?? null;
   }
 
   // --------------------------------------------------
   // 📄 Получить контрагента по ID
   // --------------------------------------------------
-  async getCounterparty(id: string) {
+  async getCounterpartyById(id: string) {
     const url = `${this.apiUrl}/entity/counterparty/${id}`;
+    console.log("📄 Получение контрагента:", id);
+
     return this.http.get(url);
   }
 
   // --------------------------------------------------
-  // 📦 Остатки товаров на складе
+  // 📦 Получение остатков на складе
   // --------------------------------------------------
   async checkInventory(): Promise<any[]> {
     const url = `${this.apiUrl}/report/stock/bystore?store.id=${STORE_ID}`;
@@ -145,7 +148,7 @@ export class MoySkladClient {
   }
 
   // --------------------------------------------------
-  // 👤 Создание контрагента
+  // 👤 Создание нового контрагента
   // --------------------------------------------------
   async createCounterparty(client: ClientData) {
     const url = `${this.apiUrl}/entity/counterparty`;
@@ -163,7 +166,7 @@ export class MoySkladClient {
   }
 
   // --------------------------------------------------
-  // 🧾 Создание заявки на поставку
+  // 🧾 Создание заявки на поставку (Supply)
   // --------------------------------------------------
   async createSupply(clientId: string, order: OrderData) {
     const url = `${this.apiUrl}/entity/supply`;
@@ -192,13 +195,16 @@ export class MoySkladClient {
       },
     };
 
+    // создаём товар — затем добавляем его в позиции
     const positions = await Promise.all(
       order.positions.map(async (pos) => {
         const product = await this.createProduct(pos);
         return {
           quantity: pos.quantity,
-          price: 100,
-          assortment: { meta: product.meta },
+          price: 100, // можешь сделать динамическую цену
+          assortment: {
+            meta: product.meta,
+          },
         };
       })
     );
@@ -211,7 +217,12 @@ export class MoySkladClient {
       store: storeMeta,
       description: order.workInstructions ?? "Нет инструкций",
       applicable: false,
-      attributes: [{ id: MS_BRAND_ID, value: brand }],
+      attributes: [
+        {
+          id: MS_BRAND_ID,
+          value: brand,
+        },
+      ],
       positions,
     };
 
