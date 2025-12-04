@@ -15,7 +15,11 @@ import { ClientData, OrderData, OrderPositionData } from "./models";
 // Класс ошибки API
 // ==================================================
 export class ApiError extends Error {
-  constructor(message: string, public status: number = 500, public details?: any) {
+  constructor(
+    message: string,
+    public status: number = 500,
+    public details?: any
+  ) {
     super(message);
     this.name = "ApiError";
   }
@@ -36,7 +40,10 @@ class MsHttpClient {
   }
 
   private async request(url: string, options: RequestInit = {}) {
-    console.log("🔵 MS REQUEST:", { url, method: options.method || "GET" });
+    console.log("🔵 MS REQUEST:", {
+      url,
+      method: options.method || "GET",
+    });
 
     const res = await fetch(url, {
       ...options,
@@ -53,7 +60,11 @@ class MsHttpClient {
     if (res.status === 204) return null;
 
     if (!res.ok) {
-      throw new ApiError(`Ошибка API МойСклад (${res.status})`, res.status, responseText);
+      throw new ApiError(
+        `Ошибка API МойСклад (${res.status})`,
+        res.status,
+        responseText
+      );
     }
 
     try {
@@ -102,10 +113,12 @@ export class MoySkladClient {
   }
 
   // --------------------------------------------------
-  // 🔍 Поиск контрагента по строке (email, название)
+  // 🔍 Поиск контрагента по строке (email, имя и т.д.)
   // --------------------------------------------------
   async findCounterparty(query: string) {
-    const url = `${this.apiUrl}/entity/counterparty?search=${encodeURIComponent(query)}`;
+    const url = `${this.apiUrl}/entity/counterparty?search=${encodeURIComponent(
+      query
+    )}`;
 
     console.log("🔍 Поиск по строке:", query);
 
@@ -142,7 +155,7 @@ export class MoySkladClient {
   }
 
   // --------------------------------------------------
-  // 🧾 Создание контрагента
+  // 👤 Создание контрагента
   // --------------------------------------------------
   async createCounterparty(client: ClientData) {
     const url = `${this.apiUrl}/entity/counterparty`;
@@ -160,7 +173,7 @@ export class MoySkladClient {
   }
 
   // --------------------------------------------------
-  // 🏷 Создание товара
+  // 🏷 Создание товара (если нет в каталоге)
   // --------------------------------------------------
   private async createProduct(pos: OrderPositionData) {
     const url = `${this.apiUrl}/entity/product`;
@@ -178,14 +191,14 @@ export class MoySkladClient {
   }
 
   // --------------------------------------------------
-  // 🧾 Создание ЗАКАЗА КЛИЕНТА (customerorder)
+  // 🧾 Создание CustomerOrder в МойСклад
   // --------------------------------------------------
-  async createCustomerOrder(clientId: string, order: OrderData) {
+  async createCustomerOrder(counterpartyId: string, order: OrderData) {
     const url = `${this.apiUrl}/entity/customerorder`;
 
-    const clientMeta = {
+    const counterpartyMeta = {
       meta: {
-        href: `${this.apiUrl}/entity/counterparty/${clientId}`,
+        href: `${this.apiUrl}/entity/counterparty/${counterpartyId}`,
         type: "counterparty",
         mediaType: "application/json",
       },
@@ -207,81 +220,35 @@ export class MoySkladClient {
       },
     };
 
+    // ---- Создаем все товары по позициям
     const positions = await Promise.all(
       order.positions.map(async (pos) => {
         const product = await this.createProduct(pos);
+
         return {
           quantity: pos.quantity,
-          price: pos.price ?? 0,
-          assortment: { meta: product.meta },
+          price: 100 * 100, // копейки
+          assortment: {
+            meta: product.meta,
+          },
         };
       })
     );
 
-    const brand = order.positions?.[0]?.brand ?? "Не указан";
+    const brand = order.positions?.[0]?.brand || "Не указан";
 
     const body = {
-      agent: clientMeta,
-      organization: orgMeta,
-      store: storeMeta,
-      description: order.workInstructions ?? "Нет инструкций",
-      attributes: [{ id: MS_BRAND_ID, value: brand }],
-      positions,
-    };
-
-    return this.http.post(url, body);
-  }
-
-  // --------------------------------------------------
-  // 📦 Создание заявки на поставку (supply)
-  // --------------------------------------------------
-  async createSupply(clientId: string, order: OrderData) {
-    const url = `${this.apiUrl}/entity/supply`;
-
-    const clientMeta = {
-      meta: {
-        href: `${this.apiUrl}/entity/counterparty/${clientId}`,
-        type: "counterparty",
-        mediaType: "application/json",
-      },
-    };
-
-    const orgMeta = {
-      meta: {
-        href: `${this.apiUrl}/entity/organization/${ORGANIZATION_ID}`,
-        type: "organization",
-        mediaType: "application/json",
-      },
-    };
-
-    const storeMeta = {
-      meta: {
-        href: `${this.apiUrl}/entity/store/${STORE_ID}`,
-        type: "store",
-        mediaType: "application/json",
-      },
-    };
-
-    const positions = await Promise.all(
-      order.positions.map(async (pos) => {
-        const product = await this.createProduct(pos);
-        return {
-          quantity: pos.quantity,
-          price: pos.price ?? 0,
-          assortment: { meta: product.meta },
-        };
-      })
-    );
-
-    const brand = order.positions?.[0]?.brand ?? "Не указан";
-
-    const body = {
-      agent: clientMeta,
+      agent: counterpartyMeta,
       organization: orgMeta,
       store: storeMeta,
       applicable: false,
-      description: order.workInstructions ?? "Нет инструкций",
-      attributes: [{ id: MS_BRAND_ID, value: brand }],
+      description: order.workInstructions || "",
+      attributes: [
+        {
+          id: MS_BRAND_ID,
+          value: brand,
+        },
+      ],
       positions,
     };
 
