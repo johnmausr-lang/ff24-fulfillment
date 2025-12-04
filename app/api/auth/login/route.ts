@@ -1,51 +1,75 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { MoySkladClient, ApiError } from '@/lib/ms-client';
-import { MOYSKLAD_TOKEN } from '@/lib/config';
-import { ClientDataSchema } from '@/lib/models';
-import jwt from 'jsonwebtoken';
+// app/api/auth/login/route.ts
 
-const JWT_SECRET = process.env.JWT_SECRET || 'secret_key';
+import { NextRequest, NextResponse } from "next/server";
+import { MoySkladClient, ApiError } from "@/lib/ms-client";
+import { MOYSKLAD_TOKEN } from "@/lib/config";
+import jwt from "jsonwebtoken";
 
-const normalizePhone = (phone: string) => phone.replace(/\D/g, "");
+const JWT_SECRET = process.env.JWT_SECRET!;
+const COOKIE_NAME = "ff24_token";
 
 export const POST = async (req: NextRequest) => {
-    try {
-        const body = await req.json();
+  try {
+    const { email } = await req.json();
 
-        const validation = ClientDataSchema.pick({ phone: true }).safeParse(body);
-        if (!validation.success) {
-            return NextResponse.json({ message: 'Неверный формат телефона' }, { status: 400 });
-        }
-
-        const phone = normalizePhone(validation.data.phone);
-
-        const ms = new MoySkladClient(MOYSKLAD_TOKEN);
-        const client = await ms.findCounterpartyByPhone(phone);
-
-        if (!client) {
-            return NextResponse.json({ message: 'Клиент не найден' }, { status: 404 });
-        }
-
-        const token = jwt.sign(
-            { id: client.id, phone },
-            JWT_SECRET,
-            { expiresIn: '7d' }
-        );
-
-        const response = NextResponse.json({ success: true });
-
-        response.cookies.set('auth_token', token, {
-            httpOnly: true,
-            secure: true,
-            sameSite: 'strict',
-            path: '/',
-            maxAge: 60 * 60 * 24 * 7, // 7 дней
-        });
-
-        return response;
-
-    } catch (err) {
-        console.error(err);
-        return NextResponse.json({ message: 'Ошибка сервера' }, { status: 500 });
+    if (!email || typeof email !== "string") {
+      return NextResponse.json(
+        { message: "Укажите корректный email" },
+        { status: 400 }
+      );
     }
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const ms = new MoySkladClient(MOYSKLAD_TOKEN);
+    const counterparty = await ms.findCounterparty(normalizedEmail);
+
+    if (!counterparty) {
+      return NextResponse.json(
+        { message: "Клиент с таким email не найден в МойСклад." },
+        { status: 404 }
+      );
+    }
+
+    const token = jwt.sign(
+      {
+        id: counterparty.id,
+        email: normalizedEmail,
+        name: counterparty.name,
+      },
+      JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    const res = NextResponse.json(
+      {
+        ok: true,
+        clientId: counterparty.id,
+        name: counterparty.name,
+      },
+      { status: 200 }
+    );
+
+    res.cookies.set({
+      name: COOKIE_NAME,
+      value: token,
+      httpOnly: true,
+      secure: true,
+      path: "/",
+      sameSite: "strict",
+      maxAge: 60 * 60 * 24 * 7,
+    });
+
+    return res;
+  } catch (err) {
+    console.error(err);
+    if (err instanceof ApiError) {
+      return NextResponse.json({ message: err.message }, { status: err.status });
+    }
+
+    return NextResponse.json(
+      { message: "Ошибка сервера" },
+      { status: 500 }
+    );
+  }
 };
