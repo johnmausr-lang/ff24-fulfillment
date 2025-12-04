@@ -1,40 +1,56 @@
-// lib/models.ts
+import { z } from "zod";
 
-// ---------------------------------------------------
-// ДАННЫЕ КЛИЕНТА
-// ---------------------------------------------------
-export interface ClientData {
-  full_name: string;
-  phone: string;
-  email: string;
-  inn?: string;
-  address?: string;
-  org_type?: "LEGAL" | "INDIVIDUAL";
-}
+/* -----------------------------------------------------
+   Клиент (контрагент)
+----------------------------------------------------- */
 
-// ---------------------------------------------------
-// ПОЗИЦИЯ ЗАКАЗА
-// ---------------------------------------------------
+export const ClientDataSchema = z.object({
+  full_name: z.string().optional(),
+  phone: z.string().optional(),
+  email: z.string().optional(),
+  inn: z.string().optional(),
+  address: z.string().optional(),
+  org_type: z.enum(["LEGAL", "INDIVIDUAL"]).optional(),
+});
+
+export type ClientData = z.infer<typeof ClientDataSchema>;
+
+/* -----------------------------------------------------
+   Позиция заказа
+----------------------------------------------------- */
+
 export interface OrderPositionData {
-  name: string;          // Название товара
-  vendorCode: string;    // Артикул
-  color: string;         // Цвет
-  size: string;          // Размер
-  quantity: number;      // Количество
-  brand: string;         // Бренд
-  photoUrl?: string;     // Ссылка на фото (опционально)
+  name: string;
+  vendorCode: string;
+  color: string;
+  size: string;
+  quantity: number;
+  brand: string;
+  photoUrl?: string;
 }
 
-// ---------------------------------------------------
-// ЗАКАЗ
-// ---------------------------------------------------
+/* -----------------------------------------------------
+   Старый OrderData — пусть остаётся
+----------------------------------------------------- */
+
 export interface OrderData {
   positions: OrderPositionData[];
-
   workInstructions?: string;
   deliveryMethod?: string;
   draftId?: string;
+}
 
-  // Добавлено поле COMMENT
-  comment?: string;
+/* -----------------------------------------------------
+   🔥 Новый CustomerOrderPayload
+   Используется для customerorder и supply
+----------------------------------------------------- */
+
+export interface CustomerOrderPayload {
+  positions: OrderPositionData[];
+
+  // Опциональные поля
+  comment?: string;            // Комментарий клиента
+  deliveryMethod?: string;     // Способ доставки
+  workInstructions?: string;   // Рабочие инструкции (комментарий)
+  draftId?: string;            // ID черновика, если обновляем черновик
 }
