@@ -4,18 +4,6 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { LogIn } from 'lucide-react';
 
-// Утилита для форматирования телефона: +7 (999) 999-99-99
-const formatPhone = (value: string) => {
-    const digits = value.replace(/\D/g, '').slice(0, 11);
-
-    if (digits.length === 0) return '';
-    if (digits.length < 2) return `+${digits}`;
-    if (digits.length <= 4) return `+${digits[0]} (${digits.slice(1)}`;
-    if (digits.length <= 7) return `+${digits[0]} (${digits.slice(1, 4)}) ${digits.slice(4)}`;
-    if (digits.length <= 9) return `+${digits[0]} (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7)}`;
-    return `+${digits[0]} (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7, 9)}-${digits.slice(9, 11)}`;
-};
-
 const LoginPage = () => {
     const [phone, setPhone] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -27,25 +15,20 @@ const LoginPage = () => {
         setIsLoading(true);
         setError(null);
 
-        // Нормализуем номер: оставляем только цифры
-        const rawPhone = phone.replace(/\D/g, '');
-        const normalized = `+${rawPhone}`;
-
         try {
             const response = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone: normalized }),
+                body: JSON.stringify({ phone }),
             });
 
             const data = await response.json();
 
-            if (!response.ok) throw new Error(data.message || 'Ошибка входа');
+            if (!response.ok) {
+                throw new Error(data.message || 'Ошибка аутентификации.');
+            }
 
-            // Сохраняем токен
-            localStorage.setItem('authToken', data.token);
-
-            // Переход в личный кабинет
+            // переход в учетку
             router.push('/dashboard');
 
         } catch (err) {
@@ -64,29 +47,25 @@ const LoginPage = () => {
                         Вход в FF24 Fulfillment
                     </h1>
                     <p className="mt-2 text-sm text-gray-500">
-                        Введите номер телефона, привязанный к вашему аккаунту
+                        Введите номер телефона
                     </p>
                 </div>
 
                 <form onSubmit={handleLogin} className="space-y-6">
                     
                     <div>
-                        <label
-                            htmlFor="phone"
-                            className="block text-sm font-medium text-gray-700"
-                        >
-                            Номер телефона
+                        <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+                            Телефон
                         </label>
-
                         <input
                             id="phone"
                             name="phone"
                             type="tel"
-                            placeholder="+7 (999) 000-00-00"
                             required
-                            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                            placeholder="+7914XXXXXXX"
+                            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm"
                             value={phone}
-                            onChange={(e) => setPhone(formatPhone(e.target.value))}
+                            onChange={(e) => setPhone(e.target.value)}
                             disabled={isLoading}
                         />
                     </div>
@@ -99,21 +78,10 @@ const LoginPage = () => {
 
                     <button
                         type="submit"
-                        className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-lg font-medium text-white ${
-                            isLoading
-                                ? 'bg-indigo-400 cursor-not-allowed'
-                                : 'bg-indigo-600 hover:bg-indigo-700 focus:outline-none transition'
-                        }`}
                         disabled={isLoading}
+                        className="w-full flex justify-center py-2 px-4 rounded-lg text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700"
                     >
-                        {isLoading ? (
-                            <span className="flex items-center">
-                                <LogIn className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
-                                Вход...
-                            </span>
-                        ) : (
-                            'Войти'
-                        )}
+                        {isLoading ? 'Вход...' : 'Войти'}
                     </button>
                 </form>
             </div>
