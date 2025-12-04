@@ -2,42 +2,54 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { LogIn } from 'lucide-react'; // Импортируем иконку для кнопки
+import { LogIn } from 'lucide-react';
 
-// Обратите внимание: убрана явная типизация : React.FC, 
-// чтобы избежать Type error: Type '() => void' is not assignable to type 'FC<{}>'.
+// Утилита для форматирования телефона: +7 (999) 999-99-99
+const formatPhone = (value: string) => {
+    const digits = value.replace(/\D/g, '').slice(0, 11);
+
+    if (digits.length === 0) return '';
+    if (digits.length < 2) return `+${digits}`;
+    if (digits.length <= 4) return `+${digits[0]} (${digits.slice(1)}`;
+    if (digits.length <= 7) return `+${digits[0]} (${digits.slice(1, 4)}) ${digits.slice(4)}`;
+    if (digits.length <= 9) return `+${digits[0]} (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7)}`;
+    return `+${digits[0]} (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7, 9)}-${digits.slice(9, 11)}`;
+};
+
 const LoginPage = () => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState(''); // Пароль не используется для МС, но оставим для формы
+    const [phone, setPhone] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
 
-    // Функция обработки авторизации
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
         setError(null);
 
+        // Нормализуем номер: оставляем только цифры
+        const rawPhone = phone.replace(/\D/g, '');
+        const normalized = `+${rawPhone}`;
+
         try {
-            // 1. Вызываем API-маршрут для аутентификации
             const response = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify({ phone: normalized }),
             });
 
             const data = await response.json();
 
-            if (!response.ok) {
-                throw new Error(data.message || 'Ошибка аутентификации.');
-            }
+            if (!response.ok) throw new Error(data.message || 'Ошибка входа');
 
-            // 2. Успешная авторизация, перенаправляем на дашборд
-            router.push('/dashboard'); 
+            // Сохраняем токен
+            localStorage.setItem('authToken', data.token);
+
+            // Переход в личный кабинет
+            router.push('/dashboard');
 
         } catch (err) {
-            setError((err as Error).message || 'Произошла непредвиденная ошибка.');
+            setError((err as Error).message);
         } finally {
             setIsLoading(false);
         }
@@ -52,39 +64,29 @@ const LoginPage = () => {
                         Вход в FF24 Fulfillment
                     </h1>
                     <p className="mt-2 text-sm text-gray-500">
-                        Используйте ваш email для доступа к личному кабинету
+                        Введите номер телефона, привязанный к вашему аккаунту
                     </p>
                 </div>
 
                 <form onSubmit={handleLogin} className="space-y-6">
+                    
                     <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                            Email
+                        <label
+                            htmlFor="phone"
+                            className="block text-sm font-medium text-gray-700"
+                        >
+                            Номер телефона
                         </label>
-                        <input
-                            id="email"
-                            name="email"
-                            type="email"
-                            required
-                            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            disabled={isLoading}
-                        />
-                    </div>
 
-                    <div>
-                        <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                            Пароль
-                        </label>
                         <input
-                            id="password"
-                            name="password"
-                            type="password"
+                            id="phone"
+                            name="phone"
+                            type="tel"
+                            placeholder="+7 (999) 000-00-00"
                             required
                             className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            value={phone}
+                            onChange={(e) => setPhone(formatPhone(e.target.value))}
                             disabled={isLoading}
                         />
                     </div>
@@ -98,7 +100,9 @@ const LoginPage = () => {
                     <button
                         type="submit"
                         className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-lg font-medium text-white ${
-                            isLoading ? 'bg-indigo-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150'
+                            isLoading
+                                ? 'bg-indigo-400 cursor-not-allowed'
+                                : 'bg-indigo-600 hover:bg-indigo-700 focus:outline-none transition'
                         }`}
                         disabled={isLoading}
                     >
