@@ -1,71 +1,51 @@
-// app/api/auth/login/route.ts
-
 import { NextRequest, NextResponse } from 'next/server';
 import { MoySkladClient, ApiError } from '@/lib/ms-client';
 import { MOYSKLAD_TOKEN } from '@/lib/config';
 import { ClientDataSchema } from '@/lib/models';
-import { generateToken } from '@/lib/auth';
+import jwt from 'jsonwebtoken';
 
-// Нормализация телефона: оставляем только цифры
+const JWT_SECRET = process.env.JWT_SECRET || 'secret_key';
+
 const normalizePhone = (phone: string) => phone.replace(/\D/g, "");
 
 export const POST = async (req: NextRequest) => {
     try {
         const body = await req.json();
-        const { phone } = body;
 
-        // 1. Валидация телефона (Zod)
         const validation = ClientDataSchema.pick({ phone: true }).safeParse(body);
         if (!validation.success) {
-            return NextResponse.json(
-                { message: 'Неверный формат телефона. Ожидается: +79XXXXXXXXX' },
-                { status: 400 }
-            );
+            return NextResponse.json({ message: 'Неверный формат телефона' }, { status: 400 });
         }
 
-        const validatedPhone = validation.data.phone;
-        const normalized = normalizePhone(validatedPhone);
+        const phone = normalizePhone(validation.data.phone);
 
-        // 2. Поиск клиента в МойСклад
-        const msClient = new MoySkladClient(MOYSKLAD_TOKEN);
-        const counterparty = await msClient.findCounterpartyByPhone(normalized);
+        const ms = new MoySkladClient(MOYSKLAD_TOKEN);
+        const client = await ms.findCounterpartyByPhone(phone);
 
-        if (!counterparty) {
-            return NextResponse.json(
-                { message: 'Клиент с таким номером телефона не найден в базе.' },
-                { status: 404 }
-            );
+        if (!client) {
+            return NextResponse.json({ message: 'Клиент не найден' }, { status: 404 });
         }
 
-        // 3. Генерация JWT токена
-        const token = generateToken({
-            id: counterparty.id,
-            phone: validatedPhone,
+        const token = jwt.sign(
+            { id: client.id, phone },
+            JWT_SECRET,
+            { expiresIn: '7d' }
+        );
+
+        const response = NextResponse.json({ success: true });
+
+        response.cookies.set('auth_token', token, {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'strict',
+            path: '/',
+            maxAge: 60 * 60 * 24 * 7, // 7 дней
         });
 
-        return NextResponse.json(
-            {
-                token,
-                clientId: counterparty.id,
-                clientName: counterparty.name,
-                clientPhone: validatedPhone
-            },
-            { status: 200 }
-        );
+        return response;
 
-    } catch (error) {
-        console.error('Login API Error:', error);
-        
-        if (error instanceof ApiError) {
-            return NextResponse.json(
-                { message: `Ошибка МойСклад: ${error.message}` },
-                { status: error.status }
-            );
-        }
-
-        return NextResponse.json(
-            { message: 'Внутренняя ошибка сервера.' },
-            { status: 500 }
-        );
+    } catch (err) {
+        console.error(err);
+        return NextResponse.json({ message: 'Ошибка сервера' }, { status: 500 });
     }
 };
