@@ -1,5 +1,3 @@
-// app/api/auth/login/route.ts
-
 import { NextRequest, NextResponse } from "next/server";
 import { MoySkladClient, ApiError } from "@/lib/ms-client";
 import { MOYSKLAD_TOKEN } from "@/lib/config";
