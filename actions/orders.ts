@@ -1,4 +1,4 @@
-// actions/orders.ts
+// actions/orders.ts — исправленная версия
 "use server";
 
 import { revalidatePath } from "next/cache";
@@ -6,10 +6,6 @@ import { MoySkladClient } from "@/lib/ms-client";
 
 const msClient = new MoySkladClient(process.env.MOYSKLAD_TOKEN!);
 
-/**
- * Массовая отправка заказов в МойСклад
- * orderIds — массив внешних ID (например: WB-123456)
- */
 export async function createBatchOrdersInMoysklad(orderIds: string[]) {
   if (!orderIds.length) {
     throw new Error("Не выбрано ни одного заказа");
@@ -19,17 +15,18 @@ export async function createBatchOrdersInMoysklad(orderIds: string[]) {
 
   for (const externalId of orderIds) {
     try {
-      // Пример: ищем контрагента по телефону/email или создаём нового
-      const counterparty = await msClient.findCounterparty(externalId.split("-")[0]); // заглушка
-      const clientId = counterparty?.id || "new-client-placeholder";
+      // Заглушка поиска контрагента
+      const counterparty = await msClient.findCounterparty(""); // можно по телефону/email
+      const clientId = counterparty?.id || "00000000-0000-0000-0000-000000000000";
 
-      // Формируем позиции (в реальности — из твоей БД)
+      // ВАЖНО: brand обязателен в OrderPositionData
       const positions = [
         {
           name: "Футболка Premium",
           vendorCode: "ART-001",
           color: "Черный",
           size: "L",
+          brand: "FF24",        // ← ДОБАВИЛИ!
           quantity: 1,
         },
       ];
@@ -40,13 +37,10 @@ export async function createBatchOrdersInMoysklad(orderIds: string[]) {
       });
 
       console.log(`Заказ ${externalId} успешно создан`);
-      
-      // Защита от лимита API
+
       await new Promise((r) => setTimeout(r, 400));
     } catch (error: any) {
       console.error(`Ошибка при создании заказа ${externalId}:`, error.message);
-      // Можно продолжить или прервать — решай сам
-      // throw error;
     }
   }
 
