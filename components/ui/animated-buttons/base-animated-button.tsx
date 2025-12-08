@@ -1,8 +1,10 @@
-'use client';
+// components/ui/animated-buttons/base-animated-button.tsx
 
-import { motion, AnimatePresence } from 'framer-motion';
-import { ReactNode } from 'react';
-import { cn } from '@/lib/utils';
+"use client";   // ← ЭТА СТРОКА — ВСЁ, ЧТО НУЖНО!
+
+import { motion, AnimatePresence } from "framer-motion";
+import { ReactNode, useState } from "react";  // ← useState теперь виден
+import { cn } from "@/lib/utils";
 
 type State = 'idle' | 'loading' | 'success';
 
@@ -45,6 +47,7 @@ export function BaseAnimatedButton({
         className
       )}
     >
+      {/* ... остальной код без изменений */}
       <div className="absolute inset-0 bg-zinc-900">
         <motion.div
           className="h-full bg-gradient-to-r from-zinc-800 to-zinc-900"
