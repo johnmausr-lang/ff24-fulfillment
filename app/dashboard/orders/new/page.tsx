@@ -1,177 +1,209 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-
-type OrderPosition = {
-  name: string;
-  vendorCode: string;
-  color: string;
-  size: string;
-  quantity: number;
-  brand: string;
-};
+import "./orders-new.css";
 
 export default function NewOrderPage() {
-  const router = useRouter();
-
-  const [positions, setPositions] = useState<OrderPosition[]>([
-    { name: "", vendorCode: "", color: "", size: "", quantity: 1, brand: "" },
+  const [positions, setPositions] = useState([
+    {
+      name: "",
+      vendorCode: "",
+      color: "",
+      size: "",
+      quantity: 1,
+      brand: "",
+      photoUrl: "",
+    },
   ]);
 
-  const [instructions, setInstructions] = useState("");
+  const [comment, setComment] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // ---- universal updater (now type-safe)
-  const updatePosition = <K extends keyof OrderPosition>(
-    i: number,
-    key: K,
-    value: OrderPosition[K]
-  ) => {
-    const copy = [...positions];
-    copy[i][key] = value;
-    setPositions(copy);
-  };
-
+  // ------------------------------
+  // Добавить позицию
+  // ------------------------------
   const addPosition = () => {
     setPositions([
       ...positions,
-      { name: "", vendorCode: "", color: "", size: "", quantity: 1, brand: "" },
+      {
+        name: "",
+        vendorCode: "",
+        color: "",
+        size: "",
+        quantity: 1,
+        brand: "",
+        photoUrl: "",
+      },
     ]);
   };
 
+  // ------------------------------
+  // Удалить позицию
+  // ------------------------------
   const removePosition = (i: number) => {
+    if (positions.length === 1) return;
     setPositions(positions.filter((_, idx) => idx !== i));
   };
 
-  const submitOrder = async () => {
-    try {
-      setLoading(true);
+  // ------------------------------
+  // Обновить поле
+  // ------------------------------
+  const update = (i: number, key: keyof typeof positions[0], value: any) => {
+    const list = [...positions];
+    list[i][key] = value;
+    setPositions(list);
+  };
 
+  // ------------------------------
+  // Отправка формы
+  // ------------------------------
+  const submit = async (e: any) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
       const res = await fetch("/api/orders/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           positions,
-          workInstructions: instructions,
+          comment,
         }),
       });
 
-      if (!res.ok) {
-        alert("Ошибка отправки заказа");
-        setLoading(false);
-        return;
-      }
-
       const data = await res.json();
 
-      alert("Заказ успешно создан!");
-      router.push("/dashboard/orders");
+      if (!data.ok) {
+        alert("Ошибка: " + data.message);
+      } else {
+        alert("Заказ успешно создан!");
+        window.location.href = "/dashboard/orders";
+      }
     } catch (err) {
-      console.error("Ошибка создания заказа:", err);
-      alert("Ошибка соединения с сервером");
-    } finally {
-      setLoading(false);
+      alert("Ошибка запроса");
     }
+
+    setLoading(false);
   };
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Создать новый заказ</h1>
+    <div className="page-content">
 
-      {/* --- positions block --- */}
-      <div className="space-y-6">
-        {positions.map((pos, i) => (
-          <div key={i} className="border p-4 rounded-lg bg-white shadow-sm">
-            <div className="flex justify-between">
-              <h2 className="font-semibold text-lg">Позиция {i + 1}</h2>
+      <div className="card" style={{ marginBottom: 20 }}>
+        <h1 style={{ fontSize: 30, marginBottom: 5 }}>Создание заказа 📝</h1>
+        <p style={{ opacity: 0.7 }}>
+          Заполните данные ниже и отправьте заказ в обработку.
+        </p>
+      </div>
+
+      <form className="card order-form" onSubmit={submit}>
+
+        {/* ============================
+            Позиции заказа
+        ============================ */}
+        <h2 className="block-title">Позиции товара</h2>
+
+        {positions.map((p, i) => (
+          <div className="position-block" key={i}>
+            <div className="position-header">
+              <strong>Позиция #{i + 1}</strong>
               {positions.length > 1 && (
                 <button
+                  type="button"
+                  className="btn-delete"
                   onClick={() => removePosition(i)}
-                  className="text-red-600 hover:underline"
                 >
-                  Удалить
+                  ✕
                 </button>
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mt-4">
-              <input
-                className="border p-2 rounded"
-                placeholder="Название товара"
-                value={pos.name}
-                onChange={(e) => updatePosition(i, "name", e.target.value)}
-              />
+            <div className="grid">
+              <div className="field">
+                <label>Название товара</label>
+                <input
+                  value={p.name}
+                  onChange={(e) => update(i, "name", e.target.value)}
+                  required
+                />
+              </div>
 
-              <input
-                className="border p-2 rounded"
-                placeholder="Артикул"
-                value={pos.vendorCode}
-                onChange={(e) => updatePosition(i, "vendorCode", e.target.value)}
-              />
+              <div className="field">
+                <label>Артикул</label>
+                <input
+                  value={p.vendorCode}
+                  onChange={(e) => update(i, "vendorCode", e.target.value)}
+                />
+              </div>
 
-              <input
-                className="border p-2 rounded"
-                placeholder="Цвет"
-                value={pos.color}
-                onChange={(e) => updatePosition(i, "color", e.target.value)}
-              />
+              <div className="field">
+                <label>Цвет</label>
+                <input
+                  value={p.color}
+                  onChange={(e) => update(i, "color", e.target.value)}
+                />
+              </div>
 
-              <input
-                className="border p-2 rounded"
-                placeholder="Размер"
-                value={pos.size}
-                onChange={(e) => updatePosition(i, "size", e.target.value)}
-              />
+              <div className="field">
+                <label>Размер</label>
+                <input
+                  value={p.size}
+                  onChange={(e) => update(i, "size", e.target.value)}
+                />
+              </div>
 
-              <input
-                className="border p-2 rounded"
-                type="number"
-                min="1"
-                placeholder="Количество"
-                value={pos.quantity}
-                onChange={(e) =>
-                  updatePosition(i, "quantity", Number(e.target.value))
-                }
-              />
+              <div className="field">
+                <label>Количество</label>
+                <input
+                  type="number"
+                  min={1}
+                  value={p.quantity}
+                  onChange={(e) => update(i, "quantity", Number(e.target.value))}
+                />
+              </div>
 
-              <input
-                className="border p-2 rounded"
-                placeholder="Бренд"
-                value={pos.brand}
-                onChange={(e) => updatePosition(i, "brand", e.target.value)}
-              />
+              <div className="field">
+                <label>Бренд</label>
+                <input
+                  value={p.brand}
+                  onChange={(e) => update(i, "brand", e.target.value)}
+                />
+              </div>
+
+              <div className="field">
+                <label>Фото товара (URL)</label>
+                <input
+                  value={p.photoUrl}
+                  onChange={(e) => update(i, "photoUrl", e.target.value)}
+                />
+              </div>
             </div>
           </div>
         ))}
-      </div>
 
-      <button
-        onClick={addPosition}
-        className="mt-4 px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
-      >
-        + Добавить позицию
-      </button>
+        <button type="button" className="btn-secondary" onClick={addPosition}>
+          + Добавить позицию
+        </button>
 
-      {/* --- instructions --- */}
-      <div className="mt-8">
-        <h2 className="text-xl font-semibold mb-2">Инструкции к заказу</h2>
+        {/* ============================
+            Комментарий
+        ============================ */}
+        <h2 className="block-title" style={{ marginTop: 25 }}>
+          Инструкции к заказу
+        </h2>
+
         <textarea
-          className="border p-3 rounded w-full h-32"
-          placeholder="Например: упаковать в термопакет…"
-          value={instructions}
-          onChange={(e) => setInstructions(e.target.value)}
+          className="comment-box"
+          placeholder="Например: бережная упаковка, проверить размеры..."
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
         />
-      </div>
 
-      {/* --- submit button --- */}
-      <button
-        disabled={loading}
-        onClick={submitOrder}
-        className="mt-6 w-full py-3 bg-blue-600 text-white rounded-lg text-lg hover:bg-blue-700 disabled:bg-gray-400"
-      >
-        {loading ? "Создаем заказ…" : "Создать заказ"}
-      </button>
+        <button className="btn-primary" disabled={loading}>
+          {loading ? "Создание..." : "Отправить заказ"}
+        </button>
+
+      </form>
     </div>
   );
 }
