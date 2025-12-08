@@ -1,10 +1,19 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import "./new-order.css";
+import React, { useState } from "react";
+
+interface OrderPosition {
+  name: string;
+  vendorCode: string;
+  color: string;
+  size: string;
+  quantity: number;
+  brand: string;
+  photoUrl?: string;
+}
 
 export default function NewOrderPage() {
-  const [positions, setPositions] = useState([
+  const [positions, setPositions] = useState<OrderPosition[]>([
     {
       name: "",
       vendorCode: "",
@@ -16,156 +25,95 @@ export default function NewOrderPage() {
     },
   ]);
 
-  const [comment, setComment] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<any>(null);
-
-  const updatePos = (i: number, field: keyof typeof positions[0], value: any) => {
+  // ---------------------------
+  // Фиксированная функция updatePos
+  // ---------------------------
+  const updatePos = <K extends keyof OrderPosition>(
+    i: number,
+    field: K,
+    value: OrderPosition[K]
+  ) => {
     const copy = [...positions];
-    copy[i][field] = value;
+    copy[i] = { ...copy[i], [field]: value };
     setPositions(copy);
   };
 
   const addPosition = () => {
     setPositions([
       ...positions,
-      { name: "", vendorCode: "", color: "", size: "", quantity: 1, brand: "", photoUrl: "" },
+      {
+        name: "",
+        vendorCode: "",
+        color: "",
+        size: "",
+        quantity: 1,
+        brand: "",
+        photoUrl: "",
+      },
     ]);
   };
 
-  const removePosition = (i: number) => {
-    if (positions.length === 1) return;
-    setPositions(positions.filter((_, idx) => idx !== i));
-  };
-
-  const submit = async () => {
-    setLoading(true);
-    setResult(null);
-
-    try {
-      const res = await fetch("/api/orders/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ positions, comment }),
-      });
-
-      const data = await res.json();
-      setResult(data);
-
-      if (!data.ok) throw new Error(data.message);
-    } catch (e: any) {
-      console.error("Order create error", e);
-      setResult({ ok: false, message: e.message });
-    }
-
-    setLoading(false);
-  };
-
   return (
-    <div className="new-order-page">
-      <h1 className="title">Создать заказ</h1>
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4">Создать заказ</h1>
 
-      <div className="positions-list">
-        {positions.map((p, i) => (
-          <div key={i} className="card position-card">
-            <div className="position-header">
-              <h2>Позиция {i + 1}</h2>
-              <button className="remove-btn" onClick={() => removePosition(i)}>
-                ✕
-              </button>
-            </div>
+      {positions.map((pos, i) => (
+        <div key={i} className="border p-4 rounded-xl mb-4 bg-white shadow">
+          <h2 className="font-semibold mb-2">Позиция {i + 1}</h2>
 
-            <div className="fields-grid">
-              <div>
-                <label>Название товара *</label>
-                <input
-                  value={p.name}
-                  onChange={(e) => updatePos(i, "name", e.target.value)}
-                  placeholder="Пример: Кроссовки"
-                />
-              </div>
+          <div className="grid grid-cols-2 gap-4">
+            <input
+              className="border p-2 rounded"
+              placeholder="Название"
+              value={pos.name}
+              onChange={(e) => updatePos(i, "name", e.target.value)}
+            />
 
-              <div>
-                <label>Артикул *</label>
-                <input
-                  value={p.vendorCode}
-                  onChange={(e) => updatePos(i, "vendorCode", e.target.value)}
-                  placeholder="Пример: 123-ABC"
-                />
-              </div>
+            <input
+              className="border p-2 rounded"
+              placeholder="Артикул"
+              value={pos.vendorCode}
+              onChange={(e) => updatePos(i, "vendorCode", e.target.value)}
+            />
 
-              <div>
-                <label>Цвет *</label>
-                <input
-                  value={p.color}
-                  onChange={(e) => updatePos(i, "color", e.target.value)}
-                  placeholder="Красный"
-                />
-              </div>
+            <input
+              className="border p-2 rounded"
+              placeholder="Цвет"
+              value={pos.color}
+              onChange={(e) => updatePos(i, "color", e.target.value)}
+            />
 
-              <div>
-                <label>Размер *</label>
-                <input
-                  value={p.size}
-                  onChange={(e) => updatePos(i, "size", e.target.value)}
-                  placeholder="42"
-                />
-              </div>
+            <input
+              className="border p-2 rounded"
+              placeholder="Размер"
+              value={pos.size}
+              onChange={(e) => updatePos(i, "size", e.target.value)}
+            />
 
-              <div>
-                <label>Количество *</label>
-                <input
-                  type="number"
-                  min={1}
-                  value={p.quantity}
-                  onChange={(e) => updatePos(i, "quantity", Number(e.target.value))}
-                />
-              </div>
+            <input
+              className="border p-2 rounded"
+              type="number"
+              placeholder="Кол-во"
+              value={pos.quantity}
+              onChange={(e) => updatePos(i, "quantity", Number(e.target.value))}
+            />
 
-              <div>
-                <label>Бренд *</label>
-                <input
-                  value={p.brand}
-                  onChange={(e) => updatePos(i, "brand", e.target.value)}
-                  placeholder="Nike"
-                />
-              </div>
-
-              <div className="photo-block">
-                <label>Фото URL</label>
-                <input
-                  value={p.photoUrl}
-                  onChange={(e) => updatePos(i, "photoUrl", e.target.value)}
-                  placeholder="https://example.com/image.jpg"
-                />
-              </div>
-            </div>
+            <input
+              className="border p-2 rounded"
+              placeholder="Бренд"
+              value={pos.brand}
+              onChange={(e) => updatePos(i, "brand", e.target.value)}
+            />
           </div>
-        ))}
-      </div>
-
-      <button className="add-btn" onClick={addPosition}>
-        + Добавить позицию
-      </button>
-
-      <div className="card comment-card">
-        <label>Комментарий к заказу</label>
-        <textarea
-          placeholder="Комментарий, пожелания, уточнения…"
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-        ></textarea>
-      </div>
-
-      <button className="submit-btn" onClick={submit} disabled={loading}>
-        {loading ? "Создаём..." : "Создать заказ"}
-      </button>
-
-      {result && (
-        <div className={`result-msg ${result.ok ? "ok" : "err"}`}>
-          {result.ok ? "Заказ успешно создан!" : `Ошибка: ${result.message}`}
         </div>
-      )}
+      ))}
+
+      <button
+        className="px-4 py-2 bg-indigo-600 text-white rounded mt-3"
+        onClick={addPosition}
+      >
+        Добавить позицию
+      </button>
     </div>
   );
 }
