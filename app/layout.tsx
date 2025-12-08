@@ -1,14 +1,27 @@
 // src/app/layout.tsx
-import './globals.css';
-import { Inter } from 'next/font/google';
-import { ThemeProvider } from '@/components/theme-provider';
-import { Toaster } from '@/components/ui/toaster';
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
 
-const inter = Inter({ subsets: ['latin', 'cyrillic'] });
+import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/toaster";
+import { GlobalLoaderProvider } from "@/components/providers/global-loader-provider";
 
-export const metadata = {
-  title: 'FF24 Fulfillment',
-  description: 'Фулфилмент для маркетплейсов Wildberries, Ozon, Яндекс Маркет',
+const inter = Inter({
+  subsets: ["latin", "cyrillic"],
+  variable: "--font-inter",
+  weight: ["400", "500", "600", "700"],
+});
+
+export const metadata: Metadata = {
+  title: "FF24 Fulfillment — Личный кабинет",
+  description: "Фулфилмент для Wildberries, Ozon, Яндекс Маркет и МойСклад",
+  keywords: "фулфилмент, склад, маркетплейсы, мойсклад, wildberries, ozon",
+  authors: [{ name: "FF24 Team" }],
+  viewport: "width=device-width, initial-scale=1",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({
@@ -18,15 +31,23 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ru" suppressHydrationWarning>
-      <body className={inter.className}>
+      <head />
+      <body className={`${inter.className} antialiased bg-background text-foreground`}>
+        {/* 1. Тёмная тема */}
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          {children}
-          <Toaster />
+          {/* 2. Глобальный грузовик-загрузчик (для useGlobalLoader.show/hide) */}
+          <GlobalLoaderProvider>
+            {/* 3. Основной контент */}
+            {children}
+
+            {/* 4. Уведомления */}
+            <Toaster />
+          </GlobalLoaderProvider>
         </ThemeProvider>
       </body>
     </html>
