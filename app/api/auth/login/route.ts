@@ -1,3 +1,5 @@
+// app/api/auth/login/route.ts
+
 import { NextRequest, NextResponse } from "next/server";
 import { MoySkladClient, ApiError } from "@/lib/ms-client";
 import { MOYSKLAD_TOKEN } from "@/lib/config";
@@ -6,15 +8,14 @@ import jwt from "jsonwebtoken";
 const JWT_SECRET = process.env.JWT_SECRET!;
 const COOKIE_NAME = "ff24_token";
 
-export const POST = async (req: NextRequest) => {
+export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    console.log("🔵 LOGIN REQUEST BODY:", body);
+    console.log("🔵 ТЕЛО ЗАПРОСА НА ВХОД:", body);
 
     const { email } = body;
 
     if (!email || typeof email !== "string") {
-      console.error("❌ Email отсутствует или неверного формата");
       return NextResponse.json(
         { message: "Укажите корректный email" },
         { status: 400 }
@@ -22,27 +23,29 @@ export const POST = async (req: NextRequest) => {
     }
 
     const normalizedEmail = email.trim().toLowerCase();
-    console.log("🔵 Normalized email:", normalizedEmail);
+    console.log("🔵 Нормализованное email:", normalizedEmail);
 
-    // Принудительно НЕ даём Next.js ломать Accept
     const ms = new MoySkladClient(MOYSKLAD_TOKEN);
 
-    console.log("🔵 Запрос в МойСклад: поиск контрагента…");
+    console.log("🔍 Запрос контрагента по email…");
 
     const counterparty = await ms.findCounterparty(normalizedEmail);
 
-    console.log("🔵 Ответ МойСклад:", counterparty);
-
     if (!counterparty) {
-      console.warn("⚠ Контрагент не найден:", normalizedEmail);
+      console.log("❌ Контрагент не найден");
       return NextResponse.json(
-        { message: "Клиент с таким email не найден в МойСклад." },
+        { message: "Клиент с таким email не найден." },
         { status: 404 }
       );
     }
 
-    console.log("✅ Найден контрагент:", counterparty.id, counterparty.name);
+    console.log(
+      `✅ Найден контрагент: ${counterparty.id} ${counterparty.name}`
+    );
 
+    // -------------------------------------------
+    // Генерация JWT токена
+    // -------------------------------------------
     const token = jwt.sign(
       {
         id: counterparty.id,
@@ -55,7 +58,10 @@ export const POST = async (req: NextRequest) => {
 
     console.log("🔵 JWT создан");
 
-    const res = NextResponse.json(
+    // -------------------------------------------
+    // Формируем ответ
+    // -------------------------------------------
+    const response = NextResponse.json(
       {
         ok: true,
         clientId: counterparty.id,
@@ -64,24 +70,26 @@ export const POST = async (req: NextRequest) => {
       { status: 200 }
     );
 
-    res.cookies.set({
+    // -------------------------------------------
+    // Устанавливаем cookie (ВАЖНО для Render)
+    // -------------------------------------------
+    response.cookies.set({
       name: COOKIE_NAME,
       value: token,
       httpOnly: true,
-      secure: true,
+      secure: true, // Обязательно на Render
+      sameSite: "none", // Обязательно, иначе cookie НЕ отправляется
       path: "/",
-      sameSite: "strict",
       maxAge: 60 * 60 * 24 * 7,
     });
 
     console.log("✅ Cookie установлена");
 
-    return res;
+    return response;
   } catch (err: any) {
-    console.error("❌ LOGIN API ERROR:", err);
+    console.error("❌ ОШИБКА API ВХОДА:", err);
 
     if (err instanceof ApiError) {
-      console.error("❌ ApiError details:", err.details);
       return NextResponse.json(
         { message: err.message, details: err.details },
         { status: err.status }
@@ -89,8 +97,8 @@ export const POST = async (req: NextRequest) => {
     }
 
     return NextResponse.json(
-      { message: "Ошибка сервера", error: String(err) },
+      { message: "Ошибка сервера", details: err?.message },
       { status: 500 }
     );
   }
-};
+}
