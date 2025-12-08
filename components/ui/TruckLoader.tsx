@@ -1,25 +1,22 @@
 "use client";
 
-import Image from "next/image";
 import { motion } from "framer-motion";
+import "./truck.css";
 
 export default function TruckLoader() {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-md">
+    <motion.div
+      className="truck-wrapper"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
       <motion.div
-        initial={{ x: -300 }}
-        animate={{ x: 300 }}
-        transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-        className="flex items-center"
-      >
-        <Image
-          src="/truck-loading.png"
-          alt="Loading"
-          width={160}
-          height={160}
-          className="drop-shadow-xl"
-        />
-      </motion.div>
-    </div>
+        className="truck"
+        animate={{ x: [0, 20, 0] }}
+        transition={{ repeat: Infinity, duration: 1.2 }}
+      />
+      <div className="loading-text">Загрузка…</div>
+    </motion.div>
   );
 }
