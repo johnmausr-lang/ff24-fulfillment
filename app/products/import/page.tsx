@@ -8,8 +8,14 @@ export default function ImportProductsPage() {
   const [isImporting, setIsImporting] = useState(false);
   const [file, setFile] = useState<File | null>(null);
 
-  const handleImport = async (formData: FormData) => {
+  const handleImport = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!file) return;
+
     setIsImporting(true);
+    const formData = new FormData();
+    formData.append("file", file);
+
     try {
       const res = await fetch("/api/products/import", {
         method: "POST",
@@ -25,15 +31,13 @@ export default function ImportProductsPage() {
     <>
       <div className="p-8 max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold mb-8">Импорт товаров</h1>
-
-        <form action={handleImport} className="space-y-6">
+        <form onSubmit={handleImport} className="space-y-6">
           <input
             type="file"
-            name="file"
             accept=".csv"
-            required
             onChange={(e) => setFile(e.target.files?.[0] || null)}
             className="block w-full border rounded-md p-2"
+            required
           />
           <Button
             type="submit"
@@ -41,14 +45,13 @@ export default function ImportProductsPage() {
             size="lg"
             className="bg-red-600 hover:bg-red-500"
           >
-            {isImporting ? 'Импортируем...' : 'Загрузить CSV'}
+            {isImporting ? "Импортируем..." : "Загрузить CSV"}
           </Button>
         </form>
       </div>
-
       <TruckFullscreenLoader
         isLoading={isImporting}
-        message="Импортируем товары из CSV..."
+        message="Импортируем товары..."
       />
     </>
   );
