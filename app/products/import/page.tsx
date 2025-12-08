@@ -1,4 +1,5 @@
 // src/app/products/import/page.tsx
+"use client";
 import { TruckFullscreenLoader } from '@/components/ui/truck-fullscreen-loader';
 import { Button } from '@/components/ui/button';
 import { uploadProductsFromCsv } from '@/actions/products';
