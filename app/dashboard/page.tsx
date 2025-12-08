@@ -1,65 +1,158 @@
-'use client';
+"use client";
 
-import { Package, TrendingUp, DollarSign, Truck } from 'lucide-react';
-import LogoutButton from '@/components/LogoutButton';
+import { useEffect, useState } from "react";
+import "./dashboard.css";
 
 export default function DashboardPage() {
+  const [profile, setProfile] = useState<any>(null);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [inventory, setInventory] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // ================================
+  // Загрузить данные Dashboard
+  // ================================
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const p = await fetch("/api/profile").then((r) => r.json());
+        const o = await fetch("/api/orders/list").then((r) => r.json());
+        const i = await fetch("/api/inventory/list").then((r) => r.json());
+
+        if (p.ok) setProfile(p.profile);
+        if (o.ok) setOrders(o.orders || []);
+        if (i.ok) setInventory(i.inventory || []);
+      } catch (e) {
+        console.error("Dashboard Load Error", e);
+      }
+      setLoading(false);
+    }
+
+    loadData();
+  }, []);
+
+  if (loading) {
     return (
-        <div className="p-8">
-            <h1 className="text-3xl font-bold text-content mb-8">Сводная панель ФФ24</h1>
-
-            {/* Карточки */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-                {dashboardMetrics.map((metric, i) => (
-                    <div
-                        key={i}
-                        className="bg-white p-6 rounded-xl shadow-md border-b-4 border-primary/20 hover:shadow-lg transition-shadow duration-300"
-                    >
-                        <div className="flex items-center justify-between">
-                            <p className="text-sm font-medium text-content/70">{metric.title}</p>
-                            <metric.icon className={`w-6 h-6 p-1 rounded-full ${metric.color}`} />
-                        </div>
-
-                        <div className="mt-4">
-                            <span className="text-4xl font-extrabold text-content">{metric.value}</span>
-                            <span className="text-base text-content/60 ml-2">{metric.unit}</span>
-                        </div>
-                    </div>
-                ))}
-            </div>
-
-            <LogoutButton />
+      <div className="page-content">
+        <div className="card">
+          <h2>Загрузка данных...</h2>
         </div>
+      </div>
     );
-}
+  }
 
-const dashboardMetrics = [
-    {
-        title: 'Остаток SKU на складе',
-        value: '14 520',
-        unit: 'ед.',
-        icon: Package,
-        color: 'text-primary bg-primary/10',
-    },
-    {
-        title: 'Обработано заказов (месяц)',
-        value: '3 218',
-        unit: 'шт.',
-        icon: TrendingUp,
-        color: 'text-accent bg-accent/10',
-    },
-    {
-        title: 'Баланс счета',
-        value: '45 800',
-        unit: '₽',
-        icon: DollarSign,
-        color: 'text-green-600 bg-green-100',
-    },
-    {
-        title: 'Заявок на отгрузку',
-        value: '4',
-        unit: 'активных',
-        icon: Truck,
-        color: 'text-orange-600 bg-orange-100',
-    },
-];
+  // ================================
+  // UI ПРИ ЗАГРУЗКЕ ПРОФИЛЯ
+  // ================================
+  if (!profile) {
+    return (
+      <div className="page-content">
+        <div className="card">
+          <h2>Ошибка: профиль не найден</h2>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="page-content">
+      {/* ================================
+          WELCOME CARD
+      ================================ */}
+      <div className="card" style={{ marginBottom: 25 }}>
+        <h1 style={{ fontSize: "30px", marginBottom: 10 }}>
+          Добро пожаловать, {profile.name || "Клиент"} 👋
+        </h1>
+        <p style={{ opacity: 0.8 }}>
+          Это ваш личный кабинет Fulfillment FF24.
+        </p>
+      </div>
+
+      {/* ================================
+          INFO CARDS ROW
+      ================================ */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+          gap: 20,
+          marginBottom: 30,
+        }}
+      >
+        {/* Заказы */}
+        <div className="card">
+          <h3>Всего заказов</h3>
+          <div style={{ fontSize: 34, fontWeight: 800, marginTop: 10 }}>
+            {orders.length}
+          </div>
+          <p style={{ opacity: 0.6, marginTop: 8 }}>Общее количество созданных заказов</p>
+        </div>
+
+        {/* Товары на складе */}
+        <div className="card">
+          <h3>Позиции на складе</h3>
+          <div style={{ fontSize: 34, fontWeight: 800, marginTop: 10 }}>
+            {inventory.length}
+          </div>
+          <p style={{ opacity: 0.6, marginTop: 8 }}>Количество товаров в системе</p>
+        </div>
+
+        {/* Последний заказ */}
+        <div className="card">
+          <h3>Последний заказ</h3>
+          {orders.length > 0 ? (
+            <>
+              <div style={{ marginTop: 10, fontSize: 18, fontWeight: 700 }}>
+                #{orders[0].name}
+              </div>
+              <p style={{ opacity: 0.6 }}>
+                {orders[0].moment?.slice(0, 10)}
+              </p>
+            </>
+          ) : (
+            <p style={{ marginTop: 10 }}>Заказов пока нет</p>
+          )}
+        </div>
+
+        {/* Профиль */}
+        <div className="card">
+          <h3>Ваш статус</h3>
+          <div style={{ fontSize: 22, marginTop: 10 }}>
+            Активный клиент ✔
+          </div>
+          <p style={{ opacity: 0.6, marginTop: 8 }}>
+            {profile.email}
+          </p>
+        </div>
+      </div>
+
+      {/* ================================
+          LAST ORDERS LIST
+      ================================ */}
+      <div className="card">
+        <h2 style={{ marginBottom: 20 }}>Последние заказы</h2>
+
+        {orders.length === 0 && (
+          <p style={{ opacity: 0.7 }}>У вас пока нет заказов</p>
+        )}
+
+        {orders.slice(0, 5).map((o) => (
+          <div
+            key={o.id}
+            style={{
+              padding: "14px 0",
+              borderBottom: "1px solid rgba(255,255,255,0.1)",
+            }}
+          >
+            <div style={{ fontSize: 18, fontWeight: 700 }}>
+              Заказ #{o.name}
+            </div>
+            <div style={{ opacity: 0.7, marginTop: 5 }}>
+              {o.moment?.slice(0, 10)}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
