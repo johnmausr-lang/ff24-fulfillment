@@ -1,42 +1,37 @@
-// src/components/ui/toaster.tsx
-"use client"
+"use client";
 
-import * as React from "react"
-import { toast, Toaster as Sonner } from "sonner"
+import { useEffect, useState } from "react";
 
-const Toaster = ({
-  position = "bottom-center",
-  closeButton = true,
-  expand = false,
-  theme,
-  richColors = true,
-}: {
-  position?: "top-left" | "top-center" | "top-right" | "bottom-left" | "bottom-center" | "bottom-right"
-  closeButton?: boolean
-  expand?: boolean
-  theme?: "light" | "dark" | "system"
-  richColors?: boolean
-}) => {
+export function Toaster() {
+  const [messages, setMessages] = useState<string[]>([]);
+
+  useEffect(() => {
+    const handler = (event: CustomEvent) => {
+      setMessages((prev) => [...prev, event.detail]);
+      setTimeout(() => {
+        setMessages((prev) => prev.slice(1));
+      }, 3000);
+    };
+
+    window.addEventListener("toast", handler as any);
+    return () => window.removeEventListener("toast", handler as any);
+  }, []);
+
   return (
-    <Sonner
-      theme={theme}
-      toastOptions={{
-        classNames: {
-          toast:
-            "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg",
-          description: "group-[.toast]:text-muted-foreground",
-          actionButton:
-            "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
-          cancelButton:
-            "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
-        },
-      }}
-      position={position}
-      closeButton={closeButton}
-      expand={expand}
-      richColors={richColors}
-    />
-  )
+    <div className="fixed bottom-4 right-4 flex flex-col gap-2 z-[9999] pointer-events-none">
+      {messages.map((msg, i) => (
+        <div
+          key={i}
+          className="bg-black/80 text-white px-4 py-2 rounded-lg shadow-lg text-sm animate-fade-in"
+        >
+          {msg}
+        </div>
+      ))}
+    </div>
+  );
 }
 
-export { Toaster }
+// функция для вызова тостов
+export function toast(message: string) {
+  window.dispatchEvent(new CustomEvent("toast", { detail: message }));
+}
