@@ -1,24 +1,34 @@
-// src/app/orders/page.tsx
-import { TruckFullscreenLoader } from '@/components/ui/truck-fullscreen-loader';
-import { Button } from '@/components/ui/button';
-import { createBatchOrdersInMoysklad } from '@/actions/orders';
-import { useState } from 'react';
-import { useToast } from '@/components/ui/use-toast';
+"use client";
 
-export default function OrdersPage() {
+import { useState } from "react";
+import { TruckFullscreenLoader } from "@/components/ui/truck-fullscreen-loader";
+import { Button } from "@/components/ui/button";
+import { createBatchOrdersInMoysklad } from "@/actions/orders";
+import { useToast } from "@/components/ui/use-toast";
+
+export default function OrdersActionsPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
 
-  // Пример: выбрано 240 заказов
-  const selectedOrders = ['1', '2', /* ...240 штук... */];
+  // Пример — у тебя может быть своя логика выбора заказов
+  const selectedOrderIds = ["1001", "1002", "1003"]; // заменить на реальные
 
   const handleSendToMoysklad = async () => {
+    if (selectedOrderIds.length === 0) return;
+
     setIsProcessing(true);
     try {
-      await createBatchOrdersInMoysklad(selectedOrders);
-      toast({ title: 'Успех', description: 'Все заказы отправлены в МойСклад!' });
-    } catch (err) {
-      toast({ title: 'Ошибка', description: 'Что-то пошло не так', variant: 'destructive' });
+      await createBatchOrdersInMoysklad(selectedOrderIds);
+      toast({
+        title: "Готово!",
+        description: `Успешно отправлено ${selectedOrderIds.length} заказов в МойСклад`,
+      });
+    } catch (err: any) {
+      toast({
+        title: "Ошибка",
+        description: err.message || "Не удалось отправить заказы",
+        variant: "destructive",
+      });
     } finally {
       setIsProcessing(false);
     }
@@ -26,30 +36,31 @@ export default function OrdersPage() {
 
   return (
     <>
-      <div className="p-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Заказы</h1>
+      <div className="p-8 max-w-4xl mx-auto">
+        <h1 className="text-3xl font-bold mb-6">Массовые действия с заказами</h1>
+
+        <div className="bg-card p-6 rounded-xl border">
+          <p className="text-muted-foreground mb-6">
+            Выбрано заказов: <strong>{selectedOrderIds.length}</strong>
+          </p>
+
           <Button
             onClick={handleSendToMoysklad}
-            disabled={isProcessing || selectedOrders.length === 0}
+            disabled={isProcessing || selectedOrderIds.length === 0}
             size="lg"
-            className="bg-red-600 hover:bg-red-500"
+            className="bg-red-600 hover:bg-red-500 text-white"
           >
             {isProcessing
-              ? `Отправляем ${selectedOrders.length} заказов...`
-              : `Отправить ${selectedOrders.length} заказов в МойСклад`}
+              ? `Отправляем ${selectedOrderIds.length} заказов...`
+              : `Отправить ${selectedOrderIds.length} заказов в МойСклад`}
           </Button>
-        </div>
-
-        {/* Таблица заказов */}
-        <div className="bg-card rounded-xl border">
-          {/* ...твоя таблица... */}
         </div>
       </div>
 
+      {/* Наш крутой грузовик появляется при загрузке */}
       <TruckFullscreenLoader
         isLoading={isProcessing}
-        message={`Отправляем ${selectedOrders.length} заказов в МойСклад...`}
+        message={`Отправляем ${selectedOrderIds.length} заказов в МойСклад...`}
       />
     </>
   );
