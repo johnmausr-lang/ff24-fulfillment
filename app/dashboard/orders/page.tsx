@@ -1,82 +1,135 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import "./orders.css";
 
-export default function OrdersPage() {
+export default function OrdersListPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
+  // ================================
+  // Получение списка заказов
+  // ================================
   useEffect(() => {
+    async function loadOrders() {
+      try {
+        const res = await fetch("/api/orders/list");
+        const data = await res.json();
+
+        if (!data.ok) {
+          setError("Не удалось загрузить список заказов");
+        } else {
+          setOrders(data.orders || []);
+        }
+      } catch (err) {
+        setError("Ошибка при загрузке заказов");
+      }
+
+      setLoading(false);
+    }
+
     loadOrders();
   }, []);
 
-  async function loadOrders() {
-    try {
-      setLoading(true);
+  // ================================
+  // Загрузка
+  // ================================
+  if (loading) {
+    return (
+      <div className="page-content">
+        <div className="card">
+          <h2>Загрузка заказов...</h2>
+        </div>
+      </div>
+    );
+  }
 
-      const res = await fetch("/api/orders/list");
-
-      if (!res.ok) {
-        console.error("Ошибка API списка заказов");
-        setLoading(false);
-        return;
-      }
-
-      const data = await res.json();
-      setOrders(data.orders || []);
-      setLoading(false);
-    } catch (e) {
-      console.error("Ошибка загрузки заказов:", e);
-      setLoading(false);
-    }
+  // ================================
+  // Ошибка
+  // ================================
+  if (error) {
+    return (
+      <div className="page-content">
+        <div className="card">
+          <h2>Ошибка</h2>
+          <p style={{ opacity: 0.7 }}>{error}</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Мои заказы</h1>
+    <div className="page-content">
 
-        <Link
-          href="/dashboard/orders/new"
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-        >
-          + Новый заказ
-        </Link>
+      <div className="card" style={{ marginBottom: 25 }}>
+        <h1 style={{ fontSize: 28 }}>Ваши заказы 📦</h1>
+        <p style={{ opacity: 0.7 }}>Здесь отображаются все заказы, созданные вами.</p>
+
+        <a className="btn-primary" href="/dashboard/orders/new" style={{ marginTop: 15 }}>
+          + Создать новый заказ
+        </a>
       </div>
 
-      {loading ? (
-        <p className="text-gray-600">Загружаем ваши заказы…</p>
-      ) : orders.length === 0 ? (
-        <p className="text-gray-600">У вас пока нет заказов.</p>
-      ) : (
-        <div className="space-y-4">
-          {orders.map((order) => (
-            <div
-              key={order.id}
-              className="border rounded-lg p-4 bg-white shadow-sm"
-            >
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="text-lg font-semibold">
-                    Заказ № {order.name}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    Дата: {order.moment?.slice(0, 10)}
-                  </p>
-                </div>
+      {/* ================================
+            Таблица заказов (desktop)
+      ================================ */}
+      <div className="orders-table-wrapper">
+        <table className="orders-table">
+          <thead>
+            <tr>
+              <th>ID заказа</th>
+              <th>Дата</th>
+              <th>Статус</th>
+              <th>Позиций</th>
+            </tr>
+          </thead>
 
-                <div className="text-right">
-                  <p className="font-bold text-lg">{order.sum / 100} ₽</p>
-                  <p className="text-sm text-gray-500">
-                    позиций: {order.positions?.length ?? 0}
-                  </p>
-                </div>
+          <tbody>
+            {orders.map((o) => (
+              <tr key={o.id}>
+                <td>#{o.name}</td>
+                <td>{o.moment?.slice(0, 10)}</td>
+                <td>
+                  <span className={`status status-${o.state?.meta?.name || "new"}`}>
+                    {o.state?.meta?.name || "Новый"}
+                  </span>
+                </td>
+                <td>{o.positions?.length ?? 0}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* ================================
+            Мобильный вид — карточки
+      ================================ */}
+      <div className="orders-cards">
+        {orders.map((o) => (
+          <div className="order-card" key={o.id}>
+            <div className="order-header">
+              <strong>Заказ #{o.name}</strong>
+              <span className={`status status-${o.state?.meta?.name || "new"}`}>
+                {o.state?.meta?.name || "Новый"}
+              </span>
+            </div>
+
+            <div className="order-info">
+              <div>
+                <label>Дата</label>
+                <p>{o.moment?.slice(0, 10)}</p>
+              </div>
+
+              <div>
+                <label>Позиций</label>
+                <p>{o.positions?.length ?? 0}</p>
               </div>
             </div>
-          ))}
-        </div>
-      )}
+          </div>
+        ))}
+      </div>
+
     </div>
   );
 }
