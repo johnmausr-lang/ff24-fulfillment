@@ -1,22 +1,29 @@
 "use client";
 
 import { motion } from "framer-motion";
-import "./truck.css";
+import "@/components/ui/truck.css";
 
 export default function TruckLoader() {
   return (
-    <motion.div
-      className="truck-wrapper"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-    >
-      <motion.div
-        className="truck"
-        animate={{ x: [0, 20, 0] }}
-        transition={{ repeat: Infinity, duration: 1.2 }}
-      />
-      <div className="loading-text">Загрузка…</div>
-    </motion.div>
+    <div className="truck-loader-overlay">
+      <div className="truck-loader-container">
+        <motion.div
+          className="truck-icon"
+          animate={{ x: [0, 40, 0] }}
+          transition={{ repeat: Infinity, duration: 1.6, ease: "easeInOut" }}
+        >
+          🚚
+        </motion.div>
+
+        <motion.div
+          className="loader-bar"
+          initial={{ width: "0%" }}
+          animate={{ width: ["0%", "90%", "60%", "100%"] }}
+          transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+        />
+
+        <div className="loader-text">Загрузка…</div>
+      </div>
+    </div>
   );
 }
