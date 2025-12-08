@@ -1,4 +1,4 @@
-// src/app/layout.tsx
+"use client";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -33,19 +33,14 @@ export default function RootLayout({
     <html lang="ru" suppressHydrationWarning>
       <head />
       <body className={`${inter.className} antialiased bg-background text-foreground`}>
-        {/* 1. Тёмная тема */}
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          {/* 2. Глобальный грузовик-загрузчик (для useGlobalLoader.show/hide) */}
           <GlobalLoaderProvider>
-            {/* 3. Основной контент */}
             {children}
-
-            {/* 4. Уведомления */}
             <Toaster />
           </GlobalLoaderProvider>
         </ThemeProvider>
