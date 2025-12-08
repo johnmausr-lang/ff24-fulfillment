@@ -1,17 +1,21 @@
-// src/app/products/import/page.tsx
 "use client";
-import { TruckFullscreenLoader } from '@/components/ui/truck-fullscreen-loader';
-import { Button } from '@/components/ui/button';
-import { uploadProductsFromCsv } from '@/actions/products';
-import { useState } from 'react';
+
+import { useState } from "react";
+import { TruckFullscreenLoader } from "@/components/ui/truck-fullscreen-loader";
+import { Button } from "@/components/ui/button";
 
 export default function ImportProductsPage() {
   const [isImporting, setIsImporting] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
 
   const handleImport = async (formData: FormData) => {
     setIsImporting(true);
     try {
-      await uploadProductsFromCsv(formData);
+      const res = await fetch("/api/products/import", {
+        method: "POST",
+        body: formData,
+      });
+      if (!res.ok) throw new Error("Import failed");
     } finally {
       setIsImporting(false);
     }
@@ -23,10 +27,17 @@ export default function ImportProductsPage() {
         <h1 className="text-3xl font-bold mb-8">Импорт товаров</h1>
 
         <form action={handleImport} className="space-y-6">
-          <input type="file" name="file" accept=".csv" required className="block w-full" />
+          <input
+            type="file"
+            name="file"
+            accept=".csv"
+            required
+            onChange={(e) => setFile(e.target.files?.[0] || null)}
+            className="block w-full border rounded-md p-2"
+          />
           <Button
             type="submit"
-            disabled={isImporting}
+            disabled={isImporting || !file}
             size="lg"
             className="bg-red-600 hover:bg-red-500"
           >
@@ -37,7 +48,7 @@ export default function ImportProductsPage() {
 
       <TruckFullscreenLoader
         isLoading={isImporting}
-        message="Импортируем 8 237 товаров в базу..."
+        message="Импортируем товары из CSV..."
       />
     </>
   );
