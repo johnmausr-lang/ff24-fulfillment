@@ -1,0 +1,146 @@
+/* =======================================================
+   FF24 — ORDERS LIST
+   Поддержка тем: theme-a и theme-b
+======================================================= */
+
+.orders-title {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+/* LIST WRAPPER */
+.orders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* ORDER ITEM */
+.order-item {
+    padding: 22px;
+    border-radius: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    transition: 0.25s ease;
+}
+
+/* Theme A */
+.theme-a .order-item {
+    border: 1px solid #e5e8ef;
+}
+
+/* Theme B */
+.theme-b .order-item {
+    background: #1a1c3b;
+    border: 1px solid #262a57;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+}
+
+/* HEADER */
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.order-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+}
+
+/* STATUS BADGES */
+.status-badge {
+    padding: 6px 14px;
+    font-size: 13px;
+    border-radius: 20px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-new {
+    background: #4b59ff;
+    color: white;
+}
+
+.status-processing {
+    background: #ffaa39;
+    color: #000;
+}
+
+.status-done {
+    background: #2ecc71;
+    color: white;
+}
+
+.status-cancelled {
+    background: #ff3b3b;
+    color: white;
+}
+
+/* INFO BLOCK */
+.order-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 12px;
+}
+
+.order-info label {
+    font-size: 12px;
+    opacity: 0.7;
+}
+
+.order-info p {
+    font-size: 15px;
+    margin-top: 2px;
+}
+
+/* ACTIONS */
+.order-actions {
+    margin-top: 6px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* BUTTONS */
+.btn-secondary {
+    padding: 10px 18px;
+    border-radius: 16px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: 0.25s;
+}
+
+/* Theme A */
+.theme-a .btn-secondary {
+    background: #eef0ff;
+    color: #2b2f8a;
+}
+
+.theme-a .btn-secondary:hover {
+    background: #d8dcff;
+}
+
+/* Theme B */
+.theme-b .btn-secondary {
+    background: #262a57;
+    color: white;
+}
+
+.theme-b .btn-secondary:hover {
+    background: #31366c;
+}
+
+/* EMPTY STATE */
+.empty-orders {
+    text-align: center;
+    padding: 40px;
+    border-radius: 20px;
+}
+
+.empty-orders h2 {
+    font-size: 22px;
+    margin-bottom: 16px;
+}
