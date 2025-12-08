@@ -9,7 +9,7 @@
     "lint": "next lint",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
-    "postinstall": "prisma generate"
+    "postinstall": "if [ \"$NODE_ENV\" = \"production\" ]; then prisma generate; fi"
   },
   "dependencies": {
     "@prisma/client": "^5.17.0",
