@@ -1,5 +1,5 @@
-"use client";
-import type { Metadata } from "next";
+// src/app/layout.tsx
+import type { Metadata } from "next";   // ← ЭТО ГЛАВНОЕ — type + Metadata
 import { Inter } from "next/font/google";
 import "./globals.css";
 
