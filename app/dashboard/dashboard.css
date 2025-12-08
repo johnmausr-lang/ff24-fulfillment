@@ -1,0 +1,234 @@
+/* ================================
+   FF24 — Две темы: Dark & Neo-Light
+   ================================ */
+
+/* Глобальные переменные */
+:root {
+  --ff24-accent: #d9ff00;
+  --ff24-dark: #1a0033;
+  --ff24-purple: #2d0066;
+  --ff24-text-light: #ffffff;
+  --ff24-text-dark: #0b0b0b;
+  --ff24-card-bg-dark: #1a0033d0;
+  --ff24-card-bg-light: #ffffff;
+  --ff24-border: rgba(255, 255, 255, 0.15);
+}
+
+/* =====================================
+   THEME A — ТЕМНАЯ (по умолчанию)
+   ===================================== */
+html[data-theme="dark"] {
+  --bg: #0a0014;
+  --text: var(--ff24-text-light);
+  --sidebar-bg: var(--ff24-dark);
+  --sidebar-hover: #2d0066;
+  --card-bg: var(--ff24-card-bg-dark);
+  --topbar-bg: #140025e0;
+}
+
+/* =====================================
+   THEME B — НЕОНОВАЯ СВЕТЛАЯ
+   ===================================== */
+html[data-theme="light"] {
+  --bg: #d9ff00;
+  --text: #1a1a1a;
+  --sidebar-bg: #f5ff7a;
+  --sidebar-hover: #eef86a;
+  --card-bg: #ffffffee;
+  --topbar-bg: #f9ffc0aa;
+}
+
+/* ================================
+   Layout Structure
+   ================================ */
+.ff24-dashboard {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Inter", sans-serif;
+  transition: background 0.3s ease;
+}
+
+/* ================================
+   SIDEBAR
+   ================================ */
+.sidebar {
+  width: 240px;
+  background: var(--sidebar-bg);
+  padding: 30px 20px;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--ff24-border);
+  position: relative;
+  z-index: 10;
+}
+
+.logo {
+  font-weight: 900;
+  font-size: 28px;
+  color: var(--ff24-accent);
+  text-transform: uppercase;
+  margin-bottom: 40px;
+  line-height: 1;
+}
+
+.logo-sub {
+  font-size: 12px;
+  opacity: 0.8;
+  color: var(--text);
+}
+
+/* ================================
+   MENU
+   ================================ */
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 15px;
+  color: var(--text);
+  text-decoration: none;
+  transition: 0.25s ease;
+  border: 1px solid transparent;
+}
+
+.menu-item:hover {
+  background: var(--sidebar-hover);
+  transform: translateX(3px);
+}
+
+.menu-item.active {
+  background: var(--ff24-accent);
+  color: #000;
+  font-weight: 700;
+  border-color: #00000020;
+  transform: translateX(3px);
+}
+
+.logout-btn {
+  margin-top: 30px;
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--ff24-border);
+  padding: 12px;
+  color: var(--text);
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  transition: 0.25s;
+}
+
+.logout-btn:hover {
+  background: #ff3b3b;
+  border-color: #ff0000;
+}
+
+/* ================================
+   MAIN CONTENT
+   ================================ */
+.content {
+  flex: 1;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  height: 70px;
+  background: var(--topbar-bg);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--ff24-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 26px;
+  position: sticky;
+  top: 0;
+  z-index: 9;
+}
+
+.top-title {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.theme-toggle {
+  background: var(--card-bg);
+  border: 1px solid var(--ff24-border);
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+.theme-toggle:hover {
+  transform: scale(1.1);
+}
+
+/* CONTENT WRAPPER */
+.page-content {
+  padding: 30px;
+}
+
+/* ================================
+   CARDS
+   ================================ */
+.card {
+  background: var(--card-bg);
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid var(--ff24-border);
+  box-shadow: 0 0 20px rgba(217, 255, 0, 0.05);
+  transition: 0.25s ease;
+}
+
+.card:hover {
+  box-shadow: 0 0 25px rgba(217, 255, 0, 0.15);
+  transform: translateY(-3px);
+}
+
+/* BUTTONS */
+.ff24-btn {
+  padding: 12px 18px;
+  border-radius: 12px;
+  background: var(--ff24-accent);
+  color: #000;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+.ff24-btn:hover {
+  transform: scale(1.05);
+}
+
+/* FORMS */
+input, select, textarea {
+  background: var(--card-bg);
+  border: 1px solid var(--ff24-border);
+  padding: 12px;
+  border-radius: 10px;
+  width: 100%;
+  color: var(--text);
+  transition: 0.2s;
+}
+
+input:focus, textarea:focus {
+  outline: none;
+  border-color: var(--ff24-accent);
+  box-shadow: 0 0 10px var(--ff24-accent);
+}
