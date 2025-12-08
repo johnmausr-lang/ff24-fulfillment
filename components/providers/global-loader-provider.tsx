@@ -1,35 +1,36 @@
+// components/providers/global-loader-provider.tsx
 "use client";
 
-import { createContext, useContext, useState } from "react";
-import TruckLoader from "@/components/ui/TruckLoader";
+import { TruckFullscreenLoader } from "@/components/ui/truck-fullscreen-loader";
+import { create } from "zustand";
 
-type LoaderContextType = {
-  loading: boolean;
-  showLoader: () => void;
-  hideLoader: () => void;
+// Zustand store
+type LoaderState = {
+  isLoading: boolean;
+  message: string;
+  show: (msg?: string) => void;
+  hide: () => void;
 };
 
-const LoaderContext = createContext<LoaderContextType | null>(null);
+export const useGlobalLoader = create<LoaderState>((set) => ({
+  isLoading: false,
+  message: "Обрабатываем ваш запрос...",
+  show: (msg = "Обрабатываем ваш запрос...") => set({ isLoading: true, message: msg }),
+  hide: () => set({ isLoading: false }),
+}));
 
-export const useGlobalLoader = () => {
-  const ctx = useContext(LoaderContext);
-  if (!ctx) throw new Error("useGlobalLoader must be used inside GlobalLoaderProvider");
-  return ctx;
-};
-
-export default function GlobalLoaderProvider({ children }: { children: React.ReactNode }) {
-  const [loading, setLoading] = useState(false);
-
-  const value = {
-    loading,
-    showLoader: () => setLoading(true),
-    hideLoader: () => setLoading(false),
-  };
+// Компонент-провайдер — default export
+export default function GlobalLoaderProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const { isLoading, message } = useGlobalLoader();
 
   return (
-    <LoaderContext.Provider value={value}>
+    <>
       {children}
-      {loading && <TruckLoader />}
-    </LoaderContext.Provider>
+      <TruckFullscreenLoader isLoading={isLoading} message={message} />
+    </>
   );
 }
