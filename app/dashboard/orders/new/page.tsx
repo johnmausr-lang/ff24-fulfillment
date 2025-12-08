@@ -1,209 +1,85 @@
 "use client";
 
-import { useState } from "react";
-import "./orders-new.css";
+import { useEffect, useState } from "react";
+import "./orders.css";
 
-export default function NewOrderPage() {
-  const [positions, setPositions] = useState([
-    {
-      name: "",
-      vendorCode: "",
-      color: "",
-      size: "",
-      quantity: 1,
-      brand: "",
-      photoUrl: "",
-    },
-  ]);
+export default function OrdersPage() {
+  const [orders, setOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const [comment, setComment] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  // ------------------------------
-  // Добавить позицию
-  // ------------------------------
-  const addPosition = () => {
-    setPositions([
-      ...positions,
-      {
-        name: "",
-        vendorCode: "",
-        color: "",
-        size: "",
-        quantity: 1,
-        brand: "",
-        photoUrl: "",
-      },
-    ]);
-  };
-
-  // ------------------------------
-  // Удалить позицию
-  // ------------------------------
-  const removePosition = (i: number) => {
-    if (positions.length === 1) return;
-    setPositions(positions.filter((_, idx) => idx !== i));
-  };
-
-  // ------------------------------
-  // Обновить поле
-  // ------------------------------
-  const update = (i: number, key: keyof typeof positions[0], value: any) => {
-    const list = [...positions];
-    list[i][key] = value;
-    setPositions(list);
-  };
-
-  // ------------------------------
-  // Отправка формы
-  // ------------------------------
-  const submit = async (e: any) => {
-    e.preventDefault();
-    setLoading(true);
-
+  const fetchOrders = async () => {
     try {
-      const res = await fetch("/api/orders/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          positions,
-          comment,
-        }),
-      });
-
+      const res = await fetch("/api/orders/list");
       const data = await res.json();
 
-      if (!data.ok) {
-        alert("Ошибка: " + data.message);
-      } else {
-        alert("Заказ успешно создан!");
-        window.location.href = "/dashboard/orders";
-      }
-    } catch (err) {
-      alert("Ошибка запроса");
-    }
+      if (!data.ok) throw new Error("Ошибка API");
 
-    setLoading(false);
+      setOrders(data.orders);
+    } catch (e) {
+      console.error("Ошибка API списка заказов", e);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
 
   return (
     <div className="page-content">
+      <h1 className="orders-title">Мои заказы</h1>
 
-      <div className="card" style={{ marginBottom: 20 }}>
-        <h1 style={{ fontSize: 30, marginBottom: 5 }}>Создание заказа 📝</h1>
-        <p style={{ opacity: 0.7 }}>
-          Заполните данные ниже и отправьте заказ в обработку.
-        </p>
-      </div>
+      {loading ? (
+        <div className="card loading-card">
+          <div className="loader"></div>
+          <p>Загружаем заказы…</p>
+        </div>
+      ) : orders.length === 0 ? (
+        <div className="card empty-orders">
+          <h2>У вас ещё нет заказов</h2>
+          <a href="/dashboard/orders/new" className="btn-primary">
+            Создать первый заказ
+          </a>
+        </div>
+      ) : (
+        <div className="orders-list">
+          {orders.map((order: any) => (
+            <div key={order.id} className="order-item card">
+              <div className="order-header">
+                <h2>{order.name || "Заказ"}</h2>
 
-      <form className="card order-form" onSubmit={submit}>
-
-        {/* ============================
-            Позиции заказа
-        ============================ */}
-        <h2 className="block-title">Позиции товара</h2>
-
-        {positions.map((p, i) => (
-          <div className="position-block" key={i}>
-            <div className="position-header">
-              <strong>Позиция #{i + 1}</strong>
-              {positions.length > 1 && (
-                <button
-                  type="button"
-                  className="btn-delete"
-                  onClick={() => removePosition(i)}
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-
-            <div className="grid">
-              <div className="field">
-                <label>Название товара</label>
-                <input
-                  value={p.name}
-                  onChange={(e) => update(i, "name", e.target.value)}
-                  required
-                />
+                <span className={`status-badge status-${order.state || "new"}`}>
+                  {order.stateName || "Новый"}
+                </span>
               </div>
 
-              <div className="field">
-                <label>Артикул</label>
-                <input
-                  value={p.vendorCode}
-                  onChange={(e) => update(i, "vendorCode", e.target.value)}
-                />
+              <div className="order-info">
+                <div>
+                  <label>Дата</label>
+                  <p>{order.created || "—"}</p>
+                </div>
+
+                <div>
+                  <label>Позиции</label>
+                  <p>{order.positions?.length ?? 0}</p>
+                </div>
+
+                <div>
+                  <label>Комментарий</label>
+                  <p>{order.description || "—"}</p>
+                </div>
               </div>
 
-              <div className="field">
-                <label>Цвет</label>
-                <input
-                  value={p.color}
-                  onChange={(e) => update(i, "color", e.target.value)}
-                />
-              </div>
-
-              <div className="field">
-                <label>Размер</label>
-                <input
-                  value={p.size}
-                  onChange={(e) => update(i, "size", e.target.value)}
-                />
-              </div>
-
-              <div className="field">
-                <label>Количество</label>
-                <input
-                  type="number"
-                  min={1}
-                  value={p.quantity}
-                  onChange={(e) => update(i, "quantity", Number(e.target.value))}
-                />
-              </div>
-
-              <div className="field">
-                <label>Бренд</label>
-                <input
-                  value={p.brand}
-                  onChange={(e) => update(i, "brand", e.target.value)}
-                />
-              </div>
-
-              <div className="field">
-                <label>Фото товара (URL)</label>
-                <input
-                  value={p.photoUrl}
-                  onChange={(e) => update(i, "photoUrl", e.target.value)}
-                />
+              <div className="order-actions">
+                <a href={`/dashboard/orders/${order.id}`} className="btn-secondary">
+                  Открыть
+                </a>
               </div>
             </div>
-          </div>
-        ))}
-
-        <button type="button" className="btn-secondary" onClick={addPosition}>
-          + Добавить позицию
-        </button>
-
-        {/* ============================
-            Комментарий
-        ============================ */}
-        <h2 className="block-title" style={{ marginTop: 25 }}>
-          Инструкции к заказу
-        </h2>
-
-        <textarea
-          className="comment-box"
-          placeholder="Например: бережная упаковка, проверить размеры..."
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-        />
-
-        <button className="btn-primary" disabled={loading}>
-          {loading ? "Создание..." : "Отправить заказ"}
-        </button>
-
-      </form>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
