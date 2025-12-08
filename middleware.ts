@@ -1,24 +1,39 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+// src/middleware.ts
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-const COOKIE_NAME = "ff24_token";
+export function middleware(request: NextRequest) {
+  const response = NextResponse.next();
 
-export function middleware(req: NextRequest) {
-  const token = req.cookies.get(COOKIE_NAME)?.value;
+  // Устанавливаем безопасные флаги для всех cookies при любом ответе
+  const cookies = response.cookies.getAll();
+  cookies.forEach((cookie) => {
+    response.cookies.set({
+      name: cookie.name,
+      value: cookie.value,
+      ...cookie,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/',
+    });
+  });
 
-  if (req.nextUrl.pathname.startsWith("/dashboard")) {
-    if (!token) {
-      return NextResponse.redirect(new URL("/login", req.url));
-    }
+  // Если пользователь заходит на защищённые страницы без сессии — редиректим на логин
+  const protectedPaths = ['/dashboard', '/orders', '/products', '/warehouses', '/settings'];
+  const isProtectedPath = protectedPaths.some(path => 
+    request.nextUrl.pathname.startsWith(path)
+  );
+
+  const sessionCookie = request.cookies.get('ff24_session');
+  
+  if (isProtectedPath && !sessionCookie) {
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  if (req.nextUrl.pathname === "/login") {
-    if (token) {
-      return NextResponse.redirect(new URL("/dashboard", req.url));
-    }
-  }
+  return response;
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/login"],
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|login|register).*)'],
 };
