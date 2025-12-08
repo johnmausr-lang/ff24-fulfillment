@@ -1,3 +1,4 @@
+// app/orders/actions/page.tsx
 "use client";
 
 import { useState } from "react";
@@ -10,22 +11,32 @@ export default function OrdersActionsPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
 
-  const selectedOrderIds = ["1001", "1002", "1003"]; // Твоя логика выбора
+  // Пример выбранных заказов — в реальности будет из таблицы/чекбоксов
+  const selectedOrderIds = ["WB-123456", "OZ-789012", "YM-345678"];
 
   const handleSendToMoysklad = async () => {
-    if (selectedOrderIds.length === 0) return;
+    if (selectedOrderIds.length === 0) {
+      toast({
+        title: "Ничего не выбрано",
+        description: "Выберите хотя бы один заказ",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setIsProcessing(true);
+
     try {
       await createBatchOrdersInMoysklad(selectedOrderIds);
+
       toast({
-        title: "Готово!",
+        title: "Успех!",
         description: `Отправлено ${selectedOrderIds.length} заказов в МойСклад`,
       });
-    } catch (err: any) {
+    } catch (error: any) {
       toast({
         title: "Ошибка",
-        description: err.message || "Не удалось отправить",
+        description: error.message || "Не удалось отправить заказы",
         variant: "destructive",
       });
     } finally {
@@ -36,26 +47,32 @@ export default function OrdersActionsPage() {
   return (
     <>
       <div className="p-8 max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6">Массовые действия</h1>
-        <div className="bg-card p-6 rounded-xl border">
-          <p className="text-muted-foreground mb-6">
-            Выбрано: <strong>{selectedOrderIds.length}</strong>
-          </p>
+        <h1 className="text-3xl font-bold mb-6">Массовые действия с заказами</h1>
+
+        <div className="bg-card p-8 rounded-xl border shadow-sm">
+          <div className="mb-6">
+            <p className="text-lg text-muted-foreground">
+              Выбрано заказов: <strong className="text-foreground">{selectedOrderIds.length}</strong>
+            </p>
+          </div>
+
           <Button
             onClick={handleSendToMoysklad}
             disabled={isProcessing || selectedOrderIds.length === 0}
             size="lg"
-            className="bg-red-600 hover:bg-red-500"
+            className="bg-red-600 hover:bg-red-500 text-white font-semibold px-8"
           >
             {isProcessing
-              ? `Отправляем ${selectedOrderIds.length}...`
-              : `Отправить ${selectedOrderIds.length} в МойСклад`}
+              ? `Отправляем ${selectedOrderIds.length} заказов...`
+              : `Отправить ${selectedOrderIds.length} заказов в МойСклад`}
           </Button>
         </div>
       </div>
+
+      {/* Наш легендарный грузовик */}
       <TruckFullscreenLoader
         isLoading={isProcessing}
-        message={`Отправляем ${selectedOrderIds.length} заказов...`}
+        message={`Отправляем ${selectedOrderIds.length} заказов в МойСклад...`}
       />
     </>
   );
