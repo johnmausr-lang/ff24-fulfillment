@@ -1,28 +1,33 @@
-import type { Metadata } from "next";
-import { Manrope } from "next/font/google";
-import "./global.css";
-import Header from "@/components/Header"; // Импорт Header
-import Footer from "@/components/Footer"; // Импорт Footer
+// src/app/layout.tsx
+import './globals.css';
+import { Inter } from 'next/font/google';
+import { ThemeProvider } from '@/components/theme-provider';
+import { Toaster } from '@/components/ui/toaster';
 
-// Настройка шрифта Manrope
-const manrope = Manrope({ subsets: ["cyrillic", "latin"] });
+const inter = Inter({ subsets: ['latin', 'cyrillic'] });
 
-export const metadata: Metadata = {
-  title: "ФФ24: Фулфилмент. Быстрее. Точнее. Надежнее.",
-  description: "Фулфилмент для Wildberries, Ozon, Яндекс.Маркет. Быстрый и надежный сервис фулфилмента в Москве и регионах.",
+export const metadata = {
+  title: 'FF24 Fulfillment',
+  description: 'Фулфилмент для маркетплейсов Wildberries, Ozon, Яндекс Маркет',
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="ru" className={manrope.className}>
-      <body>
-        <Header /> {/* Размещаем Header */}
-        <main>{children}</main>
-        <Footer /> {/* Размещаем Footer */}
+    <html lang="ru" suppressHydrationWarning>
+      <body className={inter.className}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );
