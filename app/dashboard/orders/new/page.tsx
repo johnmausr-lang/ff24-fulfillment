@@ -1,83 +1,169 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import "./orders.css";
+import { useState } from "react";
+import "./new-order.css";
 
-export default function OrdersPage() {
-  const [orders, setOrders] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function NewOrderPage() {
+  const [positions, setPositions] = useState([
+    {
+      name: "",
+      vendorCode: "",
+      color: "",
+      size: "",
+      quantity: 1,
+      brand: "",
+      photoUrl: "",
+    },
+  ]);
 
-  const fetchOrders = async () => {
-    try {
-      const res = await fetch("/api/orders/list");
-      const data = await res.json();
+  const [comment, setComment] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<any>(null);
 
-      if (!data.ok) throw new Error("Ошибка API");
-
-      setOrders(data.orders);
-    } catch (e) {
-      console.error("Ошибка API списка заказов", e);
-    } finally {
-      setLoading(false);
-    }
+  const updatePos = (i: number, field: keyof typeof positions[0], value: any) => {
+    const copy = [...positions];
+    copy[i][field] = value;
+    setPositions(copy);
   };
 
-  useEffect(() => {
-    fetchOrders();
-  }, []);
+  const addPosition = () => {
+    setPositions([
+      ...positions,
+      { name: "", vendorCode: "", color: "", size: "", quantity: 1, brand: "", photoUrl: "" },
+    ]);
+  };
+
+  const removePosition = (i: number) => {
+    if (positions.length === 1) return;
+    setPositions(positions.filter((_, idx) => idx !== i));
+  };
+
+  const submit = async () => {
+    setLoading(true);
+    setResult(null);
+
+    try {
+      const res = await fetch("/api/orders/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ positions, comment }),
+      });
+
+      const data = await res.json();
+      setResult(data);
+
+      if (!data.ok) throw new Error(data.message);
+    } catch (e: any) {
+      console.error("Order create error", e);
+      setResult({ ok: false, message: e.message });
+    }
+
+    setLoading(false);
+  };
 
   return (
-    <div className="page-content">
-      <h1 className="orders-title">Мои заказы</h1>
+    <div className="new-order-page">
+      <h1 className="title">Создать заказ</h1>
 
-      {loading ? (
-        <div className="card loading-card">
-          <div className="loader"></div>
-          <p>Загружаем заказы…</p>
-        </div>
-      ) : orders.length === 0 ? (
-        <div className="card empty-orders">
-          <h2>У вас ещё нет заказов</h2>
-          <a href="/dashboard/orders/new" className="btn-primary">
-            Создать первый заказ
-          </a>
-        </div>
-      ) : (
-        <div className="orders-list">
-          {orders.map((order: any) => (
-            <div key={order.id} className="order-item card">
-              <div className="order-header">
-                <h2>{order.name || "Заказ"}</h2>
+      <div className="positions-list">
+        {positions.map((p, i) => (
+          <div key={i} className="card position-card">
+            <div className="position-header">
+              <h2>Позиция {i + 1}</h2>
+              <button className="remove-btn" onClick={() => removePosition(i)}>
+                ✕
+              </button>
+            </div>
 
-                <span className={`status-badge status-${order.state || "new"}`}>
-                  {order.stateName || "Новый"}
-                </span>
+            <div className="fields-grid">
+              <div>
+                <label>Название товара *</label>
+                <input
+                  value={p.name}
+                  onChange={(e) => updatePos(i, "name", e.target.value)}
+                  placeholder="Пример: Кроссовки"
+                />
               </div>
 
-              <div className="order-info">
-                <div>
-                  <label>Дата</label>
-                  <p>{order.created || "—"}</p>
-                </div>
-
-                <div>
-                  <label>Позиции</label>
-                  <p>{order.positions?.length ?? 0}</p>
-                </div>
-
-                <div>
-                  <label>Комментарий</label>
-                  <p>{order.description || "—"}</p>
-                </div>
+              <div>
+                <label>Артикул *</label>
+                <input
+                  value={p.vendorCode}
+                  onChange={(e) => updatePos(i, "vendorCode", e.target.value)}
+                  placeholder="Пример: 123-ABC"
+                />
               </div>
 
-              <div className="order-actions">
-                <a href={`/dashboard/orders/${order.id}`} className="btn-secondary">
-                  Открыть
-                </a>
+              <div>
+                <label>Цвет *</label>
+                <input
+                  value={p.color}
+                  onChange={(e) => updatePos(i, "color", e.target.value)}
+                  placeholder="Красный"
+                />
+              </div>
+
+              <div>
+                <label>Размер *</label>
+                <input
+                  value={p.size}
+                  onChange={(e) => updatePos(i, "size", e.target.value)}
+                  placeholder="42"
+                />
+              </div>
+
+              <div>
+                <label>Количество *</label>
+                <input
+                  type="number"
+                  min={1}
+                  value={p.quantity}
+                  onChange={(e) => updatePos(i, "quantity", Number(e.target.value))}
+                />
+              </div>
+
+              <div>
+                <label>Бренд *</label>
+                <input
+                  value={p.brand}
+                  onChange={(e) => updatePos(i, "brand", e.target.value)}
+                  placeholder="Nike"
+                />
+              </div>
+
+              <div className="photo-block">
+                <label>Фото URL</label>
+                <input
+                  value={p.photoUrl}
+                  onChange={(e) => updatePos(i, "photoUrl", e.target.value)}
+                  placeholder="https://example.com/image.jpg"
+                />
               </div>
             </div>
-          ))}
+          </div>
+        ))}
+      </div>
+
+      <button className="add-btn" onClick={addPosition}>
+        + Добавить позицию
+      </button>
+
+      <div className="card comment-card">
+        <label>Комментарий к заказу</label>
+        <textarea
+          placeholder="Комментарий, пожелания, уточнения…"
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+        ></textarea>
+      </div>
+
+      <button className="submit-btn" onClick={submit} disabled={loading}>
+        {loading ? "Создаём..." : "Создать заказ"}
+      </button>
+
+      {result && (
+        <div className={`result-msg ${result.ok ? "ok" : "err"}`}>
+          {result.ok ? "Заказ успешно создан!" : `Ошибка: ${result.message}`}
         </div>
       )}
     </div>
