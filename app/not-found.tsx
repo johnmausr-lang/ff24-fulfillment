@@ -1,4 +1,5 @@
-// src/app/not-found.tsx
+"use client";
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Package } from "lucide-react";
@@ -7,7 +8,6 @@ export default function NotFound() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background px-4">
       <div className="text-center space-y-8 max-w-md">
-        {/* Большая 404 */}
         <h1 className="text-9xl font-bold text-red-600">404</h1>
         
         <div className="space-y-4">
@@ -19,13 +19,11 @@ export default function NotFound() {
           </p>
         </div>
 
-        {/* Анимация коробки */}
         <div className="relative">
           <Package className="w-24 h-24 text-red-500 animate-bounce" />
           <div className="absolute -inset-4 bg-red-500/20 rounded-full blur-3xl animate-pulse" />
         </div>
 
-        {/* Кнопка домой */}
         <Button asChild size="lg" className="bg-red-600 hover:bg-red-500">
           <Link href="/dashboard">
             Вернуться в личный кабинет
