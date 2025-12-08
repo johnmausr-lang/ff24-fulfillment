@@ -39,9 +39,7 @@ export default function DashboardPage() {
     loadData();
   }, []);
 
-  // ================================
   // ГРУЗОВИК ВМЕСТО СКУЧНОГО ЛОАДЕРА
-  // ================================
   if (loading) {
     return (
       <TruckFullscreenLoader
@@ -72,7 +70,7 @@ export default function DashboardPage() {
         ================================ */}
         <div className="card" style={{ marginBottom: 25 }}>
           <h1 style={{ fontSize: "30px", marginBottom: 10 }}>
-            Добро пожаловать, {profile.name || "Клиент"}
+            Добро пожаловать, {profile.name || "Клиент"} 👋
           </h1>
           <p style={{ opacity: 0.8 }}>
             Это ваш личный кабинет Fulfillment FF24.
@@ -129,7 +127,7 @@ export default function DashboardPage() {
           <div className="card">
             <h3>Ваш статус</h3>
             <div style={{ fontSize: 22, marginTop: 10 }}>
-              Активный клиент
+              Активный клиент ✔
             </div>
             <p style={{ opacity: 0.6, marginTop: 8 }}>
               {profile.email}
