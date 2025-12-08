@@ -1,3 +1,4 @@
+"use client";
 import Link from 'next/link';
 import { Truck, Zap, Lock, DollarSign } from 'lucide-react';
 import FadeInDiv from '@/components/FadeInDiv';
