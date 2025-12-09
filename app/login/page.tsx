@@ -1,129 +1,98 @@
-// app/login/page.tsx
 "use client";
 
+import { motion } from "framer-motion";
 import { useState } from "react";
-import { TruckFullscreenLoader } from "@/components/ui/truck-fullscreen-loader";
-import { toast } from "sonner";
 
 export default function LoginPage() {
-  const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email) return toast.error("Введите email");
-
-    setLoading(true);
-    try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-
-      if (res.ok) {
-        toast.success("Добро пожаловать в FF24!");
-        window.location.href = "/dashboard";
-      } else {
-        const data = await res.json();
-        toast.error(data.message || "Ошибка входа");
-      }
-    } catch {
-      toast.error("Сервер недоступен");
-    } finally {
-      setLoading(false);
-    }
-  };
+  async function handleLogin() {
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+    const data = await res.json();
+    if (data.success) window.location.href = "/dashboard";
+    else alert("Пользователь не найден");
+  }
 
   return (
-    <>
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-pink-900 to-orange-900 flex items-center justify-center p-4">
-        <div className="relative z-10 max-w-6xl w-full">
-          <div className="grid md:grid-cols-2 gap-0 rounded-3xl overflow-hidden shadow-3xl">
-            {/* Грузчик + коробка */}
-            <div className="relative bg-gradient-to-br from-purple-800 to-orange-700 p-16 flex items-end justify-center">
-              <div className="relative">
-                {/* Коробка FF24 */}
-                <div className="absolute inset-0 bg-gradient-to-br from-amber-600 to-amber-800 rounded-3xl shadow-2xl transform rotate-6 hover:rotate-12 transition-all duration-700">
-                  <div className="absolute inset-0 bg-black/20 rounded-3xl" />
-                  <div className="relative z-10 flex items-center justify-center h-full">
-                    <div className="text-white text-center">
-                      <div className="text-8xl font-black tracking-tighter">FF24</div>
-                      <div className="text-3xl font-bold mt-2">ФУЛФИЛМЕНТ</div>
-                    </div>
-                  </div>
-                </div>
+    <div className="min-h-screen flex items-center justify-center px-6 bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
+      <div className="flex flex-col md:flex-row items-center gap-16 max-w-5xl w-full">
 
-                {/* Грузчик */}
-                <div className="absolute -bottom-20 -right-20 scale-150">
-                  <svg width="400" height="500" viewBox="0 0 400 500" fill="none">
-                    {/* Каска */}
-                    <ellipse cx="200" cy="100" rx="80" ry="50" fill="#1e293b"/>
-                    <rect x="120" y="85" width="160" height="30" rx="15" fill="#fbbf24"/>
-                    
-                    {/* Лицо */}
-                    <circle cx="200" cy="140" r="50" fill="#fdbcb4"/>
-                    
-                    {/* Униформа — фиолетовый + жёлтый */}
-                    <rect x="100" y="200" width="200" height="280" rx="30" fill="#4b59ff"/>
-                    <rect x="100" y="200" width="200" height="100" rx="30" fill="#6366f1"/>
-                    <rect x="130" y="230" width="140" height="220" rx="20" fill="#4b59ff"/>
-                    
-                    {/* Логотип FF24 на груди */}
-                    <text x="200" y="320" fontSize="60" fill="white" fontWeight="bold" textAnchor="middle">FF24</text>
-                    
-                    {/* Руки */}
-                    <rect x="60" y="250" width="60" height="180" rx="30" fill="#fdbcb4"/>
-                    <rect x="280" y="250" width="60" height="180" rx="30" fill="#fdbcb4"/>
-                    
-                    {/* Ноги */}
-                    <rect x="140" y="460" width="60" height="80" rx="30" fill="#1e293b"/>
-                    <rect x="200" y="460" width="60" height="80" rx="30" fill="#1e293b"/>
-                  </svg>
-                </div>
-              </div>
+        {/* LEFT: CARTOON WORKER + BOX */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="flex flex-col items-center"
+        >
+          {/* Worker Illustration */}
+          <motion.div
+            animate={{ y: [0, -5, 0] }}
+            transition={{ repeat: Infinity, duration: 2 }}
+          >
+            <svg width="260" height="260" viewBox="0 0 300 300">
+              {/* Body */}
+              <circle cx="150" cy="80" r="40" fill="#6b46c1" />
+              <rect x="110" y="120" width="80" height="90" rx="15" fill="#6b46c1" />
 
-              <div className="absolute bottom-10 left-10 text-white text-center">
-                <h1 className="text-6xl font-black mb-4">ВХОД В КАБИНЕТ</h1>
-                <p className="text-2xl opacity-90">Только для сотрудников FF24</p>
-              </div>
-            </div>
+              {/* Arms */}
+              <rect x="90" y="130" width="30" height="80" rx="15" fill="#f97316" />
+              <rect x="180" y="130" width="30" height="80" rx="15" fill="#f97316" />
 
-            {/* Форма входа */}
-            <div className="bg-white p-16 flex flex-col justify-center">
-              <form onSubmit={handleLogin} className="space-y-10">
-                <div>
-                  <label className="block text-3xl font-bold text-purple-900 mb-6">
-                    Ваш email
-                  </label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-8 py-5 text-xl border-4 border-purple-600 rounded-3xl focus:outline-none focus:border-orange-500 transition-all"
-                    placeholder="ivan@ff24.ru"
-                    required
-                  />
-                </div>
+              {/* Legs */}
+              <rect x="115" y="210" width="30" height="70" rx="10" fill="#6b46c1" />
+              <rect x="155" y="210" width="30" height="70" rx="10" fill="#6b46c1" />
 
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-gradient-to-r from-purple-600 to-orange-600 hover:from-purple-700 hover:to-orange-700 text-white font-bold text-2xl py-6 rounded-3xl shadow-2xl transform hover:scale-105 transition-all duration-300"
-                >
-                  {loading ? "Входим..." : "Войти в кабинет"}
-                </button>
-              </form>
+              {/* Head */}
+              <circle cx="150" cy="65" r="30" fill="#ffddc0" />
 
-              <p className="text-center text-gray-600 mt-10 text-lg">
-                Нет доступа? Напишите <a href="mailto:support@ff24.ru" className="text-purple-600 font-bold underline">support@ff24.ru</a>
-              </p>
-            </div>
+              {/* Hat */}
+              <rect x="120" y="40" width="60" height="20" rx="5" fill="#f97316" />
+              <rect x="130" y="32" width="40" height="15" rx="4" fill="#f97316" />
+            </svg>
+          </motion.div>
+
+          {/* FF24 Box */}
+          <motion.div
+            className="mt-[-40px] bg-white shadow-lg border-2 border-orange-400 rounded-lg px-10 py-6 text-center"
+            animate={{ rotate: [-1, 1, -1] }}
+            transition={{ repeat: Infinity, duration: 3 }}
+          >
+            <p className="text-3xl font-black text-orange-500">FF24</p>
+          </motion.div>
+        </motion.div>
+
+        {/* RIGHT: LOGIN FORM */}
+        <motion.div
+          initial={{ opacity: 0, x: 40 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8 }}
+          className="bg-white shadow-xl rounded-2xl p-10 w-full max-w-md border"
+        >
+          <h1 className="text-3xl font-bold mb-6 text-gray-800">
+            Вход в личный кабинет
+          </h1>
+
+          <div className="flex flex-col gap-4">
+            <input
+              type="email"
+              placeholder="Введите email"
+              className="border rounded-lg px-4 py-3 text-lg focus:ring-2 focus:ring-purple-500 outline-none"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+
+            <button
+              onClick={handleLogin}
+              className="bg-gradient-to-r from-purple-600 to-orange-500 text-white py-3 text-xl rounded-lg font-semibold hover:opacity-90 transition"
+            >
+              Войти
+            </button>
           </div>
-        </div>
+        </motion.div>
       </div>
-
-      <TruckFullscreenLoader isLoading={loading} message="Открываем ваш кабинет..." />
-    </>
+    </div>
   );
 }
