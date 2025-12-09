@@ -1,12 +1,13 @@
 // lib/auth/jwt.ts
 
-import jwt, { SignOptions } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 
-const SECRET: string = process.env.JWT_SECRET || "default_secret_change_me";
+const SECRET = process.env.JWT_SECRET || "default_secret_key";
 
 export function signJwt(payload: any, expiresIn: string = "7d") {
-  const options: SignOptions = { expiresIn };
-  return jwt.sign(payload, SECRET as jwt.Secret, options);
+  return jwt.sign(payload, SECRET as jwt.Secret, {
+    expiresIn: expiresIn as any,
+  });
 }
 
 export function verifyJwt(token: string) {
