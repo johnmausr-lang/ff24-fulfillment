@@ -1,3 +1,5 @@
+// app/dashboard/page.tsx
+
 "use client";
 
 import StatsCard from "@/components/dashboard/StatsCard";
@@ -6,17 +8,17 @@ import StockChart from "@/components/dashboard/Charts/StockChart";
 import { useEffect, useState } from "react";
 
 export default function DashboardPage() {
-  const [orders, setOrders] = useState([]);
-  const [stock, setStock] = useState([]);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [stock, setStock] = useState<any[]>([]);
 
   useEffect(() => {
     fetch("/api/orders")
-      .then(r => r.json())
-      .then(d => setOrders(d.data || []));
+      .then((r) => r.json())
+      .then((d) => setOrders(d.data || []));
 
     fetch("/api/inventory")
-      .then(r => r.json())
-      .then(d => setStock(d.data || []));
+      .then((r) => r.json())
+      .then((d) => setStock(d.data || []));
   }, []);
 
   return (
