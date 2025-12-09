@@ -1,33 +1,46 @@
 // app/api/profile/route.ts
 
-import { NextRequest, NextResponse } from "next/server";
-import { MoySkladClient } from "@/lib/ms-client";
-import jwt from "jsonwebtoken";
-import { MOYSKLAD_TOKEN } from "@/lib/config";
+export const dynamic = "force-dynamic";
 
-const JWT_SECRET = process.env.JWT_SECRET!;
+import { NextResponse } from "next/server";
+import { verifyJwt } from "@/lib/auth/jwt";
 
-export async function GET(req: NextRequest) {
+export async function GET(req: Request) {
   try {
-    const cookie = req.cookies.get("ff24_token");
-    if (!cookie)
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    // Получаем куки
+    const cookieHeader = req.headers.get("cookie") || "";
+    const token = cookieHeader
+      .split("; ")
+      .find((v) => v.startsWith("auth_token="))
+      ?.split("=")[1];
 
-    const decoded = jwt.verify(cookie.value, JWT_SECRET) as any;
+    if (!token) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
 
-    const ms = new MoySkladClient(MOYSKLAD_TOKEN);
+    // Проверяем JWT
+    const user = verifyJwt(token);
 
-    // ⬇⬇⬇ исправлено
-    const profile = await ms.getCounterpartyById(decoded.id);
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: "Invalid token" },
+        { status: 401 }
+      );
+    }
 
+    return NextResponse.json({
+      success: true,
+      user,
+    });
+  } catch (err: any) {
     return NextResponse.json(
-      { ok: true, profile },
-      { status: 200 }
-    );
-  } catch (e) {
-    console.error("PROFILE API ERROR:", e);
-    return NextResponse.json(
-      { message: "Server error" },
+      {
+        success: false,
+        error: err.message || "Server error",
+      },
       { status: 500 }
     );
   }
