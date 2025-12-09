@@ -1,15 +1,18 @@
-// lib/moysklad/inventory.ts
-
 import { MoyskladClient } from "./client";
 
 export class InventoryService {
-  constructor(private client: MoyskladClient) {}
+  client: MoyskladClient;
+
+  constructor(client: MoyskladClient) {
+    this.client = client;
+  }
 
   /**
-   * Получение остатков товаров
+   * Получение остатков
    */
   async list() {
-    const res = await this.client.getStock();
+    const storeID = process.env.STORE_ID!;
+    const res = await this.client.getStock(storeID);
     return res?.rows ?? [];
   }
 }
