@@ -1,86 +1,40 @@
-// lib/moysklad/client.ts
-
 export class MoyskladClient {
-  private baseUrl = "https://api.moysklad.ru/api/remap/1.2";
+  private token: string;
+  private base = "https://api.moysklad.ru/api/remap/1.2";
 
-  constructor(private token: string) {
-    if (!token) {
-      throw new Error("MoySklad token is missing");
-    }
+  constructor(token: string) {
+    this.token = token;
   }
 
-  /**
-   * Базовый запрос к API МойСклад.
-   * Это private-метод — его нельзя вызывать извне.
-   */
-  private async request(path: string, options: RequestInit = {}) {
-    const response = await fetch(`${this.baseUrl}${path}`, {
-      ...options,
+  private async call(endpoint: string) {
+    const res = await fetch(this.base + endpoint, {
       headers: {
-        "Authorization": `Bearer ${this.token}`,
-        "Content-Type": "application/json;charset=utf-8",
-        ...(options.headers ?? {})
+        Authorization: `Bearer ${this.token}`,
+        "Content-Type": "application/json",
       },
     });
 
-    if (!response.ok) {
-      const text = await response.text().catch(() => "");
-      throw new Error(`MoySklad API error: ${response.status} ${text}`);
-    }
-
-    try {
-      return await response.json();
-    } catch {
-      return null;
-    }
+    if (!res.ok) throw new Error(`MoySklad error: ${res.statusText}`);
+    return res.json();
   }
 
-  // ------------------------------
-  //        ПУБЛИЧНЫЕ МЕТОДЫ
-  // ------------------------------
-
-  /**
-   * Получить список заказов
-   */
-  async getOrders(limit = 50) {
-    return this.request(`/entity/customerorder?limit=${limit}`);
+  // Заказы
+  getOrders() {
+    return this.call("/entity/customerorder?limit=100");
   }
 
-  /**
-   * Получить один заказ
-   */
-  async getOrder(id: string) {
-    return this.request(`/entity/customerorder/${id}`);
+  // Остатки
+  getStock(storeID: string) {
+    return this.call(`/report/stock/all?store.id=${storeID}`);
   }
 
-  /**
-   * Создать заказ
-   */
-  async createOrder(data: any) {
-    return this.request(`/entity/customerorder`, {
-      method: "POST",
-      body: JSON.stringify(data),
-    });
+  // Номенклатура
+  getProducts() {
+    return this.call("/entity/product?limit=200");
   }
 
-  /**
-   * Получить остатки товаров
-   */
-  async getStock() {
-    return this.request(`/report/stock/all`);
-  }
-
-  /**
-   * Получить товары (номенклатура)
-   */
-  async getProducts(limit = 200) {
-    return this.request(`/entity/product?limit=${limit}`);
-  }
-
-  /**
-   * Найти контрагента по email
-   */
-  async findCounterpartyByEmail(email: string) {
-    return this.request(`/entity/counterparty?filter=email=${email}`);
+  // Поиск контрагента
+  findCounterpartyByEmail(email: string) {
+    return this.call(`/entity/counterparty?filter=email=${email}`);
   }
 }
