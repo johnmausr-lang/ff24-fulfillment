@@ -8,7 +8,7 @@ export async function GET() {
     const token = process.env.MOYSKLAD_TOKEN!;
     const client = new MoyskladClient(token);
 
-    const data = await client.request("/entity/product?limit=200");
+    const data = await client.getProducts(200);
 
     return NextResponse.json({
       success: true,
