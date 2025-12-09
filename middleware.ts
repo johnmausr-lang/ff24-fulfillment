@@ -1,33 +1,25 @@
-// middleware.ts
-
 import { NextResponse } from "next/server";
-import { verifyJwt } from "@/lib/auth/jwt";
+import type { NextRequest } from "next/server";
 
-export function middleware(req: Request) {
-  const url = new URL(req.url);
+export function middleware(req: NextRequest) {
+  const token = req.cookies.get("auth_token")?.value;
 
-  // защищаем /dashboard/*
-  if (url.pathname.startsWith("/dashboard")) {
-    const cookie = req.headers
-      .get("cookie")
-      ?.split("; ")
-      ?.find((v) => v.startsWith("auth_token="));
+  const isDashboard = req.nextUrl.pathname.startsWith("/dashboard");
+  const isLogin = req.nextUrl.pathname.startsWith("/login");
 
-    if (!cookie) {
-      return NextResponse.redirect(new URL("/login", req.url));
-    }
+  // Если пользователь не авторизован и идёт в dashboard → отправляем на login
+  if (isDashboard && !token) {
+    return NextResponse.redirect(new URL("/login", req.url));
+  }
 
-    const token = cookie.split("=")[1];
-    const user = verifyJwt(token);
-
-    if (!user) {
-      return NextResponse.redirect(new URL("/login", req.url));
-    }
+  // Если пользователь авторизован и идёт на login → отправляем в dashboard
+  if (isLogin && token) {
+    return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*"],
+  matcher: ["/dashboard/:path*", "/login"],
 };
