@@ -1,85 +1,63 @@
+// app/dashboard/orders/page.tsx
+
 "use client";
 
 import { useEffect, useState } from "react";
-import "./orders.css";
+import Link from "next/link";
 
 export default function OrdersPage() {
-  const [orders, setOrders] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetchOrders = async () => {
-    try {
-      const res = await fetch("/api/orders/list");
-      const data = await res.json();
-
-      if (!data.ok) throw new Error("Ошибка API");
-
-      setOrders(data.orders);
-    } catch (e) {
-      console.error("Ошибка API списка заказов", e);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [orders, setOrders] = useState([]);
 
   useEffect(() => {
-    fetchOrders();
+    fetch("/api/orders")
+      .then((r) => r.json())
+      .then((d) => setOrders(d.data || []));
   }, []);
 
   return (
-    <div className="page-content">
-      <h1 className="orders-title">Мои заказы</h1>
+    <div>
+      <h1 className="text-2xl font-semibold mb-6">Заказы</h1>
 
-      {loading ? (
-        <div className="card loading-card">
-          <div className="loader"></div>
-          <p>Загружаем заказы…</p>
-        </div>
-      ) : orders.length === 0 ? (
-        <div className="card empty-orders">
-          <h2>У вас ещё нет заказов</h2>
-          <a href="/dashboard/orders/new" className="btn-primary">
-            Создать первый заказ
-          </a>
-        </div>
-      ) : (
-        <div className="orders-list">
-          {orders.map((order: any) => (
-            <div key={order.id} className="order-item card">
-              <div className="order-header">
-                <h2>{order.name || "Заказ"}</h2>
+      <div className="overflow-x-auto">
+        <table className="w-full bg-white rounded-lg shadow border">
+          <thead className="bg-gray-50 text-left">
+            <tr>
+              <th className="p-3 border-b">№</th>
+              <th className="p-3 border-b">Дата</th>
+              <th className="p-3 border-b">Сумма</th>
+              <th className="p-3 border-b">Статус</th>
+              <th className="p-3 border-b"></th>
+            </tr>
+          </thead>
 
-                <span className={`status-badge status-${order.state || "new"}`}>
-                  {order.stateName || "Новый"}
-                </span>
-              </div>
+          <tbody>
+            {orders.map((o: any) => (
+              <tr key={o.id} className="hover:bg-gray-50">
+                <td className="p-3 border-b">{o.name}</td>
+                <td className="p-3 border-b">{o.moment?.slice(0, 10)}</td>
+                <td className="p-3 border-b">{o.sum / 100}</td>
+                <td className="p-3 border-b">{o.state?.name || "—"}</td>
+                <td className="p-3 border-b text-right">
+                  <Link
+                    href={`/dashboard/orders/${o.id}`}
+                    className="text-blue-600 hover:underline"
+                  >
+                    Открыть →
+                  </Link>
+                </td>
+              </tr>
+            ))}
 
-              <div className="order-info">
-                <div>
-                  <label>Дата</label>
-                  <p>{order.created || "—"}</p>
-                </div>
-
-                <div>
-                  <label>Позиции</label>
-                  <p>{order.positions?.length ?? 0}</p>
-                </div>
-
-                <div>
-                  <label>Комментарий</label>
-                  <p>{order.description || "—"}</p>
-                </div>
-              </div>
-
-              <div className="order-actions">
-                <a href={`/dashboard/orders/${order.id}`} className="btn-secondary">
-                  Открыть
-                </a>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+            {orders.length === 0 && (
+              <tr>
+                <td colSpan={5} className="p-4 text-center text-gray-500">
+                  Нет заказов
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
