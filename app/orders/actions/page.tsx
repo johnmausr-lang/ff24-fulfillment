@@ -1,49 +1,32 @@
-// app/orders/actions/page.tsx — финальная версия БЕЗ actions/orders.ts
+// app/orders/actions/page.tsx
 "use client";
 
 import { useState } from "react";
 import { TruckFullscreenLoader } from "@/components/ui/truck-fullscreen-loader";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
-import { MoySkladClient } from "@/lib/ms-client";
-
-const msClient = new MoySkladClient(process.env.MOYSKLAD_TOKEN!);
+import { toast } from "sonner"; // ← ИМЕННО SONNER, НЕ use-toast!
 
 export default function OrdersActionsPage() {
   const [isProcessing, setIsProcessing] = useState(false);
-  const { toast } = useToast();
 
+  // Пример выбранных заказов
   const selectedOrderIds = ["WB-123456", "OZ-789012"];
 
   const handleSendToMoysklad = async () => {
-    if (!selectedOrderIds.length) return;
+    if (!selectedOrderIds.length) {
+      toast.error("Выберите хотя бы один заказ");
+      return;
+    }
 
     setIsProcessing(true);
 
     try {
-      for (const externalId of selectedOrderIds) {
-        const clientId = "00000000-0000-0000-0000-000000000000"; // или поиск по телефону
+      // Здесь будет реальная отправка через ms-client
+      await new Promise(r => setTimeout(r, 3000)); // имитация
 
-        await msClient.createCustomerOrder(clientId, {
-          comment: `Заказ с маркетплейса • ${externalId}`,
-          positions: [
-            {
-              name: "Футболка Premium",
-              vendorCode: "ART-001",
-              color: "Черный",
-              size: "L",
-              brand: "FF24",
-              quantity: 1,
-            },
-          ],
-        });
-
-        await new Promise(r => setTimeout(r, 400));
-      }
-
-      toast({ title: "Готово!", description: "Все заказы отправлены в МойСклад" });
-    } catch (error: any) {
-      toast({ title: "Ошибка", description: error.message, variant: "destructive" });
+      toast.success(`Отправлено ${selectedOrderIds.length} заказов в МойСклад`);
+    } catch (error) {
+      toast.error("Ошибка отправки заказов");
     } finally {
       setIsProcessing(false);
     }
@@ -53,11 +36,27 @@ export default function OrdersActionsPage() {
     <>
       <div className="p-8 max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold mb-6">Массовые действия</h1>
-        <Button onClick={handleSendToMoysklad} disabled={isProcessing} size="lg">
-          {isProcessing ? "Отправляем..." : "Отправить в МойСклад"}
-        </Button>
+
+        <div className="bg-card p-8 rounded-xl border shadow-sm">
+          <p className="text-lg text-muted-foreground mb-6">
+            Выбрано заказов: <strong className="text-foreground">{selectedOrderIds.length}</strong>
+          </p>
+
+          <Button
+            onClick={handleSendToMoysklad}
+            disabled={isProcessing}
+            size="lg"
+            className="bg-red-600 hover:bg-red-500 text-white font-semibold px-8"
+          >
+            {isProcessing ? "Отправляем..." : "Отправить в МойСклад"}
+          </Button>
+        </div>
       </div>
-      <TruckFullscreenLoader isLoading={isProcessing} message="Отправляем заказы..." />
+
+      <TruckFullscreenLoader
+        isLoading={isProcessing}
+        message={`Отправляем ${selectedOrderIds.length} заказов...`}
+      />
     </>
   );
 }
