@@ -1,5 +1,5 @@
 // components/dashboard/Sidebar.tsx
-
+"use client";
 import Link from "next/link";
 import { BarChart3, Boxes, LogOut, Home } from "lucide-react";
 
