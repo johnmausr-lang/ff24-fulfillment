@@ -4,13 +4,13 @@ import { useCart } from "@/hooks/useCart";
 import { useState } from "react";
 
 export default function NewOrderPage() {
-  const cart = useCart();
+  const { items, clear } = useCart();
   const [status, setStatus] = useState("");
 
   async function submitOrder() {
     const payload = {
       name: `Заказ #${Date.now()}`,
-      positions: cart.items.map((i: any) => ({
+      positions: items.map((i) => ({
         quantity: i.qty,
         price: i.salePrices?.[0]?.value || 0,
         assortment: { meta: i.meta },
@@ -26,13 +26,13 @@ export default function NewOrderPage() {
 
     if (data.success) {
       setStatus("success");
-      cart.clear();
+      clear();
     } else {
       setStatus("error");
     }
   }
 
-  if (cart.items.length === 0)
+  if (items.length === 0)
     return <p className="text-gray-500">Корзина пуста</p>;
 
   return (
@@ -41,7 +41,7 @@ export default function NewOrderPage() {
 
       <div className="bg-white p-6 border rounded-lg shadow w-full max-w-xl">
         <ul className="mb-4">
-          {cart.items.map((i: any) => (
+          {items.map((i) => (
             <li key={i.id} className="flex justify-between border-b py-2">
               <span>{i.name}</span>
               <span>{(i.salePrices?.[0]?.value || 0) / 100} ₽</span>
@@ -50,15 +50,11 @@ export default function NewOrderPage() {
         </ul>
 
         {status === "success" && (
-          <p className="text-green-600 mb-3">
-            Заказ успешно создан!
-          </p>
+          <p className="text-green-600 mb-3">Заказ успешно создан!</p>
         )}
 
         {status === "error" && (
-          <p className="text-red-600 mb-3">
-            Ошибка при создании заказа.
-          </p>
+          <p className="text-red-600 mb-3">Ошибка при создании заказа.</p>
         )}
 
         <button
