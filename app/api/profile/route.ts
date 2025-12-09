@@ -1,18 +1,12 @@
 // app/api/profile/route.ts
 
-export const dynamic = "force-dynamic";
-
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { verifyJwt } from "@/lib/auth/jwt";
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
-    // Получаем куки
-    const cookieHeader = req.headers.get("cookie") || "";
-    const token = cookieHeader
-      .split("; ")
-      .find((v) => v.startsWith("auth_token="))
-      ?.split("=")[1];
+    const token = cookies().get("auth_token")?.value;
 
     if (!token) {
       return NextResponse.json(
@@ -21,7 +15,6 @@ export async function GET(req: Request) {
       );
     }
 
-    // Проверяем JWT
     const user = verifyJwt(token);
 
     if (!user) {
@@ -31,15 +24,12 @@ export async function GET(req: Request) {
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      user,
-    });
+    return NextResponse.json({ success: true, user });
   } catch (err: any) {
     return NextResponse.json(
       {
         success: false,
-        error: err.message || "Server error",
+        error: err.message ?? "Server error",
       },
       { status: 500 }
     );
