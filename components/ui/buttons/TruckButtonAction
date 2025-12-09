@@ -1,0 +1,43 @@
+"use client";
+
+import { motion } from "framer-motion";
+
+export default function TruckButtonAction({
+  children,
+  onClick,
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+}) {
+  return (
+    <motion.button
+      onClick={onClick}
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      className="
+        relative w-full py-4 px-10 rounded-full font-bold text-xl
+        bg-gradient-to-r from-[#21004B] to-[#4B2C82]
+        text-[#D7FF00]
+        shadow-[0_6px_30px_rgba(33,0,75,0.45)]
+        overflow-hidden flex items-center justify-center
+      "
+    >
+      {/* Грузовик, выезжающий справа */}
+      <motion.div
+        initial={{ x: 120 }}
+        whileHover={{ x: 0 }}
+        transition={{ type: "spring", stiffness: 120, damping: 10 }}
+        className="absolute right-4"
+      >
+        <svg width="45" height="28" viewBox="0 0 80 50" fill="none">
+          <rect width="55" height="22" rx="6" fill="#21004B" />
+          <rect y="10" width="40" height="22" rx="6" fill="#4B2C82" />
+          <circle cx="20" cy="38" r="7" fill="#D7FF00" />
+          <circle cx="42" cy="38" r="7" fill="#D7FF00" />
+        </svg>
+      </motion.div>
+
+      <span className="relative z-10">{children}</span>
+    </motion.button>
+  );
+}
