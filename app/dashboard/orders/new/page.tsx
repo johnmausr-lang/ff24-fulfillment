@@ -1,119 +1,73 @@
-'use client';
+"use client";
 
-import React, { useState } from "react";
-
-interface OrderPosition {
-  name: string;
-  vendorCode: string;
-  color: string;
-  size: string;
-  quantity: number;
-  brand: string;
-  photoUrl?: string;
-}
+import { useCart } from "@/hooks/useCart";
+import { useState } from "react";
 
 export default function NewOrderPage() {
-  const [positions, setPositions] = useState<OrderPosition[]>([
-    {
-      name: "",
-      vendorCode: "",
-      color: "",
-      size: "",
-      quantity: 1,
-      brand: "",
-      photoUrl: "",
-    },
-  ]);
+  const cart = useCart();
+  const [status, setStatus] = useState("");
 
-  // ---------------------------
-  // Фиксированная функция updatePos
-  // ---------------------------
-  const updatePos = <K extends keyof OrderPosition>(
-    i: number,
-    field: K,
-    value: OrderPosition[K]
-  ) => {
-    const copy = [...positions];
-    copy[i] = { ...copy[i], [field]: value };
-    setPositions(copy);
-  };
+  async function submitOrder() {
+    const payload = {
+      name: `Заказ #${Date.now()}`,
+      positions: cart.items.map((i: any) => ({
+        quantity: i.qty,
+        price: i.salePrices?.[0]?.value || 0,
+        assortment: { meta: i.meta },
+      })),
+    };
 
-  const addPosition = () => {
-    setPositions([
-      ...positions,
-      {
-        name: "",
-        vendorCode: "",
-        color: "",
-        size: "",
-        quantity: 1,
-        brand: "",
-        photoUrl: "",
-      },
-    ]);
-  };
+    const res = await fetch("/api/orders", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      setStatus("success");
+      cart.clear();
+    } else {
+      setStatus("error");
+    }
+  }
+
+  if (cart.items.length === 0)
+    return <p className="text-gray-500">Корзина пуста</p>;
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Создать заказ</h1>
+    <div>
+      <h1 className="text-2xl font-semibold mb-4">Оформление заказа</h1>
 
-      {positions.map((pos, i) => (
-        <div key={i} className="border p-4 rounded-xl mb-4 bg-white shadow">
-          <h2 className="font-semibold mb-2">Позиция {i + 1}</h2>
+      <div className="bg-white p-6 border rounded-lg shadow w-full max-w-xl">
+        <ul className="mb-4">
+          {cart.items.map((i: any) => (
+            <li key={i.id} className="flex justify-between border-b py-2">
+              <span>{i.name}</span>
+              <span>{(i.salePrices?.[0]?.value || 0) / 100} ₽</span>
+            </li>
+          ))}
+        </ul>
 
-          <div className="grid grid-cols-2 gap-4">
-            <input
-              className="border p-2 rounded"
-              placeholder="Название"
-              value={pos.name}
-              onChange={(e) => updatePos(i, "name", e.target.value)}
-            />
+        {status === "success" && (
+          <p className="text-green-600 mb-3">
+            Заказ успешно создан!
+          </p>
+        )}
 
-            <input
-              className="border p-2 rounded"
-              placeholder="Артикул"
-              value={pos.vendorCode}
-              onChange={(e) => updatePos(i, "vendorCode", e.target.value)}
-            />
+        {status === "error" && (
+          <p className="text-red-600 mb-3">
+            Ошибка при создании заказа.
+          </p>
+        )}
 
-            <input
-              className="border p-2 rounded"
-              placeholder="Цвет"
-              value={pos.color}
-              onChange={(e) => updatePos(i, "color", e.target.value)}
-            />
-
-            <input
-              className="border p-2 rounded"
-              placeholder="Размер"
-              value={pos.size}
-              onChange={(e) => updatePos(i, "size", e.target.value)}
-            />
-
-            <input
-              className="border p-2 rounded"
-              type="number"
-              placeholder="Кол-во"
-              value={pos.quantity}
-              onChange={(e) => updatePos(i, "quantity", Number(e.target.value))}
-            />
-
-            <input
-              className="border p-2 rounded"
-              placeholder="Бренд"
-              value={pos.brand}
-              onChange={(e) => updatePos(i, "brand", e.target.value)}
-            />
-          </div>
-        </div>
-      ))}
-
-      <button
-        className="px-4 py-2 bg-indigo-600 text-white rounded mt-3"
-        onClick={addPosition}
-      >
-        Добавить позицию
-      </button>
+        <button
+          onClick={submitOrder}
+          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+        >
+          Отправить заказ
+        </button>
+      </div>
     </div>
   );
 }
