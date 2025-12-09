@@ -10,7 +10,8 @@ export class MoyskladClient {
   }
 
   /**
-   * Выполняет запрос к API МойСклад с единой обработкой ошибок.
+   * Базовый запрос к API МойСклад.
+   * Это private-метод — его нельзя вызывать извне.
    */
   private async request(path: string, options: RequestInit = {}) {
     const response = await fetch(`${this.baseUrl}${path}`, {
@@ -34,6 +35,10 @@ export class MoyskladClient {
     }
   }
 
+  // ------------------------------
+  //        ПУБЛИЧНЫЕ МЕТОДЫ
+  // ------------------------------
+
   /**
    * Получить список заказов
    */
@@ -42,7 +47,7 @@ export class MoyskladClient {
   }
 
   /**
-   * Получить один заказ по ID
+   * Получить один заказ
    */
   async getOrder(id: string) {
     return this.request(`/entity/customerorder/${id}`);
@@ -59,14 +64,21 @@ export class MoyskladClient {
   }
 
   /**
-   * Получить остатки товара
+   * Получить остатки товаров
    */
   async getStock() {
     return this.request(`/report/stock/all`);
   }
 
   /**
-   * Получить контрагента по email (полезно для логина)
+   * Получить товары (номенклатура)
+   */
+  async getProducts(limit = 200) {
+    return this.request(`/entity/product?limit=${limit}`);
+  }
+
+  /**
+   * Найти контрагента по email
    */
   async findCounterpartyByEmail(email: string) {
     return this.request(`/entity/counterparty?filter=email=${email}`);
