@@ -1,5 +1,5 @@
 // components/dashboard/StatsCard.tsx
-
+"use client";
 interface Props {
   title: string;
   value: string | number;
