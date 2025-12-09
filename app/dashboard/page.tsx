@@ -1,106 +1,42 @@
 // app/dashboard/page.tsx
+
 "use client";
 
+import StatsCard from "@/components/dashboard/StatsCard";
+import SalesChart from "@/components/dashboard/Charts/SalesChart";
+import StockChart from "@/components/dashboard/Charts/StockChart";
 import { useEffect, useState } from "react";
-import "./dashboard.css";
-import { TruckFullscreenLoader } from "@/components/ui/truck-fullscreen-loader";
 
 export default function DashboardPage() {
-  const [profile, setProfile] = useState<any>(null);
-  const [orders, setOrders] = useState<any[]>([]);
-  const [inventory, setInventory] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [orders, setOrders] = useState([]);
+  const [stock, setStock] = useState([]);
 
   useEffect(() => {
-    async function loadData() {
-      try {
-        const [pRes, oRes, iRes] = await Promise.all([
-          fetch("/api/profile"),
-          fetch("/api/orders/list"),
-          fetch("/api/inventory/list"),
-        ]);
+    fetch("/api/orders")
+      .then(r => r.json())
+      .then(d => setOrders(d.data || []));
 
-        const p = await pRes.json();
-        const o = await oRes.json();
-        const i = await iRes.json();
-
-        if (p.ok) setProfile(p.profile);
-        if (o.ok) setOrders(o.orders || []);
-        if (i.ok) setInventory(i.inventory || []);
-      } catch (e) {
-        console.error("Dashboard Load Error", e);
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadData();
+    fetch("/api/inventory")
+      .then(r => r.json())
+      .then(d => setStock(d.data || []));
   }, []);
 
-  if (loading) {
-    return <TruckFullscreenLoader isLoading={true} message="Загружаем ваш личный кабинет FF24..." />;
-  }
-
-  if (!profile) {
-    return (
-      <div className="page-content">
-        <div className="card">
-          <h2>Ошибка: профиль не найден</h2>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="page-content">
-      {/* WELCOME */}
-      <div className="card" style={{ marginBottom: 25 }}>
-        <h1 style={{ fontSize: "30px", marginBottom: 10 }}>
-          Добро пожаловать, {profile.name || "Клиент"}!
-        </h1>
-        <p style={{ opacity: 0.8 }}>Это ваш личный кабинет FF24 Fulfillment</p>
+    <div className="space-y-6">
+      <h1 className="text-3xl font-semibold">Личный кабинет</h1>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <StatsCard title="Всего заказов" value={orders.length} />
+        <StatsCard title="Позиций на складе" value={stock.length} />
+        <StatsCard
+          title="Последний заказ"
+          value={orders[0]?.name || "—"}
+        />
       </div>
 
-      {/* STATS GRID */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 20, marginBottom: 30 }}>
-        <div className="card">
-          <h3>Всего заказов</h3>
-          <div style={{ fontSize: 34, fontWeight: 800, marginTop: 10 }}>{orders.length}</div>
-        </div>
-        <div className="card">
-          <h3>Позиции на складе</h3>
-          <div style={{ fontSize: 34, fontWeight: 800, marginTop: 10 }}>{inventory.length}</div>
-        </div>
-        <div className="card">
-          <h3>Последний заказ</h3>
-          {orders.length > 0 ? (
-            <>
-              <div style={{ marginTop: 10, fontSize: 18, fontWeight: 700 }}>#{orders[0].name}</div>
-              <p style={{ opacity: 0.6 }}>{orders[0].moment?.slice(0, 10)}</p>
-            </>
-          ) : (
-            <p style={{ marginTop: 10 }}>Заказов пока нет</p>
-          )}
-        </div>
-        <div className="card">
-          <h3>Ваш статус</h3>
-          <div style={{ fontSize: 22, marginTop: 10 }}>Активный клиент ✔</div>
-          <p style={{ opacity: 0.6, marginTop: 8 }}>{profile.email}</p>
-        </div>
-      </div>
-
-      {/* LAST ORDERS */}
-      <div className="card">
-        <h2 style={{ marginBottom: 20 }}>Последние заказы</h2>
-        {orders.length === 0 ? (
-          <p style={{ opacity: 0.7 }}>У вас пока нет заказов</p>
-        ) : (
-          orders.slice(0, 5).map((o) => (
-            <div key={o.id} style={{ padding: "14px 0", borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
-              <div style={{ fontSize: 18, fontWeight: 700 }}>Заказ #{o.name}</div>
-              <div style={{ opacity: 0.7, marginTop: 5 }}>{o.moment?.slice(0, 10)}</div>
-            </div>
-          ))
-        )}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <SalesChart orders={orders} />
+        <StockChart stock={stock} />
       </div>
     </div>
   );
