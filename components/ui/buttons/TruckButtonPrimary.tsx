@@ -1,8 +1,14 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { ReactNode } from "react";
 
-export default function TruckButtonPrimary({ children, onClick }) {
+interface TruckButtonProps {
+  children: ReactNode;
+  onClick?: () => void;
+}
+
+export default function TruckButtonPrimary({ children, onClick }: TruckButtonProps) {
   return (
     <motion.button
       onClick={onClick}
@@ -15,7 +21,7 @@ export default function TruckButtonPrimary({ children, onClick }) {
         relative overflow-hidden flex items-center justify-center
       "
     >
-      {/* Грузовик */}
+      {/* Анимированный грузовик */}
       <motion.div
         initial={{ x: -120, opacity: 0 }}
         animate={{ x: -40, opacity: 1 }}
@@ -30,6 +36,7 @@ export default function TruckButtonPrimary({ children, onClick }) {
         </svg>
       </motion.div>
 
+      {/* Текст кнопки */}
       <span className="z-10">{children}</span>
     </motion.button>
   );
