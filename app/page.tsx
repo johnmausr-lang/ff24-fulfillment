@@ -3,19 +3,10 @@ import Link from "next/link";
 import {
   Truck,
   Zap,
-  Lock,
   DollarSign,
   ArrowRight,
-  Package,
   Shield,
-  Clock,
-  CheckCircle,
 } from "lucide-react";
-
-import PriceCalculator from "@/components/PriceCalculator";
-import ContactForm from "@/components/ContactForm";
-// ProcessTimeline удалён
-// IntegrationsSlider тоже будет заменён позже (3D-слайдер брендов)
 
 export default function HomePage() {
   return (
@@ -43,12 +34,12 @@ export default function HomePage() {
             </Link>
 
             <button className="text-xl font-bold text-purple-600 hover:text-orange-600 transition-colors">
-              Рассчитать стоимость за 1 минуту →
+              Рассчитать стоимость →
             </button>
           </div>
         </div>
 
-        {/* АНИМАЦИЯ ГРУЗОВИКОВ НА ФОНЕ */}
+        {/* АНИМАЦИЯ НА ФОНЕ */}
         <div className="absolute inset-0 pointer-events-none">
           <Truck className="absolute top-20 left-10 text-purple-600/10 w-32 h-32 animate-bounce" />
           <Truck className="absolute bottom-32 right-20 text-orange-600/10 w-40 h-40 animate-bounce delay-300" />
@@ -67,22 +58,22 @@ export default function HomePage() {
               {
                 icon: Truck,
                 title: "Мгновенная обработка",
-                desc: "Приемка и отправка заказов в течение 24 часов. Никаких задержек — только скорость!",
+                desc: "Приемка и отправка заказов в течение 24 часов. Без задержек — только скорость!",
               },
               {
                 icon: DollarSign,
                 title: "Прозрачные тарифы",
-                desc: "Справедливая и понятная цена, которая не изменится. Рассчитайте стоимость прямо на сайте.",
+                desc: "Справедливая и понятная цена — рассчитаете стоимость за 1 минуту.",
               },
               {
                 icon: Zap,
-                title: "Интеграция с маркетплейсами",
-                desc: "Полная автоматизация обмена данными с Wildberries, Ozon и Яндекс.Маркет.",
+                title: "Интеграции с маркетплейсами",
+                desc: "Автоматизация с Wildberries, Ozon и Яндекс.Маркет.",
               },
               {
                 icon: Shield,
-                title: "Контроль и надежность",
-                desc: "Система видеонаблюдения и строгое соблюдение WMS-стандартов для сохранности вашего товара.",
+                title: "Надежность",
+                desc: "WMS-стандарты и видеонаблюдение обеспечивают безопасность ваших товаров.",
               },
             ].map((item, i) => (
               <div
@@ -97,14 +88,9 @@ export default function HomePage() {
               </div>
             ))}
           </div>
+
         </div>
       </section>
-
-      {/* КАЛЬКУЛЯТОР */}
-      <PriceCalculator />
-
-      {/* CONTACT FORM */}
-      <ContactForm />
     </div>
   );
 }
