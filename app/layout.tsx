@@ -1,4 +1,4 @@
-// app/layout.tsx — SERVER COMPONENT (БЕЗ use client!)
+// app/layout.tsx — финальная рабочая версия
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -6,7 +6,7 @@ import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "sonner";
 import GlobalLoaderProvider from "@/components/providers/global-loader-provider";
-import DashboardWrapper from "./dashboard/DashboardWrapper";
+import DashboardSidebar from "./dashboard/DashboardSidebar"; // отдельный сайдбар
 
 const inter = Inter({ subsets: ["latin", "cyrillic"] });
 
@@ -19,11 +19,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ru" suppressHydrationWarning>
       <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           <GlobalLoaderProvider>
-            <DashboardWrapper>
+            {/* Если мы в дашборде — показываем сайдбар, иначе — только контент */}
+            <DashboardSidebar>
               {children}
-            </DashboardWrapper>
+            </DashboardSidebar>
             <Toaster position="bottom-right" richColors />
           </GlobalLoaderProvider>
         </ThemeProvider>
