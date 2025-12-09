@@ -3,129 +3,19 @@
 @tailwind components;
 @tailwind utilities;
 
-/* === ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ — ТВОЯ ПАЛИТРА FF24 === */
 :root {
-  --color-primary: #4b59ff;
-  --color-primary-dark: #3a45d1;
-  --color-accent: #ff9a3c;
-  --color-accent-light: #ffb84d;
-  --color-bg: #f8f9ff;
-  --color-card: #ffffff;
-  --color-text: #1e293b;
-  --color-text-light: #64748b;
-  --color-border: #e2e8f0;
+  --ff24-purple: #4b59ff;
+  --ff24-orange: #ff6b35;
+  --ff24-gradient: linear-gradient(135deg, #4b59ff, #ff6b35);
 }
 
-/* Тёмная тема */
-.dark {
-  --color-primary: #6366f1;
-  --color-primary-dark: #4f46e5;
-  --color-accent: #fbbf24;
-  --color-accent-light: #fcd34d;
-  --color-bg: #0f172a;
-  --color-card: #1e293b;
-  --color-text: #e2e8f0;
-  --color-text-light: #94a3b8;
-  --color-border: #334155;
+.bg-ff24 {
+  background: var(--ff24-gradient);
 }
 
-/* === ОСНОВНЫЕ СТИЛИ === */
-html, body, #__next {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  background: var(--color-bg);
-  color: var(--color-text);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-
-* {
-  box-sizing: border-box;
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-}
-
-/* === КАРТОЧКИ И КОНТЕЙНЕРЫ === */
-.card {
-  background: var(--color-card);
-  border: 1px solid var(--color-border);
-  border-radius: 1.5rem;
-  padding: 2rem;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 20px 40px -10px rgba(75, 89, 255, 0.25);
-}
-
-/* === КНОПКИ === */
-.btn-primary {
-  background: linear-gradient(to right, var(--color-primary), var(--color-primary-dark));
-  color: white;
-  padding: 0.75rem 2rem;
-  border-radius: 9999px;
-  font-weight: 600;
-  box-shadow: 0 10px 20px rgba(75, 89, 255, 0.3);
-  transition: all 0.3s ease;
-}
-
-.btn-primary:hover {
-  background: linear-gradient(to right, var(--color-primary-dark), #312e81);
-  transform: translateY(-2px);
-  box-shadow: 0 15px 30px rgba(75, 89, 255, 0.4);
-}
-
-/* === НЕОНОВЫЕ ЭФФЕКТЫ === */
-.neon-glow {
-  box-shadow: 0 0 20px rgba(75, 89, 255, 0.5), 0 0 40px rgba(255, 154, 60, 0.3);
-}
-
-/* === АНИМАЦИИ === */
-@keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-12px); }
-}
-
-.animate-bounce { animation: bounce 2s infinite; }
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-20px); }
-}
-
-.float { animation: float 6s ease-in-out infinite; }
-
-/* === ГРАДИЕНТНЫЙ ФОН ДЛЯ ЛЕНДИНГА === */
-.bg-gradient-hero {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-/* === ТЕКСТ С ГРАДИЕНТОМ === */
-.text-gradient {
-  background: linear-gradient(to right, var(--color-primary), var(--color-accent));
+.text-ff24 {
+  background: var(--ff24-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-}
-
-/* === ОТЗЫВЧИВАЯ СЕТКА === */
-.grid-responsive {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 2rem;
-}
-
-/* === ПЛАВНЫЕ ПЕРЕХОДЫ === */
-.transition-all {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* === СКРЫТИЕ СКРОЛЛБАРА === */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
 }
