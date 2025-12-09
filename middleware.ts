@@ -1,38 +1,33 @@
 // middleware.ts
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
 
-export function middleware(request: NextRequest) {
-  const response = NextResponse.next();
+import { NextResponse } from "next/server";
+import { verifyJwt } from "@/lib/auth/jwt";
 
-  // Перезаписываем все куки с безопасными флагами
-  const cookies = response.cookies.getAll();
-  
-  cookies.forEach((cookie) => {
-    response.cookies.set({
-      ...cookie,                    // ← берём всё из оригинальной куки
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      path: '/',
-    });
-  });
+export function middleware(req: Request) {
+  const url = new URL(req.url);
 
-  // Защита роутов (если нужно)
-  const protectedPaths = ['/dashboard', '/orders', '/products', '/settings'];
-  const isProtected = protectedPaths.some(path => 
-    request.nextUrl.pathname.startsWith(path)
-  );
+  // защищаем /dashboard/*
+  if (url.pathname.startsWith("/dashboard")) {
+    const cookie = req.headers
+      .get("cookie")
+      ?.split("; ")
+      ?.find((v) => v.startsWith("auth_token="));
 
-  const session = request.cookies.get('ff24_session');
+    if (!cookie) {
+      return NextResponse.redirect(new URL("/login", req.url));
+    }
 
-  if (isProtected && !session) {
-    return NextResponse.redirect(new URL('/login', request.url));
+    const token = cookie.split("=")[1];
+    const user = verifyJwt(token);
+
+    if (!user) {
+      return NextResponse.redirect(new URL("/login", req.url));
+    }
   }
 
-  return response;
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|login|register).*)'],
+  matcher: ["/dashboard/:path*"],
 };
