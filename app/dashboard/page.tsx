@@ -1,5 +1,3 @@
-// app/dashboard/page.tsx
-
 "use client";
 
 import StatsCard from "@/components/dashboard/StatsCard";
@@ -28,10 +26,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatsCard title="Всего заказов" value={orders.length} />
         <StatsCard title="Позиций на складе" value={stock.length} />
-        <StatsCard
-          title="Последний заказ"
-          value={orders[0]?.name || "—"}
-        />
+        <StatsCard title="Последний заказ" value={orders[0]?.name || "—"} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
