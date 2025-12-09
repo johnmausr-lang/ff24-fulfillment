@@ -3,7 +3,6 @@ import Link from "next/link";
 import { Truck, Zap, Lock, DollarSign, ArrowRight, Package, Shield, Clock, CheckCircle } from "lucide-react";
 import PriceCalculator from "@/components/PriceCalculator";
 import ProcessTimeline from "@/components/ProcessTimeline";
-import IntegrationsSlider from "@/components/IntegrationsSlider";
 import ContactForm from "@/components/ContactForm";
 
 export default function HomePage() {
@@ -71,9 +70,6 @@ export default function HomePage() {
 
       {/* ПРОЦЕСС */}
       <ProcessTimeline />
-
-      {/* ИНТЕГРАЦИИ */}
-      <IntegrationsSlider />
 
       {/* КОНТАКТЫ */}
       <ContactForm />
