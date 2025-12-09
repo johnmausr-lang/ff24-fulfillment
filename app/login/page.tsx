@@ -1,11 +1,15 @@
-import WorkerAnimation from "@/components/login/WorkerAnimation";
+import WorkerIllustration from "@/components/login/WorkerIllustration";
 import LoginForm from "@/components/login/LoginForm";
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 px-6">
-      <div className="flex flex-col md:flex-row gap-16 items-center max-w-5xl w-full">
-        <WorkerAnimation />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-purple-100 via-pink-100 to-orange-100 px-10">
+      <div className="flex items-center gap-24 max-w-7xl w-full">
+
+        {/* Грузчик слева */}
+        <WorkerIllustration />
+
+        {/* Форма справа */}
         <LoginForm />
       </div>
     </div>
