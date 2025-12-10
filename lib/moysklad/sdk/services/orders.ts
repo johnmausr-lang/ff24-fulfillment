@@ -1,25 +1,15 @@
 import { MSClient } from "../../client";
-
-export interface MSOrder {
-  id: string;
-  name: string;
-  description?: string;
-  created?: string;
-}
+import { MSOrder } from "../../types";
 
 export class OrdersService {
-  private client: MSClient;
+  constructor(private client: MSClient) {}
 
-  constructor(client: MSClient) {
-    this.client = client;
-  }
-
-  async list(limit: number = 50): Promise<MSOrder[]> {
+  async list(limit: number = 100) {
     const res = await this.client.get("/entity/customerorder", { limit });
-    return res.rows ?? [];
+    return res.rows as MSOrder[];
   }
 
-  async getById(id: string): Promise<MSOrder> {
+  async getById(id: string) {
     return await this.client.get(`/entity/customerorder/${id}`);
   }
 }
