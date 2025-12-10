@@ -11,14 +11,12 @@ export async function GET(
 
     return NextResponse.json({
       success: true,
-      data: order,
+      data: order
     });
   } catch (err: any) {
+    console.error("ORDER BY ID ERROR:", err);
     return NextResponse.json(
-      {
-        success: false,
-        error: err.message,
-      },
+      { success: false, error: err.message },
       { status: 500 }
     );
   }
