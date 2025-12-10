@@ -5,68 +5,64 @@ import Image from "next/image";
 import WarehouseGate from "@/components/login/WarehouseGate";
 
 export default function LoginPage() {
-  const [loading, setLoading] = useState(false);
+  const [stage, setStage] = useState<"opening" | "form" | "loading">("opening");
   const [email, setEmail] = useState("");
-  const [stage, setStage] = useState<"gate" | "form" | "opening">("gate");
-
-  // После первой загрузки показываем ворота → затем форму
-  function handleGateFinish() {
-    setStage("form");
-  }
+  const [loading, setLoading] = useState(false);
 
   async function submit() {
     if (!email) return;
 
+    setStage("loading");
     setLoading(true);
 
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" }, // ← исправлено
         body: JSON.stringify({ email }),
       });
 
       const data = await res.json();
 
       if (data.success) {
-        // Показываем анимацию открытия ворот
-        setStage("opening");
-
-        setTimeout(() => {
-          window.location.href = "/dashboard";
-        }, 1400);
-
+        window.location.href = "/dashboard";
       } else {
         alert(data.error || "Пользователь не найден");
+        setStage("form");
       }
     } catch (e) {
       alert("Ошибка входа");
+      setStage("form");
     } finally {
       setLoading(false);
     }
   }
 
   /* -------------------------------------------------------
-   * 1) Этап: Анимация ворот
-   * -----------------------------------------------------*/
-  if (stage === "gate") {
-    return <WarehouseGate onFinish={handleGateFinish} />;
-  }
-
-  /* -------------------------------------------------------
-   * 2) Этап: Анимация открытия после авторизации
+   * СТАДИЯ 1 — ВОРОТА ОТКРЫВАЮТСЯ
    * -----------------------------------------------------*/
   if (stage === "opening") {
-    return <WarehouseGate onFinish={() => {}} openMode />;
+    return (
+      <WarehouseGate
+        openMode
+        onFinish={() => setStage("form")}
+      />
+    );
   }
 
   /* -------------------------------------------------------
-   * 3) Этап: Форма входа
+   * СТАДИЯ 3 — ЛОАДЕР
+   * -----------------------------------------------------*/
+  if (stage === "loading") {
+    return <FF24Loader />;
+  }
+
+  /* -------------------------------------------------------
+   * СТАДИЯ 2 — ФОРМА ЛОГИНА
    * -----------------------------------------------------*/
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-[#0F0F0F] to-[#1A0A00] overflow-hidden flex justify-center items-center">
 
-      {/* Грузчик 3D часть сцены */}
+      {/* Грузчик */}
       <Image
         src="/illustrations/worker-ff24.png"
         alt="FF24 Worker"
@@ -75,7 +71,7 @@ export default function LoginPage() {
         className="
           absolute bottom-0 left-10
           drop-shadow-[0_0_35px_rgba(255,107,0,0.5)]
-          z-10 animate-float-slow
+          animate-float-slow
           pointer-events-none
         "
       />
@@ -88,7 +84,7 @@ export default function LoginPage() {
         <div className="box box4"></div>
       </div>
 
-      {/* Форма логина */}
+      {/* Форма */}
       <div
         className="
           relative z-20 p-10 rounded-3xl
@@ -129,14 +125,13 @@ export default function LoginPage() {
           {loading ? "Загрузка..." : "Войти"}
         </button>
       </div>
-
-      {loading && <FF24Loader />}
     </div>
   );
 }
 
-/* --------------------------- LOADER ------------------------------ */
-
+/* ------------------------------------------------------------------
+ * PREMIUM FF24 LOADER
+ * ----------------------------------------------------------------*/
 function FF24Loader() {
   return (
     <div
