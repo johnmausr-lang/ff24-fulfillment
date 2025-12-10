@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { MoyskladClient } from "@/lib/moysklad/client";
+import { createMoyskladSDK } from "@/lib/moysklad/sdk";
 import { signJwt } from "@/lib/auth/jwt";
 
 export async function POST(req: Request) {
@@ -9,10 +9,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: "Email required" }, { status: 400 });
     }
 
-    const client = new MoyskladClient(process.env.MOYSKLAD_TOKEN!);
-    const found = await client.findCounterpartyByEmail(email);
+    const ms = createMoyskladSDK();
 
+    // поиск контрагента по email
+    const found = await ms.counterparties.findByEmail(email);
     const user = found?.rows?.[0];
+
     if (!user) {
       return NextResponse.json({ success: false, error: "User not found" }, { status: 404 });
     }
@@ -20,7 +22,7 @@ export async function POST(req: Request) {
     const token = signJwt({
       id: user.id,
       email,
-      iat: Math.floor(Date.now() / 1000)
+      iat: Math.floor(Date.now() / 1000),
     });
 
     const res = NextResponse.json({ success: true });
@@ -30,10 +32,11 @@ export async function POST(req: Request) {
       secure: true,
       sameSite: "lax",
       path: "/",
-      maxAge: 60 * 60 * 24 * 7, // 7 days
+      maxAge: 60 * 60 * 24 * 7,
     });
 
     return res;
+
   } catch (err: any) {
     return NextResponse.json(
       { success: false, error: err.message ?? "Login error" },
