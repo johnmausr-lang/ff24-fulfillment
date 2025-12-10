@@ -1,96 +1,141 @@
-// app/page.tsx
-import Link from "next/link";
-import {
-  Truck,
-  Zap,
-  DollarSign,
-  ArrowRight,
-  Shield,
-} from "lucide-react";
+"use client";
 
+import Image from "next/image";
+import { useEffect, useRef } from "react";
+
+/* -----------------------------------------------------------
+   Premium Scene Parallax Handler
+----------------------------------------------------------- */
+function useParallax() {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const handle = (e: MouseEvent) => {
+      const x = (e.clientX / window.innerWidth - 0.5) * 10;
+      const y = (e.clientY / window.innerHeight - 0.5) * 10;
+      el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+    };
+
+    window.addEventListener("mousemove", handle);
+    return () => window.removeEventListener("mousemove", handle);
+  }, []);
+
+  return ref;
+}
+
+/* -----------------------------------------------------------
+   Главная страница FF24 Premium V1
+----------------------------------------------------------- */
 export default function HomePage() {
+  const heroRef = useParallax();
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
-      {/* HERO */}
-      <section className="relative py-24 px-6 overflow-hidden">
-        <div className="max-w-7xl mx-auto text-center">
-          <h1 className="text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-orange-600 mb-8">
-            ФФ24: ФУЛФИЛМЕНТ
+    <main className="relative min-h-screen bg-[#0A0A0A] overflow-hidden text-white">
+
+      {/* Noise Layer */}
+      <div className="pointer-events-none fixed inset-0 z-[5] bg-[url('/noise.png')] opacity-[0.08]" />
+
+      {/* Soft Ambient Lights */}
+      <div className="absolute -top-40 -left-40 w-[500px] h-[500px] bg-[#ff7a1a33] blur-[160px] rounded-full" />
+      <div className="absolute top-0 right-0 w-[450px] h-[450px] bg-[#ff480033] blur-[180px] rounded-full" />
+
+      {/* ---------------------- HERO ----------------------- */}
+      <section className="relative h-screen flex items-center justify-center">
+        <div
+          ref={heroRef}
+          className="relative z-20 text-center select-none"
+        >
+          <h1 className="
+            text-7xl md:text-9xl font-black 
+            tracking-tight leading-none
+            drop-shadow-[0_0_20px_rgba(255,120,20,0.35)]
+          ">
+            FF24 FULFILLMENT
           </h1>
-          <p className="text-3xl md:text-5xl font-bold text-gray-800 mb-8">
-            Быстрее. Точнее. Надежнее.
-          </p>
-          <p className="text-xl md:text-2xl text-gray-600 max-w-4xl mx-auto mb-12">
-            Мы берем на себя все заботы по упаковке, маркировке, хранению и доставке ваших товаров на склады крупнейших маркетплейсов России.
+
+          <p className="mt-6 text-xl md:text-2xl text-white/70 max-w-2xl mx-auto">
+            Современный премиальный фулфилмент для брендов нового поколения.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-8 justify-center items-center">
-            <Link
-              href="/login"
-              className="group bg-gradient-to-r from-purple-600 to-orange-600 hover:from-purple-700 hover:to-orange-700 text-white font-bold text-xl px-12 py-6 rounded-full shadow-2xl transform hover:scale-110 transition-all duration-300 flex items-center gap-4"
-            >
-              Личный кабинет
-              <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
-            </Link>
-
-            <button className="text-xl font-bold text-purple-600 hover:text-orange-600 transition-colors">
-              Рассчитать стоимость →
-            </button>
-          </div>
+          {/* CTA */}
+          <button
+            onClick={() => (window.location.href = "/login")}
+            className="
+              premium-btn mt-10 px-10 py-4 rounded-xl text-lg font-semibold 
+              bg-gradient-to-r from-[#FF6B00] to-[#FF8C32]
+              shadow-[0_0_28px_rgba(255,110,10,0.55)]
+              hover:shadow-[0_0_38px_rgba(255,110,10,0.75)]
+              hover:-translate-y-1 transition-all
+            "
+          >
+            Войти в личный кабинет
+          </button>
         </div>
 
-        {/* АНИМАЦИЯ НА ФОНЕ */}
-        <div className="absolute inset-0 pointer-events-none">
-          <Truck className="absolute top-20 left-10 text-purple-600/10 w-32 h-32 animate-bounce" />
-          <Truck className="absolute bottom-32 right-20 text-orange-600/10 w-40 h-40 animate-bounce delay-300" />
-        </div>
+        {/* Worker 3D Scene */}
+        <Image
+          src="/illustrations/worker-ff24.png"
+          alt="FF24 Worker"
+          width={620}
+          height={620}
+          className="
+            absolute bottom-0 left-1/2 -translate-x-1/2 md:left-[10%] md:translate-x-0
+            z-10 pointer-events-none
+            drop-shadow-[0_0_45px_rgba(255,110,10,0.55)]
+            animate-premium-float
+          "
+        />
+
+        {/* Depth Boxes */}
+        <div className="box-layer box-depth-1" />
+        <div className="box-layer box-depth-2" />
+        <div className="box-layer box-depth-3" />
       </section>
 
-      {/* ПРЕИМУЩЕСТВА */}
-      <section className="py-20 px-6 bg-white">
-        <div className="max-w-7xl mx-auto text-center">
-          <h2 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-orange-600 mb-16">
-            Почему выбирают ФФ24?
-          </h2>
+      {/* ---------------- Premium Blocks Section ---------------- */}
+      <section className="relative z-30 py-32 container mx-auto px-6">
+        <h2 className="text-5xl font-bold text-center mb-20">
+          Почему FF24 — выбор премиальных брендов?
+        </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
-            {[
-              {
-                icon: Truck,
-                title: "Мгновенная обработка",
-                desc: "Приемка и отправка заказов в течение 24 часов. Без задержек — только скорость!",
-              },
-              {
-                icon: DollarSign,
-                title: "Прозрачные тарифы",
-                desc: "Справедливая и понятная цена — рассчитаете стоимость за 1 минуту.",
-              },
-              {
-                icon: Zap,
-                title: "Интеграции с маркетплейсами",
-                desc: "Автоматизация с Wildberries, Ozon и Яндекс.Маркет.",
-              },
-              {
-                icon: Shield,
-                title: "Надежность",
-                desc: "WMS-стандарты и видеонаблюдение обеспечивают безопасность ваших товаров.",
-              },
-            ].map((item, i) => (
-              <div
-                key={i}
-                className="group p-8 bg-gradient-to-br from-purple-50 to-orange-50 rounded-3xl shadow-xl hover:shadow-2xl transition-all hover:-translate-y-4"
-              >
-                <item.icon className="w-16 h-16 mx-auto mb-6 text-purple-600 group-hover:scale-110 transition-transform" />
-                <h3 className="text-2xl font-bold mb-4 text-gray-800">
-                  {item.title}
-                </h3>
-                <p className="text-gray-600">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-
+        <div className="grid md:grid-cols-3 gap-16">
+          <Feature
+            title="Премиальная скорость"
+            text="Упаковка и отправка в день поступления. Без очередей. Без задержек."
+          />
+          <Feature
+            title="Идеальная точность"
+            text="Контроль на каждом этапе. WMS-система уровня enterprise."
+          />
+          <Feature
+            title="Сильная инфраструктура"
+            text="Мощные процессы с интеграцией в маркетплейсы и API."
+          />
         </div>
       </section>
+    </main>
+  );
+}
+
+/* -----------------------------------------------------------
+   Feature Block
+----------------------------------------------------------- */
+function Feature({ title, text }: { title: string; text: string }) {
+  return (
+    <div
+      className="
+        p-10 rounded-3xl border border-white/10 
+        bg-white/[0.03] backdrop-blur-xl
+        shadow-[0_0_30px_rgba(255,110,10,0.15)]
+        hover:shadow-[0_0_45px_rgba(255,110,10,0.35)]
+        hover:-translate-y-1 transition-all
+      "
+    >
+      <h3 className="text-2xl font-semibold mb-4">{title}</h3>
+      <p className="text-white/70 leading-relaxed">{text}</p>
     </div>
   );
 }
