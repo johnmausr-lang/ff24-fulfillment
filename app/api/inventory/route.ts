@@ -5,15 +5,21 @@ export async function GET() {
   try {
     const ms = createMoyskladSDK();
 
-    const stock = await ms.inventory.list();
+    const data = await ms.inventory.list(200);
 
     return NextResponse.json({
       success: true,
-      data: stock,
+      data,
     });
+
   } catch (err: any) {
+    console.error("INVENTORY API ERROR:", err);
+
     return NextResponse.json(
-      { success: false, error: err.message || "Inventory error" },
+      {
+        success: false,
+        error: err?.message ?? "Unexpected server error",
+      },
       { status: 500 }
     );
   }
