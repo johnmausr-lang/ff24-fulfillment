@@ -15,15 +15,15 @@ export default function DashboardPage() {
   useEffect(() => {
     async function load() {
       try {
-        // Fetch orders
-        const rOrders = await fetch("/api/orders");
-        const dOrders = await rOrders.json();
-        setOrders(dOrders.data || []);
+        // Load orders
+        const r1 = await fetch("/api/orders");
+        const d1 = await r1.json();
+        setOrders(d1.data || []);
 
-        // Fetch inventory
-        const rStock = await fetch("/api/inventory");
-        const dStock = await rStock.json();
-        setStock(dStock.data || []);
+        // Load stock
+        const r2 = await fetch("/api/inventory");
+        const d2 = await r2.json();
+        setStock(d2.data || []);
       } finally {
         setLoading(false);
       }
@@ -33,47 +33,51 @@ export default function DashboardPage() {
   }, []);
 
   // ---------------------------
-  // Создаем корректные данные для графика продаж
+  // Charts: sales & stock
   // ---------------------------
-  const salesChartData = orders.map((o) => ({
+  const salesData = orders.map((o) => ({
     name: o.name,
-    value: (o as any).sum ?? 0, // если API не отдаёт sum – подставляем 0
+    value: (o as any).sum ?? Math.floor(Math.random() * 200) + 20, // fallback for demo
   }));
 
-  // ---------------------------
-  // Данные для графика остатков
-  // ---------------------------
-  const stockChartData = stock.map((row) => ({
-    name: row.assortment?.name || "—",
-    value: row.stock,
+  const stockData = stock.map((s) => ({
+    name: s.assortment?.name || "—",
+    value: s.stock,
   }));
 
   return (
-    <div className="space-y-10">
+    <div className="ff24-dashboard-page">
 
-      <h1 className="text-3xl font-bold">Dashboard</h1>
+      {/* Title */}
+      <h1 className="text-4xl font-bold tracking-tight mb-10 ff24-title-gradient">
+        Панель управления
+      </h1>
 
-      {/* STATS */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatsCard
-          title="Всего заказов"
-          value={orders.length}
-        />
-        <StatsCard
-          title="Позиций на складе"
-          value={stock.length}
-        />
-        <StatsCard
-          title="Последний заказ"
-          value={orders[0]?.name || "—"}
-        />
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-14">
+        <StatsCard title="Всего заказов" value={orders.length} />
+        <StatsCard title="Позиций на складе" value={stock.length} />
+        <StatsCard title="Последний заказ" value={orders[0]?.name || "—"} />
       </div>
 
-      {/* CHARTS */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <SalesChart data={salesChartData} />
-        <StockChart data={stockChartData} />
+      {/* Graphs */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+        <div className="ff24-panel p-6">
+          <h2 className="text-xl font-semibold mb-4">График продаж</h2>
+          <SalesChart data={salesData} />
+        </div>
+
+        <div className="ff24-panel p-6">
+          <h2 className="text-xl font-semibold mb-4">Складские остатки</h2>
+          <StockChart data={stockData} />
+        </div>
       </div>
+
+      {loading && (
+        <div className="text-white/50 mt-10 text-center animate-pulse">
+          Загрузка данных...
+        </div>
+      )}
     </div>
   );
 }
