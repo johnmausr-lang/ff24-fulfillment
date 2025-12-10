@@ -1,101 +1,71 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import ProductSelector from "@/components/supply/ProductSelector";
+import TruckButtonPrimary from "@/components/ui/buttons/TruckButtonPrimary";
+import { toast } from "sonner";
 
-import Step1Product from "@/components/supply/Step1Product";
-import Step2Sizes from "@/components/supply/Step2Sizes";
-import Step3Works from "@/components/supply/Step3Works";
-import Step4Preview from "@/components/supply/Step4Preview";
-import Step5Finish from "@/components/supply/Step5Finish";
+export default function SupplyCreatePage() {
+  const [products, setProducts] = useState<any[]>([]);
+  const [comment, setComment] = useState("");
+  const [loading, setLoading] = useState(false);
 
-export default function NewSupplyPage() {
-  const [step, setStep] = useState(1);
+  async function submitSupply() {
+    if (products.length === 0) {
+      toast.error("Добавьте хотя бы один товар");
+      return;
+    }
 
-  // Общие данные поставки
-  const [data, setData] = useState({
-    brand: "",
-    model: "",
-    color: "",
-    description: "",
-    image: null,
-    imagePreview: null,
-    sizes: [],
-    services: []
-  });
-
-  const [supplyId, setSupplyId] = useState(null);
-
-  // Навигация
-  const next = () => setStep(step + 1);
-  const back = () => setStep(step - 1);
-
-  // Финальная отправка
-  async function createSupply() {
-    const form = new FormData();
-    form.append("data", JSON.stringify(data));
-    if (data.image) form.append("image", data.image);
+    setLoading(true);
 
     const res = await fetch("/api/supply/create", {
       method: "POST",
-      body: form
+      body: JSON.stringify({
+        products: products.map((p) => ({
+          meta: p.meta,
+          qty: p.qty,
+        })),
+        comment,
+      }),
     });
 
-    const json = await res.json();
+    const data = await res.json();
+    setLoading(false);
 
-    if (json.success) {
-      setSupplyId(json.supplyId);
-      setStep(5);
-    } else {
-      alert("Ошибка создания поставки: " + json.error);
+    if (!data.success) {
+      toast.error(data.error || "Ошибка создания приёмки");
+      return;
     }
+
+    toast.success("Приёмка успешно создана!");
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-8 space-y-8">
+      <h1 className="text-3xl font-bold">Создать приёмку товара</h1>
 
-      {step === 1 && (
-        <Step1Product
-          data={data}
-          onChange={(v) => {
-            // передаём также превью фото
-            if (v.image) {
-              v.imagePreview = URL.createObjectURL(v.image);
-            }
-            setData(v);
-          }}
-          onNext={next}
+      {/* Выбор товаров */}
+      <ProductSelector
+        selected={products}
+        onChange={setProducts}
+      />
+
+      {/* Комментарий */}
+      <div className="bg-white p-6 rounded-2xl shadow-md">
+        <label className="font-semibold">Комментарий</label>
+        <textarea
+          className="w-full mt-2 p-3 border rounded-xl"
+          rows={4}
+          placeholder="Комментарий к поставке"
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
         />
-      )}
+      </div>
 
-      {step === 2 && (
-        <Step2Sizes
-          data={data}
-          onChange={(v) => setData(v)}
-          onNext={next}
-          onBack={back}
-        />
-      )}
-
-      {step === 3 && (
-        <Step3Works
-          data={data}
-          onChange={(v) => setData(v)}
-          onNext={next}
-          onBack={back}
-        />
-      )}
-
-      {step === 4 && (
-        <Step4Preview
-          data={data}
-          onNext={createSupply}
-          onBack={back}
-        />
-      )}
-
-      {step === 5 && (
-        <Step5Finish supplyId={supplyId} />
-      )}
+      {/* Кнопка */}
+      <TruckButtonPrimary onClick={submitSupply}>
+        {loading ? "Отправка..." : "Создать приёмку"}
+      </TruckButtonPrimary>
     </div>
   );
 }
