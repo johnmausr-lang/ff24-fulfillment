@@ -1,16 +1,20 @@
-// app/dashboard/layout.tsx
+"use client";
 
 import Sidebar from "@/components/dashboard/Sidebar";
-import "@/app/globals.css";
+import DashboardHeader from "@/components/dashboard/DashboardHeader";
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default function DashboardLayout({ children }) {
   return (
-    <div className="flex w-full h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-[#0F0F0F] text-white">
       <Sidebar />
 
-      <main className="flex-1 p-6 overflow-y-auto">
-        {children}
-      </main>
+      <div className="flex flex-col flex-1">
+        <DashboardHeader />
+
+        <main className="p-10">
+          <div className="max-w-7xl mx-auto">{children}</div>
+        </main>
+      </div>
     </div>
   );
 }
