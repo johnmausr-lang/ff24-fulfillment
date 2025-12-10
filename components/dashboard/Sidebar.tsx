@@ -2,70 +2,66 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Package, BarChart3, Truck, User, Boxes } from "lucide-react";
 import Image from "next/image";
-
-const menu = [
-  { href: "/dashboard", label: "Аналитика", icon: BarChart3 },
-  { href: "/dashboard/orders", label: "Заказы", icon: Package },
-  { href: "/dashboard/stock", label: "Остатки", icon: Boxes },
-  { href: "/dashboard/supply/new", label: "Поставка", icon: Truck },
-  { href: "/dashboard/profile", label: "Профиль", icon: User },
-];
 
 export default function Sidebar() {
   const path = usePathname();
 
+  const links = [
+    { href: "/dashboard", label: "Главная" },
+    { href: "/dashboard/orders", label: "Заказы" },
+    { href: "/dashboard/stock", label: "Остатки" },
+    { href: "/dashboard/supply/new", label: "Приёмка товара" },
+    { href: "/dashboard/profile", label: "Профиль" },
+  ];
+
   return (
-    <aside className="
-        w-72 p-8 bg-[#0F0F0F]
-        border-r border-white/10
-        backdrop-blur-2xl
-        shadow-[inset_0_0_30px_rgba(255,107,0,0.06)]
-    ">
-      {/* Лого */}
-      <div className="flex items-center gap-4 mb-10">
-        <Image
-          src="/logo-ff24.png"
-          width={42}
-          height={42}
-          alt="FF24"
-          className="drop-shadow-[0_0_12px_rgba(255,107,0,0.5)]"
-        />
-        <span className="text-xl font-semibold text-white tracking-wide">
-          FF24 Dashboard
-        </span>
+    <aside
+      className="
+        w-64 bg-black/40 backdrop-blur-xl border-r border-white/10
+        flex flex-col justify-between z-20
+      "
+    >
+      <div>
+        <div className="px-6 py-8 flex items-center gap-3">
+          <Image
+            src="/logo-ff24.png"
+            alt="FF24"
+            width={42}
+            height={42}
+            className="drop-shadow-[0_0_15px_rgba(228,255,0,0.6)]"
+          />
+          <span className="text-xl font-semibold tracking-wide">
+            FF24
+          </span>
+        </div>
+
+        <nav className="mt-4">
+          {links.map((l) => {
+            const active = path === l.href;
+
+            return (
+              <Link
+                key={l.href}
+                href={l.href}
+                className={`
+                  block px-6 py-3 my-1 rounded-md transition
+                  ${active
+                    ? "bg-white/10 text-[var(--ff24-acid)] border-l-4 border-[var(--ff24-acid)]"
+                    : "text-white/70 hover:bg-white/5 hover:text-white"
+                  }
+                `}
+              >
+                {l.label}
+              </Link>
+            );
+          })}
+        </nav>
       </div>
 
-      <nav className="flex flex-col gap-4">
-        {menu.map((item, i) => {
-          const Icon = item.icon;
-          const active = path === item.href;
-
-          return (
-            <Link
-              key={i}
-              href={item.href}
-              className={`
-                flex items-center gap-3 px-4 py-3 rounded-xl
-                transition-all duration-300
-
-                ${
-                  active
-                    ? "bg-gradient-to-r from-[#FF6B00] to-[#FF8C32] text-black font-semibold shadow-[0_0_20px_rgba(255,107,0,0.5)]"
-                    : "text-white/60 hover:text-white hover:bg-white/5 hover:shadow-[0_0_10px_rgba(255,255,255,0.06)]"
-                }
-
-                hover:translate-x-1
-                hover:shadow-lg
-              `}
-            >
-              <Icon className={`w-5 ${active ? "text-black" : "text-white/40"}`} />
-              {item.label}
-            </Link>
-          );
-        })}
-      </nav>
+      <div className="px-6 py-6 text-white/40 text-xs">
+        © 2025 FF24 Fulfillment
+      </div>
     </aside>
   );
 }
