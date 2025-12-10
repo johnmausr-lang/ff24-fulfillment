@@ -5,18 +5,16 @@ export async function GET() {
   try {
     const ms = createMoyskladSDK();
 
-    const data = await ms.inventory.list({
-      limit: 200
-    });
+    const data = await ms.inventory.list(200); // FIX
 
     return NextResponse.json({
       success: true,
-      data
+      data,
     });
   } catch (err: any) {
     console.error("INVENTORY API ERROR:", err);
     return NextResponse.json(
-      { success: false, error: err.message },
+      { success: false, error: err.message || "Inventory error" },
       { status: 500 }
     );
   }
