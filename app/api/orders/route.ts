@@ -4,10 +4,17 @@ import { createMoyskladSDK } from "@/lib/moysklad/sdk";
 export async function GET() {
   try {
     const ms = createMoyskladSDK();
-    const data = await ms.orders.list(100);
 
-    return NextResponse.json({ success: true, data: data.rows });
+    const orders = await ms.orders.list(100);
+
+    return NextResponse.json({
+      success: true,
+      data: orders?.rows ?? [],
+    });
   } catch (err: any) {
-    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: err.message },
+      { status: 500 }
+    );
   }
 }
