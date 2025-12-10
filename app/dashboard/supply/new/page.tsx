@@ -1,36 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import Step1Product from "@/components/supply/Step1Product";
+import Step1Product, { Step1Data } from "@/components/supply/Step1Product";
 import Step2Packaging from "@/components/supply/Step2Packaging";
 import Step3Confirm from "@/components/supply/Step3Confirm";
 
-interface SupplyFormData {
-  productName: string;
-  article: string;
-  qty: string;
-  image: File | null;
-  imagePreview: string;
-
-  packaging: string;
-  marking: boolean;
-  places: string;
-  comment: string;
+export interface SupplyFormData extends Step1Data {
+  packagingType?: string;
+  quantity?: number;
+  comment?: string;
 }
 
-export default function SupplyWizardPage() {
+export default function SupplyCreatePage() {
   const [step, setStep] = useState(1);
 
   const [data, setData] = useState<SupplyFormData>({
-    productName: "",
+    name: "",
     article: "",
-    qty: "",
+    description: "",
     image: null,
-    imagePreview: "",
+    imagePreview: null,
 
-    packaging: "",
-    marking: false,
-    places: "",
+    packagingType: "",
+    quantity: 1,
     comment: "",
   });
 
@@ -44,28 +36,39 @@ export default function SupplyWizardPage() {
   }
 
   return (
-    <div className="space-y-10 max-w-3xl mx-auto">
-      <h1 className="text-3xl font-bold text-white">Новая поставка</h1>
+    <div className="max-w-3xl mx-auto py-10 space-y-10">
+      <h1 className="text-3xl font-bold">Создать приёмку</h1>
 
+      {/* ИНДИКАТОР ШАГОВ */}
       <div className="flex items-center gap-4">
-        {[1, 2, 3].map((s) => (
-          <div
-            key={s}
-            className={`
-              w-10 h-10 rounded-full flex items-center justify-center text-sm
-              ${step === s
-                ? "bg-[#FF6B00] text-black shadow-[0_0_20px_rgba(255,107,0,0.6)]"
-                : "bg-white/10 text-white/50"}
-            `}
-          >
-            {s}
-          </div>
-        ))}
+        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 1 ? "bg-orange-500" : "bg-gray-600"}`}>
+          1
+        </div>
+        <div className="h-[2px] flex-1 bg-gray-600" />
+        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 2 ? "bg-orange-500" : "bg-gray-600"}`}>
+          2
+        </div>
+        <div className="h-[2px] flex-1 bg-gray-600" />
+        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 3 ? "bg-orange-500" : "bg-gray-600"}`}>
+          3
+        </div>
       </div>
 
+      {/* ШАГИ */}
       {step === 1 && <Step1Product data={data} onNext={next} />}
-      {step === 2 && <Step2Packaging data={data} onNext={next} onBack={back} />}
-      {step === 3 && <Step3Confirm data={data} onBack={back} />}
+      {step === 2 && (
+        <Step2Packaging
+          data={data}
+          onNext={next}
+          onBack={back}
+        />
+      )}
+      {step === 3 && (
+        <Step3Confirm
+          data={data}
+          onBack={back}
+        />
+      )}
     </div>
   );
 }
