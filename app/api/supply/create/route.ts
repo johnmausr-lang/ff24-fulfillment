@@ -4,7 +4,9 @@ import { createMoyskladSDK } from "@/lib/moysklad/sdk";
 
 export async function POST(req: Request) {
   try {
-    // 1) Чтение токена
+    // ----------------------------------------------------------------
+    // 1️⃣ Проверяем токен авторизации
+    // ----------------------------------------------------------------
     const cookie = req.headers.get("cookie") ?? "";
     const token = cookie
       .split("; ")
@@ -12,26 +14,35 @@ export async function POST(req: Request) {
       ?.split("=")[1];
 
     if (!token) {
-      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      );
     }
 
     const user = verifyJwt(token);
 
-    // 2) Данные клиента
+    // ----------------------------------------------------------------
+    // 2️⃣ Получаем данные запроса
+    // ----------------------------------------------------------------
     const body = await req.json();
     const { products, comment } = body;
 
-    if (!products?.length) {
+    if (!products || !Array.isArray(products) || products.length === 0) {
       return NextResponse.json(
         { success: false, error: "No products provided" },
         { status: 400 }
       );
     }
 
-    // 3) Инициализация SDK
+    // ----------------------------------------------------------------
+    // 3️⃣ Инициализация SDK
+    // ----------------------------------------------------------------
     const ms = createMoyskladSDK();
 
-    // 4) Загружаем контрагента по user.id
+    // ----------------------------------------------------------------
+    // 4️⃣ Загружаем контрагента (продавца) по ID
+    // ----------------------------------------------------------------
     const counterparty = await ms.counterparties.getById(user.id);
 
     if (!counterparty) {
@@ -41,21 +52,34 @@ export async function POST(req: Request) {
       );
     }
 
-    // 5) Создаём документ "Приёмка"
-    const supply = await ms.orders.createSupply({
+    // ----------------------------------------------------------------
+    // 5️⃣ Создаём документ «Приёмка» (Supply)
+    // ----------------------------------------------------------------
+    const supply = await ms.supply.create({
       agent: { meta: counterparty.meta },
       description: comment || "",
       positions: products.map((p: any) => ({
         assortment: { meta: p.meta },
-        quantity: p.qty,
+        quantity: p.qty ?? 1,
       })),
     });
 
-    return NextResponse.json({ success: true, data: supply });
+    // ----------------------------------------------------------------
+    // 6️⃣ Возвращаем результат
+    // ----------------------------------------------------------------
+    return NextResponse.json({
+      success: true,
+      data: supply,
+    });
 
   } catch (err: any) {
+    console.error("SUPPLY CREATE ERROR:", err);
+
     return NextResponse.json(
-      { success: false, error: err.message ?? "Supply creation error" },
+      {
+        success: false,
+        error: err?.message || "Supply creation failed",
+      },
       { status: 500 }
     );
   }
