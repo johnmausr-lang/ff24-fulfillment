@@ -5,10 +5,23 @@ import Step1Product from "@/components/supply/Step1Product";
 import Step2Packaging from "@/components/supply/Step2Packaging";
 import Step3Confirm from "@/components/supply/Step3Confirm";
 
+interface SupplyFormData {
+  productName: string;
+  article: string;
+  qty: string;
+  image: File | null;
+  imagePreview: string;
+
+  packaging: string;
+  marking: boolean;
+  places: string;
+  comment: string;
+}
+
 export default function SupplyWizardPage() {
   const [step, setStep] = useState(1);
 
-  const [data, setData] = useState({
+  const [data, setData] = useState<SupplyFormData>({
     productName: "",
     article: "",
     qty: "",
@@ -21,7 +34,7 @@ export default function SupplyWizardPage() {
     comment: "",
   });
 
-  function next(newData) {
+  function next(newData: Partial<SupplyFormData>) {
     setData((prev) => ({ ...prev, ...newData }));
     setStep((s) => s + 1);
   }
@@ -32,12 +45,8 @@ export default function SupplyWizardPage() {
 
   return (
     <div className="space-y-10 max-w-3xl mx-auto">
+      <h1 className="text-3xl font-bold text-white">Новая поставка</h1>
 
-      <h1 className="text-3xl font-bold text-white">
-        Новая поставка
-      </h1>
-
-      {/* ШАГИ */}
       <div className="flex items-center gap-4">
         {[1, 2, 3].map((s) => (
           <div
@@ -54,18 +63,9 @@ export default function SupplyWizardPage() {
         ))}
       </div>
 
-      {/* КОНТЕНТ */}
-      {step === 1 && (
-        <Step1Product data={data} onNext={next} />
-      )}
-
-      {step === 2 && (
-        <Step2Packaging data={data} onNext={next} onBack={back} />
-      )}
-
-      {step === 3 && (
-        <Step3Confirm data={data} onBack={back} />
-      )}
+      {step === 1 && <Step1Product data={data} onNext={next} />}
+      {step === 2 && <Step2Packaging data={data} onNext={next} onBack={back} />}
+      {step === 3 && <Step3Confirm data={data} onBack={back} />}
     </div>
   );
 }
