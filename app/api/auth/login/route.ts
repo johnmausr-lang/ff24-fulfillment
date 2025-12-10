@@ -5,25 +5,16 @@ import { signJwt } from "@/lib/auth/jwt";
 export async function POST(req: Request) {
   try {
     const { email } = await req.json();
-    if (!email) {
-      return NextResponse.json({ success: false, error: "Email required" }, { status: 400 });
-    }
+    if (!email) return NextResponse.json({ success: false });
 
     const ms = createMoyskladSDK();
-
-    // поиск контрагента по email
-    const found = await ms.counterparties.findByEmail(email);
-    const user = found?.rows?.[0];
+    const user = await ms.counterparties.findByEmail(email);
 
     if (!user) {
-      return NextResponse.json({ success: false, error: "User not found" }, { status: 404 });
+      return NextResponse.json({ success: false, error: "User not found" });
     }
 
-    const token = signJwt({
-      id: user.id,
-      email,
-      iat: Math.floor(Date.now() / 1000),
-    });
+    const token = signJwt({ id: user.id, email });
 
     const res = NextResponse.json({ success: true });
 
@@ -32,15 +23,13 @@ export async function POST(req: Request) {
       secure: true,
       sameSite: "lax",
       path: "/",
-      maxAge: 60 * 60 * 24 * 7,
     });
 
     return res;
-
   } catch (err: any) {
     return NextResponse.json(
-      { success: false, error: err.message ?? "Login error" },
-      { status: 500 }
+      { success: false, error: err.message },
+      { status: err.status || 500 }
     );
   }
 }
