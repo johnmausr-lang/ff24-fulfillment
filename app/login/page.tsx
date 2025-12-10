@@ -4,11 +4,10 @@ import Image from "next/image";
 import { useState } from "react";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState("");
 
-  async function handleLogin() {
-    if (!email) return;
+  async function submit() {
     setLoading(true);
 
     const res = await fetch("/api/auth/login", {
@@ -16,74 +15,105 @@ export default function LoginPage() {
       body: JSON.stringify({ email }),
     });
 
-    const json = await res.json();
-    setLoading(false);
+    const data = await res.json();
 
-    if (json.success) {
+    if (data.success) {
       window.location.href = "/dashboard";
     } else {
       alert("Пользователь не найден");
     }
+
+    setLoading(false);
   }
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center px-4"
-      style={{ backgroundColor: "#D4FF00" }} // фирменный FF24 неоновый фон
-    >
-      <div className="max-w-6xl w-full flex flex-col md:flex-row items-center justify-center gap-12">
+    <div className="relative min-h-screen bg-gradient-to-br from-[#0F0F0F] to-[#1A0A00] overflow-hidden flex justify-center items-center">
 
-        {/* ГРУЗЧИК — единая композиция */}
-        <div className="relative flex justify-center">
-          <Image
-            src="/illustrations/worker-ff24.png"
-            alt="FF24 Worker"
-            width={520}
-            height={520}
-            priority
-            className="drop-shadow-2xl select-none"
-          />
-        </div>
+      {/* 🔥 Грузчик — встроенный в сцену */}
+      <Image
+        src="/illustrations/worker-ff24.png"
+        alt="FF24 Worker"
+        width={480}
+        height={480}
+        className="
+          absolute bottom-0 left-10
+          drop-shadow-[0_0_35px_rgba(255,107,0,0.5)]
+          z-10
+          animate-float-slow
+          pointer-events-none
+        "
+      />
 
-        {/* ФОРМА АВТОРИЗАЦИИ */}
-        <div className="bg-white w-full max-w-md p-10 rounded-3xl shadow-[0_15px_40px_rgba(0,0,0,0.18)]">
-          <h1 className="text-4xl font-black text-[#21004B] mb-6 leading-tight">
-            Вход в личный<br />кабинет
-          </h1>
+      {/* 🔥 Анимация коробок */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="box box1"></div>
+        <div className="box box2"></div>
+        <div className="box box3"></div>
+        <div className="box box4"></div>
+      </div>
 
-          {/* EMAIL INPUT */}
-          <input
-            type="email"
-            placeholder="Введите email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-4 text-lg rounded-xl border border-gray-300 mb-6 focus:ring-2 focus:ring-purple-500 outline-none"
-          />
+      {/* 🔥 Форма */}
+      <div
+        className="
+          relative z-20 p-10 rounded-3xl
+          bg-white/5 backdrop-blur-2xl
+          border border-white/10 shadow-[0_0_40px_rgba(255,107,0,0.25)]
+          w-[420px]
+        "
+      >
+        <h1 className="text-3xl font-bold text-white text-center mb-6 drop-shadow-[0_0_12px_rgba(255,107,0,0.35)]">
+          Вход в FF24
+        </h1>
 
-          {/* БРЕНДИРОВАННАЯ КНОПКА-ГРУЗОВИК */}
-          <button
-            onClick={handleLogin}
-            disabled={loading}
-            className="
-              w-full py-4 rounded-xl text-white text-xl font-bold 
-              flex items-center justify-center gap-3
-              transition-all shadow-lg
-              bg-gradient-to-r from-purple-600 to-orange-500
-              hover:from-purple-700 hover:to-orange-600
-              active:scale-[0.98]
-            "
-          >
-            <span className="inline-flex items-center gap-2">
-              <img
-                src="/ui/truck-purple.png"
-                alt="truck"
-                className="w-8 h-8"
-              />
-            </span>
+        <label className="text-white/70 text-sm">Email</label>
+        <input
+          type="email"
+          placeholder="example@mail.ru"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="
+            w-full mt-2 p-3 rounded-lg bg-black/30 text-white
+            border border-white/10 outline-none
+            focus:border-[#FF6B00] transition
+          "
+        />
 
-            {loading ? "Входим..." : "Войти"}
-          </button>
-        </div>
+        <button
+          onClick={submit}
+          disabled={loading}
+          className="
+            w-full mt-6 py-3 rounded-lg font-semibold text-black
+            bg-gradient-to-r from-[#FF6B00] to-[#FF8C32]
+            shadow-[0_0_20px_rgba(255,107,0,0.45)]
+            hover:shadow-[0_0_32px_rgba(255,107,0,0.65)]
+            hover:-translate-y-0.5 transition
+          "
+        >
+          {loading ? "Загрузка..." : "Войти"}
+        </button>
+      </div>
+
+      {/* 🔥 Лоадер */}
+      {loading && <FF24Loader />}
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                  ЛОАДЕР FF24                               */
+/* -------------------------------------------------------------------------- */
+
+function FF24Loader() {
+  return (
+    <div className="
+      fixed inset-0 bg-black/70 backdrop-blur-xl
+      flex items-center justify-center
+      z-50
+    ">
+      <div className="loader-boxes">
+        <div className="lb lb1"></div>
+        <div className="lb lb2"></div>
+        <div className="lb lb3"></div>
       </div>
     </div>
   );
