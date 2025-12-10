@@ -1,21 +1,56 @@
-/* app/globals.css */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-:root {
-  --ff24-purple: #4b59ff;
-  --ff24-orange: #ff6b35;
-  --ff24-gradient: linear-gradient(135deg, #4b59ff, #ff6b35);
+/* АНИМАЦИЯ ГРУЗЧИКА */
+@keyframes float-slow {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+  100% { transform: translateY(0px); }
+}
+.animate-float-slow {
+  animation: float-slow 6s ease-in-out infinite;
 }
 
-.bg-ff24 {
-  background: var(--ff24-gradient);
+/* КОРОБКИ */
+.box {
+  position: absolute;
+  width: 90px;
+  height: 90px;
+  background: url("/illustrations/box-ff24.png") no-repeat center/cover;
+  opacity: 0.25;
+  filter: drop-shadow(0 0 10px rgba(255,107,0,0.35));
+  animation: slideBox 12s linear infinite;
 }
 
-.text-ff24 {
-  background: var(--ff24-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.box1 { top: 20%; left: -120px; animation-delay: 0s; }
+.box2 { top: 40%; left: -150px; animation-delay: 2s; }
+.box3 { top: 60%; left: -180px; animation-delay: 4s; }
+.box4 { top: 75%; left: -200px; animation-delay: 6s; }
+
+@keyframes slideBox {
+  0% {
+    transform: translateX(0) rotate(0deg);
+  }
+  100% {
+    transform: translateX(120vw) rotate(360deg);
+  }
+}
+
+/* ЛОАДЕР FF24 */
+.loader-boxes {
+  display: flex;
+  gap: 16px;
+}
+
+.lb {
+  width: 28px;
+  height: 28px;
+  background: url("/illustrations/box-ff24.png") no-repeat center/cover;
+  animation: loaderBounce 1s infinite ease-in-out;
+}
+
+.lb1 { animation-delay: 0s; }
+.lb2 { animation-delay: 0.15s; }
+.lb3 { animation-delay: 0.3s; }
+
+@keyframes loaderBounce {
+  0%, 100% { transform: translateY(0); opacity: 0.6; }
+  50%       { transform: translateY(-18px); opacity: 1; }
 }
