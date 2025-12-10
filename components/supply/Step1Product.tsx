@@ -1,62 +1,94 @@
 "use client";
 
-import UploadBox from "./UploadBox";
 import { useState } from "react";
 
-export default function Step1Product({ data, onNext }) {
-  const [local, setLocal] = useState(data);
+interface Step1Data {
+  name: string;
+  article: string;
+  description?: string;
+  image?: File | null;
+  imagePreview?: string | null;
+}
 
-  function update(field, value) {
-    setLocal((p) => ({ ...p, [field]: value }));
+interface Step1ProductProps {
+  data: Step1Data;
+  onNext: (updated: Step1Data) => void;
+}
+
+export default function Step1Product({ data, onNext }: Step1ProductProps) {
+  const [local, setLocal] = useState<Step1Data>(data);
+
+  function update(field: keyof Step1Data, value: any) {
+    setLocal((prev) => ({ ...prev, [field]: value }));
+  }
+
+  function handleNext() {
+    onNext(local);
   }
 
   return (
-    <div className="bg-white/5 border border-white/10 p-8 rounded-2xl backdrop-blur-xl">
+    <div className="space-y-6 max-w-xl">
+      <h2 className="text-2xl font-bold">1. Основная информация</h2>
 
-      <h2 className="text-xl text-white mb-6 font-semibold">Информация о товаре</h2>
-
-      <div className="space-y-4">
-        <div>
-          <label className="text-white/70">Название товара</label>
-          <input
-            className="inputFF24"
-            value={local.productName}
-            onChange={(e) => update("productName", e.target.value)}
-          />
-        </div>
-
-        <div>
-          <label className="text-white/70">Артикул</label>
-          <input
-            className="inputFF24"
-            value={local.article}
-            onChange={(e) => update("article", e.target.value)}
-          />
-        </div>
-
-        <div>
-          <label className="text-white/70">Количество</label>
-          <input
-            type="number"
-            className="inputFF24"
-            value={local.qty}
-            onChange={(e) => update("qty", e.target.value)}
-          />
-        </div>
-
-        {/* ЗАГРУЗКА ИЗОБРАЖЕНИЯ */}
-        <UploadBox
-          image={local.imagePreview}
-          onFile={(file, preview) => {
-            update("image", file);
-            update("imagePreview", preview);
-          }}
+      <div className="space-y-2">
+        <label className="text-sm opacity-70">Название товара</label>
+        <input
+          type="text"
+          value={local.name}
+          onChange={(e) => update("name", e.target.value)}
+          className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10"
+          placeholder="Введите название"
         />
       </div>
 
+      <div className="space-y-2">
+        <label className="text-sm opacity-70">Артикул</label>
+        <input
+          type="text"
+          value={local.article}
+          onChange={(e) => update("article", e.target.value)}
+          className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10"
+          placeholder="Введите артикул"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm opacity-70">Описание</label>
+        <textarea
+          value={local.description || ""}
+          onChange={(e) => update("description", e.target.value)}
+          className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 min-h-[120px]"
+          placeholder="Опишите товар"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm opacity-70">Фото товара</label>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => {
+            const file = e.target.files?.[0] || null;
+            update("image", file);
+
+            if (file) {
+              update("imagePreview", URL.createObjectURL(file));
+            }
+          }}
+        />
+
+        {local.imagePreview && (
+          <img
+            src={local.imagePreview}
+            alt="preview"
+            className="w-32 h-32 object-cover rounded-lg border border-white/10 mt-3"
+          />
+        )}
+      </div>
+
       <button
-        onClick={() => onNext(local)}
-        className="btnFF24 mt-6"
+        onClick={handleNext}
+        className="px-6 py-3 bg-ff24-orange rounded-xl font-semibold text-black hover:opacity-80 transition"
       >
         Далее →
       </button>
