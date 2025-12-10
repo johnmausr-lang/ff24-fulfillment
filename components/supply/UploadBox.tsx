@@ -1,43 +1,36 @@
 "use client";
 
-export default function UploadBox({ image, onFile }) {
-  function handleFile(e) {
-    const file = e.target.files[0];
-    if (!file) return;
+interface UploadBoxProps {
+  image: string | null;                // preview URL или null
+  onFile: (file: File | null) => void; // callback при выборе файла
+}
 
-    const preview = URL.createObjectURL(file);
-    onFile(file, preview);
+export default function UploadBox({ image, onFile }: UploadBoxProps) {
+  function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0] || null;
+    onFile(file);
   }
 
   return (
-    <div className="flex flex-col gap-3">
-      <label className="text-white/70">Фото товара</label>
+    <div className="space-y-3">
+      <label className="text-sm opacity-70">Фото товара</label>
 
-      <div
-        className="
-          w-full h-48 rounded-xl border border-white/10
-          bg-white/5 backdrop-blur-xl flex items-center justify-center
-          hover:bg-white/10 transition cursor-pointer
-        "
-        onClick={() => document.getElementById("fileInput").click()}
-      >
-        {image ? (
+      <div className="border border-white/10 rounded-xl p-4 bg-white/5 flex flex-col items-center justify-center text-center">
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleFile}
+          className="text-sm"
+        />
+
+        {image && (
           <img
             src={image}
-            className="w-full h-full object-cover rounded-xl"
+            alt="preview"
+            className="w-32 h-32 object-cover rounded-lg border border-white/10 mt-4"
           />
-        ) : (
-          <span className="text-white/40">Нажмите для загрузки</span>
         )}
       </div>
-
-      <input
-        type="file"
-        id="fileInput"
-        className="hidden"
-        accept="image/*"
-        onChange={handleFile}
-      />
     </div>
   );
 }
