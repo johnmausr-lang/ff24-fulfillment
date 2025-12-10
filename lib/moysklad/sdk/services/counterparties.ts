@@ -1,25 +1,28 @@
 import { MSClient } from "../../client";
 
+export interface MSCounterparty {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+}
+
 export class CounterpartyService {
-  client: MSClient;
+  private client: MSClient;
 
   constructor(client: MSClient) {
     this.client = client;
   }
 
-  /**
-   * Найти контрагента по E-mail
-   */
-  async findByEmail(email: string) {
-    return await this.client.get("/entity/counterparty", {
+  async findByEmail(email: string): Promise<MSCounterparty | null> {
+    const res = await this.client.get("/entity/counterparty", {
       filter: `email=${email}`,
     });
+
+    return res.rows?.[0] ?? null;
   }
 
-  /**
-   * Получить контрагента по ID
-   */
-  async getById(id: string) {
+  async getById(id: string): Promise<MSCounterparty> {
     return await this.client.get(`/entity/counterparty/${id}`);
   }
 }
