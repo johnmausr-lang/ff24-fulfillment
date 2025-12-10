@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-interface Step1Data {
+export interface Step1Data {
   name: string;
   article: string;
   description?: string;
