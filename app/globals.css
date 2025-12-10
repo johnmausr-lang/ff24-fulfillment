@@ -1,212 +1,269 @@
-/* --------------------------------------
-    FF24 PREMIUM GLOBALS V2
-    (Industrial Black + Dual Neon)
--------------------------------------- */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --ff24-black: #050505;
-  --ff24-purple: #28064F;
-  --ff24-acid: #D7FF00;
-  --ff24-acid-soft: #d7ff0099;
-  --ff24-white-soft: #ffffffdd;
-}
+/* ---------------------------------------------------
+   GLOBAL FF24 RESETS
+--------------------------------------------------- */
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
-  background: var(--ff24-black);
-  color: white;
-  font-family: "Inter", sans-serif;
+  background: #0A0A0A;
+  color: #fff;
+  font-family: var(--font-inter), sans-serif;
+  overflow-x: hidden;
 }
 
-/* --------------------------------------
-    PREMIUM HERO WRAPPER
--------------------------------------- */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
 
 .ff24-home-wrapper {
   position: relative;
-  width: 100%;
   min-height: 100vh;
   overflow: hidden;
-  display: flex;
-  align-items: center;
-  padding: 0 6vw;
+  padding: 0;
+  margin: 0;
+  background: radial-gradient(circle at 20% 30%, #1a1a1a 0%, #0a0a0a 70%);
 }
 
-/* --------------------------------------
-    GRID BACKGROUND (Moxion style)
--------------------------------------- */
+/* ---------------------------------------------------
+   PREMIUM GRID (subtle, cinematic)
+--------------------------------------------------- */
 
 .ff24-hero-grid {
   position: absolute;
   inset: 0;
-  background: 
-    linear-gradient(var(--ff24-purple) 1px, transparent 1px),
-    linear-gradient(90deg, var(--ff24-purple) 1px, transparent 1px);
-  background-size: 120px 120px;
-  opacity: 0.12;
-  animation: ff24-grid-move 28s linear infinite;
+  background-image:
+    linear-gradient(transparent 95%, rgba(255,255,255,0.05) 100%),
+    linear-gradient(90deg, transparent 95%, rgba(255,255,255,0.05) 100%);
+  background-size: 80px 80px;
+  opacity: 0.07;
+  z-index: 1;
+  pointer-events: none;
 }
 
-@keyframes ff24-grid-move {
-  from { background-position: 0 0; }
-  to { background-position: -300px -600px; }
-}
-
-/* --------------------------------------
-    HERO MOVING NEON LINES
--------------------------------------- */
+/* ---------------------------------------------------
+   MOVING NEON LINES — Moxion-style
+--------------------------------------------------- */
 
 .ff24-hero-lines {
   position: absolute;
   inset: 0;
+  overflow: hidden;
+  z-index: 2;
   pointer-events: none;
 }
 
 .ff24-hero-line {
   position: absolute;
-  left: 0;
-  right: 0;
-  height: 2px;
+  width: 2px;
+  height: 180px;
   background: linear-gradient(
-    90deg,
-    transparent,
-    var(--ff24-acid),
-    transparent
+    to bottom,
+    rgba(255,219,0,0) 0%,
+    rgba(255,219,0,0.8) 50%,
+    rgba(255,219,0,0) 100%
   );
-  opacity: 0.25;
-  animation: ff24-line-run 4s linear infinite;
+  left: calc(10% + 80px * var(--i));
+  animation: ff24-line-fall 6s linear infinite;
+  filter: drop-shadow(0 0 12px rgba(255,219,0,0.7));
 }
 
-.ff24-hero-line:nth-child(1) { top: 25%; animation-delay: 0s; }
-.ff24-hero-line:nth-child(2) { top: 50%; animation-delay: 1.2s; }
-.ff24-hero-line:nth-child(3) { top: 75%; animation-delay: 2.4s; }
+.ff24-hero-line:nth-child(1) { --i: 1; animation-delay: 0s; }
+.ff24-hero-line:nth-child(2) { --i: 4; animation-delay: 1s; }
+.ff24-hero-line:nth-child(3) { --i: 7; animation-delay: 2.5s; }
 
-@keyframes ff24-line-run {
-  from { transform: translateX(-100%); }
-  to { transform: translateX(100%); }
+@keyframes ff24-line-fall {
+  0% { transform: translateY(-200px); opacity: 0; }
+  10% { opacity: 1; }
+  100% { transform: translateY(120vh); opacity: 0; }
 }
 
-/* --------------------------------------
-    PARALLAX BACK WALL (subtle)
--------------------------------------- */
+/* ---------------------------------------------------
+   PARALLAX DARK NEON BACK WALL
+--------------------------------------------------- */
 
 .ff24-parallax-bg {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 60% 40%, var(--ff24-purple) 0%, transparent 60%),
-    radial-gradient(circle at 20% 80%, var(--ff24-acid-soft) 0%, transparent 55%);
-  opacity: 0.4;
-  filter: blur(80px);
+    radial-gradient(circle at 70% 40%, rgba(40,6,79,0.5) 0%, transparent 55%),
+    radial-gradient(circle at 30% 70%, rgba(255,219,0,0.25) 0%, transparent 55%),
+    #0A0A0A;
+  filter: blur(60px);
+  z-index: 0;
 }
 
-/* --------------------------------------
-    WORKER HERO
--------------------------------------- */
+/* ---------------------------------------------------
+   WORKER HERO CHARACTER
+--------------------------------------------------- */
 
 .ff24-worker {
   position: absolute;
-  left: 4vw;
+  left: 3%;
   bottom: 0;
-  z-index: 10;
+  width: 750px;
+  max-width: 45vw;
+  z-index: 4;
   pointer-events: none;
 }
 
 .ff24-worker-img {
-  width: 680px;
-  max-width: 45vw;
+  width: 100%;
   height: auto;
-  filter: drop-shadow(0 0 35px var(--ff24-purple))
-          drop-shadow(0 0 50px var(--ff24-acid-soft));
+  object-fit: contain;
+  filter:
+    drop-shadow(0 0 40px rgba(255,219,0,0.55))
+    drop-shadow(0 0 90px rgba(40,6,79,0.7));
+  animation: ff24-worker-parallax 6s ease-in-out infinite alternate;
 }
 
-/* --------------------------------------
-    RIGHT CONTENT
--------------------------------------- */
+/* Subtle breathing / parallax motion */
+@keyframes ff24-worker-parallax {
+  0% { transform: translateY(0px) scale(1); }
+  100% { transform: translateY(-12px) scale(1.01); }
+}
+
+/* ---------------------------------------------------
+   HERO CONTENT AREA (RIGHT SIDE)
+--------------------------------------------------- */
 
 .ff24-hero-content {
-  margin-left: auto;
-  max-width: 600px;
-  z-index: 20;
-  display: flex;
-  flex-direction: column;
-  gap: 26px;
+  position: absolute;
+  right: 6%;
+  top: 18%;
+  width: 40%;
+  max-width: 620px;
+  z-index: 5;
 }
 
 .ff24-logo {
-  filter: drop-shadow(0 0 25px var(--ff24-acid-soft));
+  filter: drop-shadow(0 0 14px rgba(255,219,0,0.4));
+  margin-bottom: 30px;
 }
 
 .ff24-hero-title {
-  font-size: 58px;
+  font-size: 3.3rem;
   font-weight: 800;
-  line-height: 1.05;
+  line-height: 1.15;
+  margin-bottom: 22px;
+  text-shadow:
+    0 0 18px rgba(40,6,79,0.6),
+    0 0 32px rgba(255,219,0,0.4);
 }
 
 .ff24-title-accent {
-  color: var(--ff24-acid);
-  text-shadow: 0 0 14px var(--ff24-acid-soft);
+  color: #FFDB00;
+  text-shadow:
+    0 0 22px rgba(255,219,0,0.8),
+    0 0 40px rgba(255,219,0,1);
 }
 
 .ff24-hero-sub {
-  font-size: 20px;
-  color: #ffffff99;
-  max-width: 480px;
-  line-height: 1.45;
+  color: #CCCCCC;
+  font-size: 1.15rem;
+  line-height: 1.6;
+  margin-bottom: 40px;
+  max-width: 540px;
 }
 
-/* --------------------------------------
-    BUTTONS
--------------------------------------- */
+/* ---------------------------------------------------
+   BUTTONS (premium)
+--------------------------------------------------- */
 
 .ff24-hero-buttons {
   display: flex;
   gap: 18px;
+  margin-bottom: 40px;
 }
 
 .ff24-btn-primary {
-  padding: 14px 32px;
-  border-radius: 14px;
-  background: var(--ff24-acid);
-  color: black;
+  padding: 14px 28px;
+  background: linear-gradient(90deg, #FFDB00, #FFE866);
+  color: #000;
   font-weight: 700;
-  text-decoration: none;
-  transition: 0.25s;
+  border-radius: 14px;
+  font-size: 1.1rem;
+  transition: 0.3s ease;
   box-shadow:
-    0 0 18px var(--ff24-acid-soft),
-    0 0 10px var(--ff24-acid);
+    0 0 14px rgba(255,219,0,0.5),
+    0 0 28px rgba(255,219,0,0.4);
 }
 
 .ff24-btn-primary:hover {
-  transform: translateY(-3px);
+  transform: translateY(-3px) scale(1.03);
   box-shadow:
-    0 0 30px var(--ff24-acid),
-    0 0 60px var(--ff24-acid);
+    0 0 20px rgba(255,219,0,0.7),
+    0 0 40px rgba(255,219,0,0.8);
 }
 
 .ff24-btn-secondary {
-  padding: 14px 32px;
+  padding: 14px 28px;
+  border: 1px solid rgba(255,219,0,0.4);
   border-radius: 14px;
-  border: 1px solid var(--ff24-purple);
-  color: var(--ff24-white-soft);
-  text-decoration: none;
-  transition: 0.3s;
+  font-weight: 700;
+  color: #FFDB00;
+  font-size: 1.05rem;
+  transition: 0.3s ease;
 }
 
 .ff24-btn-secondary:hover {
-  background: var(--ff24-purple);
-  box-shadow: 0 0 20px var(--ff24-purple);
-  transform: translateY(-3px);
+  border-color: #FFDB00;
+  color: #fff;
+  background: rgba(255,219,0,0.1);
 }
 
-/* --------------------------------------
-    MARKETPLACE ROW
--------------------------------------- */
+/* ---------------------------------------------------
+   MARKETPLACE ICONS
+--------------------------------------------------- */
 
 .ff24-marketplace-row {
-  margin-top: 10px;
   display: flex;
   gap: 20px;
-  opacity: 0.75;
+  opacity: 0.85;
+}
+
+.ff24-marketplace-row img {
+  filter: drop-shadow(0 0 12px rgba(255,219,0,0.6));
+}
+
+/* ---------------------------------------------------
+   RESPONSIVE
+--------------------------------------------------- */
+
+@media (max-width: 1280px) {
+  .ff24-worker {
+    max-width: 50vw;
+  }
+  .ff24-hero-content {
+    width: 45%;
+  }
+}
+
+@media (max-width: 980px) {
+  .ff24-worker {
+    opacity: 0.25;
+    filter: blur(1px);
+  }
+  .ff24-hero-content {
+    width: 90%;
+    top: 22%;
+    right: 5%;
+  }
+}
+
+@media (max-width: 640px) {
+  .ff24-hero-title {
+    font-size: 2.2rem;
+  }
+  .ff24-worker {
+    display: none;
+  }
+  .ff24-hero-content {
+    width: 92%;
+    top: 18%;
+  }
 }
