@@ -1,4 +1,3 @@
-// app/login/page.tsx
 "use client";
 
 import { useState } from "react";
@@ -29,7 +28,7 @@ export default function LoginPage() {
         alert(data.error || "Пользователь не найден");
       }
     } catch (e) {
-      alert("Ошибка авторизации");
+      alert("Ошибка входа");
     } finally {
       setLoading(false);
     }
@@ -42,7 +41,8 @@ export default function LoginPage() {
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-[#0F0F0F] to-[#1A0A00] overflow-hidden flex justify-center items-center">
-      {/* Грузчик — часть сцены */}
+
+      {/* Грузчик как часть сцены */}
       <Image
         src="/illustrations/worker-ff24.png"
         alt="FF24 Worker"
@@ -57,7 +57,7 @@ export default function LoginPage() {
         "
       />
 
-      {/* Анимированные коробки FF24 */}
+      {/* Анимация коробок */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="box box1"></div>
         <div className="box box2"></div>
@@ -94,14 +94,14 @@ export default function LoginPage() {
         <button
           onClick={submit}
           disabled={loading}
-          className="
+          className={`
             w-full mt-6 py-3 rounded-lg font-semibold text-black
             bg-gradient-to-r from-[#FF6B00] to-[#FF8C32]
             shadow-[0_0_20px_rgba(255,107,0,0.45)]
             hover:shadow-[0_0_32px_rgba(255,107,0,0.65)]
             hover:-translate-y-0.5 transition
-            disabled:opacity-60 disabled:hover:translate-y-0
-          "
+            ${loading ? "opacity-60 cursor-not-allowed" : ""}
+          `}
         >
           {loading ? "Загрузка..." : "Войти"}
         </button>
@@ -112,8 +112,9 @@ export default function LoginPage() {
   );
 }
 
-/* Лоадер FF24 с прыгающими коробками */
-function FF24Loader(): JSX.Element {
+/* ---------------------------------- LOADER --------------------------------- */
+
+function FF24Loader() {
   return (
     <div
       className="
