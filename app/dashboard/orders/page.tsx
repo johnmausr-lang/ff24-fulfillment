@@ -1,5 +1,3 @@
-// app/dashboard/orders/page.tsx
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -15,48 +13,62 @@ export default function OrdersPage() {
   }, []);
 
   return (
-    <div>
-      <h1 className="text-2xl font-semibold mb-6">Заказы</h1>
+    <div className="space-y-10">
 
-      <div className="overflow-x-auto">
-        <table className="w-full bg-white rounded-lg shadow border">
-          <thead className="bg-gray-50 text-left">
-            <tr>
-              <th className="p-3 border-b">№</th>
-              <th className="p-3 border-b">Дата</th>
-              <th className="p-3 border-b">Сумма</th>
-              <th className="p-3 border-b">Статус</th>
-              <th className="p-3 border-b"></th>
+      <h1 className="text-3xl font-bold text-white drop-shadow-[0_0_15px_rgba(107,0,255,0.45)]">
+        Заказы
+      </h1>
+
+      <div
+        className="
+          bg-white/5 backdrop-blur-xl border border-white/10 
+          rounded-2xl overflow-hidden shadow-[0_0_45px_rgba(107,0,255,0.25)]
+        "
+      >
+        <table className="w-full text-left">
+          <thead>
+            <tr className="bg-white/10">
+              <th className="p-4 text-white/70">Номер</th>
+              <th className="p-4 text-white/70">Дата</th>
+              <th className="p-4 text-white/70">Статус</th>
             </tr>
           </thead>
 
           <tbody>
-            {orders.map((o: any) => (
-              <tr key={o.id} className="hover:bg-gray-50">
-                <td className="p-3 border-b">{o.name}</td>
-                <td className="p-3 border-b">{o.moment?.slice(0, 10)}</td>
-                <td className="p-3 border-b">{o.sum / 100}</td>
-                <td className="p-3 border-b">{o.state?.name || "—"}</td>
-                <td className="p-3 border-b text-right">
+            {orders.map((o) => (
+              <tr
+                key={o.id}
+                className="border-t border-white/5 hover:bg-white/10 transition-all"
+              >
+                <td className="p-4">
                   <Link
                     href={`/dashboard/orders/${o.id}`}
-                    className="text-blue-600 hover:underline"
+                    className="text-[#FF6B00] hover:underline"
                   >
-                    Открыть →
+                    {o.name}
                   </Link>
+                </td>
+                <td className="p-4">{o.created?.slice(0, 10)}</td>
+
+                <td className="p-4">
+                  <span
+                    className="
+                      px-3 py-1 rounded-lg text-sm
+                      bg-purple-500/20 text-purple-300
+                      border border-purple-500/30
+                    "
+                  >
+                    Новый
+                  </span>
                 </td>
               </tr>
             ))}
-
-            {orders.length === 0 && (
-              <tr>
-                <td colSpan={5} className="p-4 text-center text-gray-500">
-                  Нет заказов
-                </td>
-              </tr>
-            )}
           </tbody>
         </table>
+
+        {orders.length === 0 && (
+          <p className="p-6 text-white/40 text-center">Заказов нет</p>
+        )}
       </div>
     </div>
   );
