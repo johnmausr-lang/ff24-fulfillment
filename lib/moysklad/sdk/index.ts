@@ -1,4 +1,5 @@
 import { MSClient } from "../client";
+
 import { OrdersService } from "./services/orders";
 import { ProductsService } from "./services/products";
 import { InventoryService } from "./services/inventory";
@@ -9,7 +10,7 @@ export function createMoyskladSDK() {
   const token = process.env.MOYSKLAD_TOKEN;
 
   if (!token) {
-    throw new Error("MOYSKLAD_TOKEN env variable is missing");
+    throw new Error("MOYSKLAD_TOKEN is missing in environment variables");
   }
 
   const client = new MSClient(token);
