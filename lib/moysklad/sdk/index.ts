@@ -7,7 +7,10 @@ import { SupplyService } from "./services/supply";
 
 export function createMoyskladSDK() {
   const token = process.env.MOYSKLAD_TOKEN;
-  if (!token) throw new Error("MOYSKLAD_TOKEN missing");
+
+  if (!token) {
+    throw new Error("MOYSKLAD_TOKEN env variable is missing");
+  }
 
   const client = new MSClient(token);
 
@@ -17,6 +20,8 @@ export function createMoyskladSDK() {
     products: new ProductsService(client),
     inventory: new InventoryService(client),
     counterparties: new CounterpartyService(client),
-    supply: new SupplyService(client), // ← добавили
+    supply: new SupplyService(client),
   };
 }
+
+export type MoyskladSDK = ReturnType<typeof createMoyskladSDK>;
