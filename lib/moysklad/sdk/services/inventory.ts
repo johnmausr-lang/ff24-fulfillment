@@ -1,15 +1,21 @@
+import { MSClient } from "../../client";
+
 export class InventoryService {
-  constructor(private client: any) {}
+  client: MSClient;
+
+  constructor(client: MSClient) {
+    this.client = client;
+  }
 
   /**
-   * Получить весь отчёт по остаткам
+   * Общий отчёт остатков по складам
    */
   async list(limit: number = 200) {
     return await this.client.get("/report/stock/all", { limit });
   }
 
   /**
-   * Получить остатки по конкретному складу
+   * Остатки по конкретному складу
    */
   async byStore(storeId: string, limit: number = 200) {
     return await this.client.get("/report/stock/all", {
@@ -19,7 +25,7 @@ export class InventoryService {
   }
 
   /**
-   * Получить остатки по конкретному товару
+   * Остатки по конкретному товару
    */
   async byProduct(productId: string) {
     return await this.client.get("/report/stock/all", {
