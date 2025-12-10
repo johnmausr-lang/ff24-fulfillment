@@ -1,35 +1,48 @@
+// app/login/page.tsx
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
+import Image from "next/image";
+import WarehouseGate from "@/components/login/WarehouseGate";
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
+  const [showGate, setShowGate] = useState(true);
 
   async function submit() {
+    if (!email) return;
+
     setLoading(true);
 
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      body: JSON.stringify({ email }),
-    });
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ email }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (data.success) {
-      window.location.href = "/dashboard";
-    } else {
-      alert("Пользователь не найден");
+      if (data.success) {
+        window.location.href = "/dashboard";
+      } else {
+        alert(data.error || "Пользователь не найден");
+      }
+    } catch (e) {
+      alert("Ошибка авторизации");
+    } finally {
+      setLoading(false);
     }
+  }
 
-    setLoading(false);
+  // Сначала показываем анимацию ворот склада
+  if (showGate) {
+    return <WarehouseGate onFinish={() => setShowGate(false)} />;
   }
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-[#0F0F0F] to-[#1A0A00] overflow-hidden flex justify-center items-center">
-
-      {/* 🔥 Грузчик — встроенный в сцену */}
+      {/* Грузчик — часть сцены */}
       <Image
         src="/illustrations/worker-ff24.png"
         alt="FF24 Worker"
@@ -44,7 +57,7 @@ export default function LoginPage() {
         "
       />
 
-      {/* 🔥 Анимация коробок */}
+      {/* Анимированные коробки FF24 */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="box box1"></div>
         <div className="box box2"></div>
@@ -52,7 +65,7 @@ export default function LoginPage() {
         <div className="box box4"></div>
       </div>
 
-      {/* 🔥 Форма */}
+      {/* Форма логина */}
       <div
         className="
           relative z-20 p-10 rounded-3xl
@@ -87,29 +100,28 @@ export default function LoginPage() {
             shadow-[0_0_20px_rgba(255,107,0,0.45)]
             hover:shadow-[0_0_32px_rgba(255,107,0,0.65)]
             hover:-translate-y-0.5 transition
+            disabled:opacity-60 disabled:hover:translate-y-0
           "
         >
           {loading ? "Загрузка..." : "Войти"}
         </button>
       </div>
 
-      {/* 🔥 Лоадер */}
       {loading && <FF24Loader />}
     </div>
   );
 }
 
-/* -------------------------------------------------------------------------- */
-/*                                  ЛОАДЕР FF24                               */
-/* -------------------------------------------------------------------------- */
-
-function FF24Loader() {
+/* Лоадер FF24 с прыгающими коробками */
+function FF24Loader(): JSX.Element {
   return (
-    <div className="
+    <div
+      className="
       fixed inset-0 bg-black/70 backdrop-blur-xl
       flex items-center justify-center
       z-50
-    ">
+    "
+    >
       <div className="loader-boxes">
         <div className="lb lb1"></div>
         <div className="lb lb2"></div>
