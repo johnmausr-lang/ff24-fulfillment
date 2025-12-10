@@ -1,395 +1,212 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-/* ============================
-   FF24 DESIGN TOKENS
-   ============================ */
+/* --------------------------------------
+    FF24 PREMIUM GLOBALS V2
+    (Industrial Black + Dual Neon)
+-------------------------------------- */
 
 :root {
-  --ff24-purple: #28064f;
-  --ff24-acid: #e4ff00;
-  --ff24-orange: #ff6b00;
-  --ff24-orange-soft: #ff8c32;
-
-  --ff24-bg-0: #050505;
-  --ff24-bg-1: #090909;
-  --ff24-bg-2: #0f0f0f;
-
-  --ff24-text-main: rgba(255, 255, 255, 0.9);
-  --ff24-text-dim: rgba(255, 255, 255, 0.6);
-
-  --ff24-radius-lg: 24px;
-  --ff24-radius-md: 16px;
-  --ff24-radius-sm: 10px;
-
-  --ff24-shadow-neon-orange:
-    0 0 18px rgba(255, 107, 0, 0.6),
-    0 0 40px rgba(255, 140, 50, 0.35);
-
-  --ff24-border-glass: rgba(255, 255, 255, 0.12);
+  --ff24-black: #050505;
+  --ff24-purple: #28064F;
+  --ff24-acid: #D7FF00;
+  --ff24-acid-soft: #d7ff0099;
+  --ff24-white-soft: #ffffffdd;
 }
 
-html,
-body {
-  min-height: 100%;
-}
-
-body {
+html, body {
   margin: 0;
-  background: radial-gradient(circle at 0% 0%, #111111 0, #050505 55%, #000000 100%);
-  color: var(--ff24-text-main);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+  padding: 0;
+  background: var(--ff24-black);
+  color: white;
+  font-family: "Inter", sans-serif;
 }
 
-/* ============================
-   HERO PAGE WRAPPER
-   ============================ */
+/* --------------------------------------
+    PREMIUM HERO WRAPPER
+-------------------------------------- */
 
-.ff24-page {
+.ff24-home-wrapper {
   position: relative;
+  width: 100%;
   min-height: 100vh;
   overflow: hidden;
-  background:
-    radial-gradient(circle at 20% 20%, rgba(228, 255, 0, 0.06), transparent 55%),
-    radial-gradient(circle at 70% 80%, rgba(40, 6, 79, 0.4), transparent 60%),
-    linear-gradient(to bottom, var(--ff24-bg-0), var(--ff24-bg-2));
-  color: var(--ff24-text-main);
+  display: flex;
+  align-items: center;
+  padding: 0 6vw;
 }
 
-/* Туман + виньетка */
-.ff24-page::before {
-  content: "";
-  position: absolute;
-  inset: -20%;
-  background:
-    radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.04), transparent 65%),
-    radial-gradient(circle at 80% 90%, rgba(40, 6, 79, 0.4), transparent 55%);
-  opacity: 0.8;
-  pointer-events: none;
-}
-
-.ff24-page::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at 50% 120%, rgba(0, 0, 0, 0.8), transparent 55%);
-  pointer-events: none;
-}
-
-/* ============================
-   INDUSTRIAL GRID / LINES
-   ============================ */
+/* --------------------------------------
+    GRID BACKGROUND (Moxion style)
+-------------------------------------- */
 
 .ff24-hero-grid {
   position: absolute;
   inset: 0;
-  background-image:
-    linear-gradient(
-      to right,
-      rgba(255, 255, 255, 0.04) 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      to bottom,
-      rgba(255, 255, 255, 0.04) 1px,
-      transparent 1px
-    );
-  background-size: 80px 80px;
-  mix-blend-mode: soft-light;
-  opacity: 0.2;
-  pointer-events: none;
+  background: 
+    linear-gradient(var(--ff24-purple) 1px, transparent 1px),
+    linear-gradient(90deg, var(--ff24-purple) 1px, transparent 1px);
+  background-size: 120px 120px;
+  opacity: 0.12;
+  animation: ff24-grid-move 28s linear infinite;
 }
 
-/* "траектории" как Moxion */
+@keyframes ff24-grid-move {
+  from { background-position: 0 0; }
+  to { background-position: -300px -600px; }
+}
+
+/* --------------------------------------
+    HERO MOVING NEON LINES
+-------------------------------------- */
 
 .ff24-hero-lines {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  overflow: hidden;
 }
 
 .ff24-hero-line {
   position: absolute;
+  left: 0;
+  right: 0;
   height: 2px;
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(228, 255, 0, 0.9),
-    rgba(255, 255, 255, 0.8),
+    var(--ff24-acid),
     transparent
   );
-  filter: drop-shadow(0 0 10px rgba(228, 255, 0, 0.7));
-  opacity: 0.7;
-  animation: ff24-line-move 8s linear infinite;
+  opacity: 0.25;
+  animation: ff24-line-run 4s linear infinite;
 }
 
-.ff24-hero-line:nth-child(1) {
-  top: 30%;
-  left: -40%;
-  width: 80%;
-  animation-delay: 0s;
+.ff24-hero-line:nth-child(1) { top: 25%; animation-delay: 0s; }
+.ff24-hero-line:nth-child(2) { top: 50%; animation-delay: 1.2s; }
+.ff24-hero-line:nth-child(3) { top: 75%; animation-delay: 2.4s; }
+
+@keyframes ff24-line-run {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
 }
 
-.ff24-hero-line:nth-child(2) {
-  top: 55%;
-  left: -50%;
-  width: 90%;
-  animation-delay: 1.2s;
-}
+/* --------------------------------------
+    PARALLAX BACK WALL (subtle)
+-------------------------------------- */
 
-.ff24-hero-line:nth-child(3) {
-  top: 72%;
-  left: -35%;
-  width: 75%;
-  animation-delay: 2.4s;
-}
-
-@keyframes ff24-line-move {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(140%);
-  }
-}
-
-/* ============================
-   HERO WORKER (FULL-BODY)
-   ============================ */
-
-.ff24-hero-worker-wrap {
-  position: relative;
-  width: 320px;
-  max-width: 100%;
-  transform-style: preserve-3d;
-}
-
-.ff24-hero-worker-glow {
+.ff24-parallax-bg {
   position: absolute;
-  inset: 18% 5% 0;
+  inset: 0;
   background:
-    radial-gradient(circle at 0% 0%, rgba(40, 6, 79, 0.9), transparent 65%),
-    radial-gradient(circle at 100% 0%, rgba(228, 255, 0, 0.6), transparent 65%);
-  filter: blur(18px);
-  opacity: 0.9;
-  z-index: -1;
+    radial-gradient(circle at 60% 40%, var(--ff24-purple) 0%, transparent 60%),
+    radial-gradient(circle at 20% 80%, var(--ff24-acid-soft) 0%, transparent 55%);
+  opacity: 0.4;
+  filter: blur(80px);
 }
 
-.ff24-hero-worker-img {
-  display: block;
-  width: 100%;
+/* --------------------------------------
+    WORKER HERO
+-------------------------------------- */
+
+.ff24-worker {
+  position: absolute;
+  left: 4vw;
+  bottom: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.ff24-worker-img {
+  width: 680px;
+  max-width: 45vw;
   height: auto;
-  transform-origin: center bottom;
-  will-change: transform;
+  filter: drop-shadow(0 0 35px var(--ff24-purple))
+          drop-shadow(0 0 50px var(--ff24-acid-soft));
 }
 
-/* ============================
-   HERO PANEL (RIGHT)
-   ============================ */
+/* --------------------------------------
+    RIGHT CONTENT
+-------------------------------------- */
 
-.ff24-hero-panel {
-  position: relative;
-  padding: 28px 28px 24px;
-  border-radius: var(--ff24-radius-lg);
-  background: radial-gradient(circle at 0 0, rgba(228, 255, 0, 0.09), transparent 55%),
-    radial-gradient(circle at 100% 0, rgba(40, 6, 79, 0.4), transparent 60%),
-    rgba(10, 10, 10, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow:
-    0 18px 45px rgba(0, 0, 0, 0.8),
-    0 0 60px rgba(40, 6, 79, 0.7);
-  backdrop-filter: blur(24px);
+.ff24-hero-content {
+  margin-left: auto;
+  max-width: 600px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
 }
 
-.ff24-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.6);
-  border: 1px solid rgba(228, 255, 0, 0.4);
-  color: rgba(228, 255, 0, 0.95);
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+.ff24-logo {
+  filter: drop-shadow(0 0 25px var(--ff24-acid-soft));
 }
 
-/* ============================
-   BUTTONS
-   ============================ */
+.ff24-hero-title {
+  font-size: 58px;
+  font-weight: 800;
+  line-height: 1.05;
+}
+
+.ff24-title-accent {
+  color: var(--ff24-acid);
+  text-shadow: 0 0 14px var(--ff24-acid-soft);
+}
+
+.ff24-hero-sub {
+  font-size: 20px;
+  color: #ffffff99;
+  max-width: 480px;
+  line-height: 1.45;
+}
+
+/* --------------------------------------
+    BUTTONS
+-------------------------------------- */
+
+.ff24-hero-buttons {
+  display: flex;
+  gap: 18px;
+}
 
 .ff24-btn-primary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 13px 24px;
-  border-radius: var(--ff24-radius-md);
-  border: none;
-  cursor: pointer;
-  background: linear-gradient(90deg, var(--ff24-orange), var(--ff24-orange-soft));
-  color: #050505;
-  font-weight: 600;
-  font-size: 15px;
-  box-shadow: var(--ff24-shadow-neon-orange);
-  transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+  padding: 14px 32px;
+  border-radius: 14px;
+  background: var(--ff24-acid);
+  color: black;
+  font-weight: 700;
+  text-decoration: none;
+  transition: 0.25s;
+  box-shadow:
+    0 0 18px var(--ff24-acid-soft),
+    0 0 10px var(--ff24-acid);
 }
 
 .ff24-btn-primary:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.03);
+  transform: translateY(-3px);
   box-shadow:
-    0 0 30px rgba(255, 107, 0, 0.6),
-    0 0 70px rgba(255, 140, 50, 0.45);
+    0 0 30px var(--ff24-acid),
+    0 0 60px var(--ff24-acid);
 }
 
 .ff24-btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 12px 20px;
-  border-radius: var(--ff24-radius-md);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(5, 5, 5, 0.7);
-  color: var(--ff24-text-main);
-  font-size: 14px;
-  cursor: pointer;
-  transition: border-color 0.18s ease, background 0.18s ease, transform 0.18s ease;
+  padding: 14px 32px;
+  border-radius: 14px;
+  border: 1px solid var(--ff24-purple);
+  color: var(--ff24-white-soft);
+  text-decoration: none;
+  transition: 0.3s;
 }
 
 .ff24-btn-secondary:hover {
-  border-color: rgba(228, 255, 0, 0.7);
-  background: rgba(15, 15, 15, 0.9);
-  transform: translateY(-1px);
+  background: var(--ff24-purple);
+  box-shadow: 0 0 20px var(--ff24-purple);
+  transform: translateY(-3px);
 }
 
-/* ============================
-   MARKETPLACE LOGOS STRIP
-   ============================ */
+/* --------------------------------------
+    MARKETPLACE ROW
+-------------------------------------- */
 
-.ff24-logos-strip {
+.ff24-marketplace-row {
+  margin-top: 10px;
   display: flex;
-  flex-wrap: wrap;
-  gap: 18px;
-  align-items: center;
+  gap: 20px;
   opacity: 0.75;
-}
-
-.ff24-logo-pill {
-  padding: 6px 12px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: transform 0.18s ease, opacity 0.18s ease, border-color 0.18s ease;
-}
-
-.ff24-logo-pill:hover {
-  transform: translateY(-1px);
-  opacity: 1;
-  border-color: rgba(228, 255, 0, 0.6);
-}
-
-/* ============================
-   SIMPLE FADE / PARALLAX UTILS
-   ============================ */
-
-@keyframes ff24-fade-up {
-  0% {
-    opacity: 0;
-    transform: translate3d(0, 18px, 0);
-  }
-  100% {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-}
-
-.ff24-fade-up {
-  animation: ff24-fade-up 0.9s ease forwards;
-}
-
-/* loader из предыдущей версии (для логина/форм) */
-
-.loader-boxes {
-  display: flex;
-  gap: 12px;
-}
-
-.lb {
-  width: 22px;
-  height: 22px;
-  background: var(--ff24-orange);
-  border-radius: 6px;
-  box-shadow: var(--ff24-shadow-neon-orange);
-  animation: lb-bounce 0.9s infinite ease-in-out;
-}
-
-.lb2 {
-  animation-delay: 0.15s;
-}
-
-.lb3 {
-  animation-delay: 0.3s;
-}
-
-@keyframes lb-bounce {
-  0% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-14px);
-  }
-  100% {
-    transform: translateY(0);
-  }
-}
-
-/* ============================
-   DASHBOARD BACKGROUND (для будущего)
-   ============================ */
-
-.dashboard-bg {
-  position: relative;
-  min-height: 100vh;
-  background:
-    radial-gradient(circle at 20% 10%, rgba(228, 255, 0, 0.06), transparent 55%),
-    radial-gradient(circle at 80% 80%, rgba(40, 6, 79, 0.35), transparent 55%),
-    #050505;
-}
-
-.dashboard-bg::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
-  background-size: 60px 60px;
-  opacity: 0.2;
-  pointer-events: none;
-  mix-blend-mode: soft-light;
-}
-
-/* маленький твик для мобильных */
-
-@media (max-width: 768px) {
-  .ff24-hero-panel {
-    padding: 22px 18px;
-  }
-
-  .ff24-hero-worker-wrap {
-    width: 260px;
-    margin-inline: auto;
-  }
-
-  .ff24-page::before {
-    opacity: 0.6;
-  }
 }
