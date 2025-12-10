@@ -5,7 +5,7 @@ import Image from "next/image";
 
 export interface WarehouseGateProps {
   onFinish?: () => void;
-  openMode?: boolean; // ← добавили поддержку режима открытия
+  openMode?: boolean;
 }
 
 export default function WarehouseGate({
@@ -15,25 +15,23 @@ export default function WarehouseGate({
   const [opened, setOpened] = useState(openMode);
 
   useEffect(() => {
-    // Если openMode включён — сразу открываем ворота
     if (openMode) {
       setOpened(true);
-      setTimeout(() => onFinish && onFinish(), 1000);
+      setTimeout(() => onFinish?.(), 900);
       return;
     }
 
-    // Иначе — закрытые ворота → через 1.2 сек открываем
-    const timer = setTimeout(() => {
+    const t = setTimeout(() => {
       setOpened(true);
-      setTimeout(() => onFinish && onFinish(), 800);
-    }, 1200);
+      setTimeout(() => onFinish?.(), 900);
+    }, 900);
 
-    return () => clearTimeout(timer);
+    return () => clearTimeout(t);
   }, [openMode, onFinish]);
 
   return (
     <div className="fixed inset-0 bg-[#0F0F0F] flex items-center justify-center z-50 overflow-hidden">
-      {/* Левое крыло ворот */}
+      {/* Left wing */}
       <div
         className={`
           absolute left-0 top-0 h-full w-1/2 bg-[#1A1A1A]
@@ -42,7 +40,7 @@ export default function WarehouseGate({
         `}
       />
 
-      {/* Правое крыло ворот */}
+      {/* Right wing */}
       <div
         className={`
           absolute right-0 top-0 h-full w-1/2 bg-[#1A1A1A]
@@ -51,12 +49,12 @@ export default function WarehouseGate({
         `}
       />
 
-      {/* Логотип или контент */}
+      {/* Loader character */}
       <Image
         src="/illustrations/worker-ff24.png"
-        alt="Warehouse Loader"
-        width={300}
-        height={300}
+        alt="Warehouse Worker"
+        width={320}
+        height={320}
         className="relative z-10 animate-fadeIn"
       />
     </div>
