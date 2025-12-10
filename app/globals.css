@@ -1,150 +1,221 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* -------------------------------------------------------
+   FF24 Premium Global Styles
+   © FF24 Fulfillment – Enterprise Frontend
+--------------------------------------------------------- */
 
-/* -----------------------------
-   FF24 БАЗОВЫЙ RESET
------------------------------- */
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
 html,
 body {
-  padding: 0;
-  margin: 0;
-  font-family: var(--font-sans, Inter), sans-serif;
-  background: #0f0f0f;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+  background: #0A0A0A;
   color: white;
+  overflow-x: hidden;
 }
 
-/* Убираем полосу прокрутки */
-::-webkit-scrollbar {
-  width: 0;
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
 }
 
-/* -----------------------------
-   FF24 UI КОМПОНЕНТЫ
------------------------------- */
-
-/* --- FF24 INPUT --- */
-.inputFF24 {
-  width: 100%;
-  padding: 12px 14px;
-  border-radius: 10px;
-  margin-top: 6px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #fff;
-  outline: none;
-  transition: 0.25s;
+/* Subpixel text smoothing */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-.inputFF24:focus {
-  border-color: #ff6b00;
-  box-shadow: 0 0 15px rgba(255, 107, 0, 0.5);
+/* ----------------------------------------------
+   PREMIUM NOISE OVERLAY
+----------------------------------------------- */
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: url("/noise.png");
+  opacity: 0.08;
+  z-index: 9999;
+  mix-blend-mode: overlay;
 }
 
-/* --- FF24 PRIMARY BUTTON --- */
-.btnFF24 {
-  background: linear-gradient(90deg, #ff6b00, #ff8c32);
-  padding: 12px 22px;
-  color: black;
-  border-radius: 12px;
-  font-weight: 600;
-  transition: 0.25s;
-  box-shadow: 0 0 25px rgba(255, 107, 0, 0.45);
-}
+/* ----------------------------------------------
+   PREMIUM ANIMATIONS
+----------------------------------------------- */
 
-.btnFF24:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 0 40px rgba(255, 107, 0, 0.75);
-}
-
-/* --- FF24 SECONDARY BUTTON --- */
-.btnFF24-secondary {
-  background: rgba(255, 255, 255, 0.08);
-  padding: 12px 22px;
-  border-radius: 12px;
-  color: white;
-  transition: 0.2s;
-}
-
-.btnFF24-secondary:hover {
-  background: rgba(255, 255, 255, 0.18);
-}
-
-/* -----------------------------
-   АНИМАЦИИ FF24
------------------------------- */
-
-/* Мягкая анимация плавания грузчика */
-@keyframes float-slow {
-  0% { transform: translateY(0px); }
+@keyframes premium-float {
+  0% { transform: translateY(0); }
   50% { transform: translateY(-12px); }
-  100% { transform: translateY(0px); }
+  100% { transform: translateY(0); }
 }
 
-.animate-float-slow {
-  animation: float-slow 6s ease-in-out infinite;
+.animate-premium-float {
+  animation: premium-float 6s ease-in-out infinite;
 }
 
-/* -----------------------------
-   АНИМАЦИИ КОРОБОК
------------------------------- */
+@keyframes fade-up {
+  0% { opacity: 0; transform: translateY(20px) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
 
-.box {
+.fade-up {
+  animation: fade-up 1.2s ease-out forwards;
+}
+
+/* ----------------------------------------------
+   3D BOXES LAYERS (Cinematic)
+----------------------------------------------- */
+
+.box-layer {
   position: absolute;
-  width: 90px;
-  height: 90px;
-  background-image: url("/illustrations/box-ff24.png");
-  background-size: contain;
-  background-repeat: no-repeat;
-  opacity: 0.15;
-  animation: boxMove 12s linear infinite;
+  width: 180px;
+  height: 120px;
+  background: linear-gradient(135deg, #ff7a1a, #ff9c45);
+  opacity: 0.18;
+  border-radius: 12px;
+  filter: blur(4px);
+  animation: float-box 14s infinite ease-in-out;
 }
 
-.box1 { top: 20%; left: -10%; animation-delay: 0s; }
-.box2 { top: 60%; left: -15%; animation-delay: 2s; }
-.box3 { top: 35%; left: -18%; animation-delay: 4s; }
-.box4 { top: 75%; left: -12%; animation-delay: 6s; }
-
-@keyframes boxMove {
-  0%   { transform: translateX(0) rotate(0deg); opacity: 0.15; }
-  50%  { opacity: 0.25; }
-  100% { transform: translateX(160vw) rotate(25deg); opacity: 0; }
+.box-depth-1 {
+  top: 25%;
+  left: 65%;
+  transform: translateZ(-40px);
+  animation-duration: 16s;
 }
 
-/* -----------------------------
-   FF24 LOADER
------------------------------- */
+.box-depth-2 {
+  top: 60%;
+  left: 20%;
+  transform: translateZ(-80px);
+}
 
-.loader-boxes {
+.box-depth-3 {
+  top: 40%;
+  right: 10%;
+  transform: translateZ(-120px);
+  animation-duration: 20s;
+}
+
+@keyframes float-box {
+  0% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(6deg); }
+  100% { transform: translateY(0) rotate(0deg); }
+}
+
+/* ----------------------------------------------
+   PREMIUM BUTTON
+----------------------------------------------- */
+
+.premium-btn {
+  background: linear-gradient(90deg, #FF6B00, #FF8C32);
+  border: none;
+  transition: 0.3s;
+}
+
+.premium-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 40px rgba(255, 110, 10, 0.45);
+}
+
+/* ----------------------------------------------
+   TIMELINE SECTION
+----------------------------------------------- */
+
+.timeline {
+  position: relative;
+  max-width: 900px;
+  margin: 0 auto;
+  padding-left: 40px;
+}
+
+.timeline::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 16px;
+  width: 2px;
+  background: linear-gradient(#ff7a1a, transparent);
+  opacity: 0.5;
+}
+
+.timeline-step {
+  margin-bottom: 60px;
+  position: relative;
+  opacity: 0;
+  animation: fade-up 1.2s forwards;
+}
+
+.timeline-step::before {
+  content: "";
+  position: absolute;
+  left: -26px;
+  top: 6px;
+  width: 14px;
+  height: 14px;
+  background: #FF6B00;
+  border-radius: 50%;
+  box-shadow: 0 0 15px #ff7a1a;
+}
+
+/* ----------------------------------------------
+   3D LOGO SLIDER (CUBE STYLE)
+----------------------------------------------- */
+
+.slider-3d {
+  width: 260px;
+  height: 260px;
+  position: relative;
+  margin: 0 auto;
+  transform-style: preserve-3d;
+  animation: rotate-cube 12s infinite linear;
+}
+
+.slider-face {
+  position: absolute;
+  width: 260px;
+  height: 260px;
   display: flex;
-  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  background: #111;
+  border: 1px solid #222;
 }
 
-.lb {
-  width: 22px;
-  height: 22px;
-  background: linear-gradient(90deg, #ff6b00, #ff8c32);
-  border-radius: 6px;
-  animation: loaderBeat 0.6s infinite alternate;
+.slider-face img {
+  width: 50%;
+  opacity: 0.9;
 }
 
-.lb1 { animation-delay: 0s; }
-.lb2 { animation-delay: 0.15s; }
-.lb3 { animation-delay: 0.3s; }
-
-@keyframes loaderBeat {
-  0% { transform: scale(1); opacity: 0.5; }
-  100% { transform: scale(1.3); opacity: 1; }
+@keyframes rotate-cube {
+  from { transform: rotateY(0deg); }
+  to { transform: rotateY(360deg); }
 }
 
-/* -----------------------------
-   GLASS EFFECTS
------------------------------- */
+/* ----------------------------------------------
+   CTA SECTION
+----------------------------------------------- */
 
-.glassFF24 {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(25px);
-  border-radius: 20px;
+.cta {
+  background: linear-gradient(135deg, #1a0a00, #0d0d0d);
+  border: 1px solid rgba(255, 110, 10, 0.2);
+  box-shadow: 0 0 50px rgba(255, 110, 10, 0.25);
+  backdrop-filter: blur(16px);
+}
+
+/* ----------------------------------------------
+   Utility
+----------------------------------------------- */
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
 }
