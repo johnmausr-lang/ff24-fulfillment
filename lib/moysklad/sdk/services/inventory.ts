@@ -1,13 +1,7 @@
-import { MSClient } from "./client";
-
 export class InventoryService {
-  client: MSClient;
+  constructor(private client: any) {}
 
-  constructor(client: MSClient) {
-    this.client = client;
-  }
-
-  list(storeID: string) {
-    return this.client.request(`/report/stock/all?store.id=${storeID}`);
+  async list(limit: number = 200) {
+    return await this.client.get("/report/stock/all", { limit });
   }
 }
