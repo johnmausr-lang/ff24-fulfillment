@@ -39,8 +39,8 @@ export class MSClient {
     const res = await fetch(url, {
       ...options,
       headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
+        Accept: "application/json;charset=utf-8",   // ✔ FIX
+        "Content-Type": "application/json;charset=utf-8", // ✔ FIX
         Authorization: `Bearer ${this.token}`,
         ...(options.headers || {}),
       },
@@ -50,9 +50,8 @@ export class MSClient {
       let text = "";
       try {
         text = await res.text();
-      } catch {
-        // ignore
-      }
+      } catch {}
+
       throw new Error(
         `Moysklad error ${res.status}: ${text || res.statusText}`
       );
