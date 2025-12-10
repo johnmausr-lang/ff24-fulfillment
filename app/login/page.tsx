@@ -7,7 +7,12 @@ import WarehouseGate from "@/components/login/WarehouseGate";
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
-  const [showGate, setShowGate] = useState(true);
+  const [stage, setStage] = useState<"gate" | "form" | "opening">("gate");
+
+  // После первой загрузки показываем ворота → затем форму
+  function handleGateFinish() {
+    setStage("form");
+  }
 
   async function submit() {
     if (!email) return;
@@ -17,13 +22,20 @@ export default function LoginPage() {
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
+        headers: { "Content-Type": "application/json" }, // ← исправлено
         body: JSON.stringify({ email }),
       });
 
       const data = await res.json();
 
       if (data.success) {
-        window.location.href = "/dashboard";
+        // Показываем анимацию открытия ворот
+        setStage("opening");
+
+        setTimeout(() => {
+          window.location.href = "/dashboard";
+        }, 1400);
+
       } else {
         alert(data.error || "Пользователь не найден");
       }
@@ -34,15 +46,27 @@ export default function LoginPage() {
     }
   }
 
-  // Сначала показываем анимацию ворот склада
-  if (showGate) {
-    return <WarehouseGate onFinish={() => setShowGate(false)} />;
+  /* -------------------------------------------------------
+   * 1) Этап: Анимация ворот
+   * -----------------------------------------------------*/
+  if (stage === "gate") {
+    return <WarehouseGate onFinish={handleGateFinish} />;
   }
 
+  /* -------------------------------------------------------
+   * 2) Этап: Анимация открытия после авторизации
+   * -----------------------------------------------------*/
+  if (stage === "opening") {
+    return <WarehouseGate onFinish={() => {}} openMode />;
+  }
+
+  /* -------------------------------------------------------
+   * 3) Этап: Форма входа
+   * -----------------------------------------------------*/
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-[#0F0F0F] to-[#1A0A00] overflow-hidden flex justify-center items-center">
 
-      {/* Грузчик как часть сцены */}
+      {/* Грузчик 3D часть сцены */}
       <Image
         src="/illustrations/worker-ff24.png"
         alt="FF24 Worker"
@@ -51,8 +75,7 @@ export default function LoginPage() {
         className="
           absolute bottom-0 left-10
           drop-shadow-[0_0_35px_rgba(255,107,0,0.5)]
-          z-10
-          animate-float-slow
+          z-10 animate-float-slow
           pointer-events-none
         "
       />
@@ -112,7 +135,7 @@ export default function LoginPage() {
   );
 }
 
-/* ---------------------------------- LOADER --------------------------------- */
+/* --------------------------- LOADER ------------------------------ */
 
 function FF24Loader() {
   return (
