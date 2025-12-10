@@ -39,6 +39,7 @@ export default function Step2Packaging({
           value={local.packagingType}
           onChange={(e) => update("packagingType", e.target.value)}
           className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10"
+          placeholder="Например: Пакет, Коробка"
         />
       </div>
 
