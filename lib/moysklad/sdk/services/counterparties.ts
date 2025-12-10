@@ -1,15 +1,33 @@
-import { MSClient } from "../client";
-import { MSCounterparty } from "../types";
+import { MSClient } from "@/lib/moysklad/client";
+import { MSCounterparty } from "@/lib/moysklad/types";
 
 export class CounterpartyService {
-  constructor(private client: MSClient) {}
+  client: MSClient;
 
-  async list(params: { limit?: number; search?: string } = {}): Promise<MSCounterparty[]> {
-    const res = await this.client.get("/entity/counterparty", params);
-    return res.rows ?? [];
+  constructor(client: MSClient) {
+    this.client = client;
   }
 
-  async getById(id: string): Promise<MSCounterparty> {
-    return await this.client.get(`/entity/counterparty/${id}`);
+  /**
+   * Найти контрагента по email (точное совпадение)
+   */
+  async findByEmail(email: string): Promise<MSCounterparty | null> {
+    const res = await this.client.get("/entity/counterparty", {
+      filter: `email=${email}`,
+      limit: 1,
+    });
+
+    return res?.rows?.[0] ?? null;
+  }
+
+  /**
+   * Получить контрагента по ID
+   */
+  async getById(id: string): Promise<MSCounterparty | null> {
+    try {
+      return await this.client.get(`/entity/counterparty/${id}`);
+    } catch {
+      return null;
+    }
   }
 }
