@@ -1,15 +1,32 @@
-import { MSClient } from "../client";
-import { MSOrder } from "../types";
+import { MSClient } from "@/lib/moysklad/client";
+import { MSOrder } from "@/lib/moysklad/types";
 
 export class OrdersService {
-  constructor(private client: MSClient) {}
+  client: MSClient;
 
-  async list(params: { limit?: number; expand?: string } = {}): Promise<MSOrder[]> {
-    const res = await this.client.get("/entity/customerorder", params);
-    return res.rows ?? [];
+  constructor(client: MSClient) {
+    this.client = client;
   }
 
-  async getById(id: string): Promise<MSOrder> {
-    return await this.client.get(`/entity/customerorder/${id}`);
+  /**
+   * Список заказов
+   * @param params { limit?: number, expand?: string }
+   */
+  async list(params: { limit?: number; expand?: string } = {}): Promise<MSOrder[]> {
+    const { limit = 100, expand } = params;
+
+    const res = await this.client.get("/entity/customerorder", {
+      limit,
+      expand,
+    });
+
+    return res?.rows ?? [];
+  }
+
+  /**
+   * Получить один заказ
+   */
+  async getById(id: string): Promise<MSOrder | null> {
+    return this.client.get(`/entity/customerorder/${id}`);
   }
 }
