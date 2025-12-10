@@ -1,52 +1,71 @@
 "use client";
 
-import { useState } from "react";
+import { SupplyFormData } from "@/app/dashboard/supply/new/page";
 
-export default function Step3Confirm({ data, onBack }) {
-  const [loading, setLoading] = useState(false);
+interface Step3ConfirmProps {
+  data: SupplyFormData;
+  onBack: () => void;
+}
 
-  async function submit() {
-    setLoading(true);
-
-    const res = await fetch("/api/supply/create", {
-      method: "POST",
-      body: JSON.stringify(data),
-    });
-
-    const result = await res.json();
-    setLoading(false);
-
-    if (result.success) {
-      alert("Поставка создана!");
-      window.location.href = "/dashboard";
-    } else {
-      alert("Ошибка: " + result.error);
-    }
-  }
-
+export default function Step3Confirm({ data, onBack }: Step3ConfirmProps) {
   return (
-    <div className="bg-white/5 border border-white/10 p-8 rounded-2xl backdrop-blur-xl">
-      <h2 className="text-xl text-white mb-6 font-semibold">Подтверждение</h2>
+    <div className="space-y-6 max-w-xl">
+      <h2 className="text-2xl font-bold">3. Подтверждение</h2>
 
-      <div className="space-y-2 text-white/80">
-        <p><b>Товар:</b> {data.productName}</p>
-        <p><b>Артикул:</b> {data.article}</p>
-        <p><b>Количество:</b> {data.qty}</p>
-        <p><b>Упаковка:</b> {data.packaging}</p>
-        <p><b>Места:</b> {data.places}</p>
-        <p><b>Маркировка:</b> {data.marking ? "Да" : "Нет"}</p>
-        {data.comment && <p><b>Комментарий:</b> {data.comment}</p>}
+      <div className="bg-white/5 p-6 rounded-xl border border-white/10 space-y-4">
+        <div>
+          <div className="opacity-60 text-sm">Название</div>
+          <div>{data.name}</div>
+        </div>
+
+        <div>
+          <div className="opacity-60 text-sm">Артикул</div>
+          <div>{data.article}</div>
+        </div>
+
+        {data.description && (
+          <div>
+            <div className="opacity-60 text-sm">Описание</div>
+            <div>{data.description}</div>
+          </div>
+        )}
+
+        {data.packagingType && (
+          <div>
+            <div className="opacity-60 text-sm">Тип упаковки</div>
+            <div>{data.packagingType}</div>
+          </div>
+        )}
+
+        {data.quantity && (
+          <div>
+            <div className="opacity-60 text-sm">Количество</div>
+            <div>{data.quantity}</div>
+          </div>
+        )}
+
+        {data.comment && (
+          <div>
+            <div className="opacity-60 text-sm">Комментарий</div>
+            <div>{data.comment}</div>
+          </div>
+        )}
+
+        {data.imagePreview && (
+          <img
+            src={data.imagePreview}
+            alt="preview"
+            className="w-32 h-32 rounded-lg object-cover border border-white/10"
+          />
+        )}
       </div>
 
-      <div className="flex justify-between mt-8">
-        <button onClick={onBack} className="btnFF24-secondary">
-          ← Назад
-        </button>
-
-        <button onClick={submit} className="btnFF24">
-          {loading ? "Отправка..." : "Создать поставку →"}
-        </button>
-      </div>
+      <button
+        onClick={onBack}
+        className="px-6 py-3 bg-gray-600 rounded-xl hover:bg-gray-500 transition"
+      >
+        ← Назад
+      </button>
     </div>
   );
 }
