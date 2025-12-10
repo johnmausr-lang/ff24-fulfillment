@@ -8,10 +8,7 @@ import { SupplyService } from "./services/supply";
 
 export function createMoyskladSDK() {
   const token = process.env.MOYSKLAD_TOKEN;
-
-  if (!token) {
-    throw new Error("MOYSKLAD_TOKEN is missing in environment variables");
-  }
+  if (!token) throw new Error("MOYSKLAD_TOKEN not set");
 
   const client = new MSClient(token);
 
