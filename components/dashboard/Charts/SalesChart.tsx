@@ -3,21 +3,26 @@
 import {
   LineChart,
   Line,
+  CartesianGrid,
   XAxis,
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  CartesianGrid,
 } from "recharts";
 
-export default function SalesChart({ data }) {
+interface SalesChartPoint {
+  name: string;
+  value: number;
+}
+
+export default function SalesChart({ data }: { data: SalesChartPoint[] }) {
   const gradientId = "ff24Gradient";
 
   return (
-    <div className="p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl h-80 shadow-[0_0_25px_rgba(255,107,0,0.15)]">
-      <h3 className="text-white/70 mb-4">Динамика заказов</h3>
+    <div className="bg-white/5 p-6 rounded-2xl border border-white/10 backdrop-blur-xl">
+      <h2 className="text-xl font-semibold mb-4">Продажи</h2>
 
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height={250}>
         <LineChart data={data}>
           <defs>
             <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
@@ -26,31 +31,18 @@ export default function SalesChart({ data }) {
             </linearGradient>
           </defs>
 
-          <CartesianGrid stroke="#333" strokeDasharray="5 5" />
-
-          <XAxis dataKey="day" stroke="#777" />
-          <YAxis stroke="#777" />
-
-          <Tooltip
-            contentStyle={{
-              background: "rgba(0,0,0,0.6)",
-              border: "1px solid rgba(255,255,255,0.1)",
-              borderRadius: "10px",
-              backdropFilter: "blur(12px)",
-            }}
-          />
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+          <XAxis dataKey="name" stroke="#aaa" />
+          <YAxis stroke="#aaa" />
+          <Tooltip />
 
           <Line
             type="monotone"
-            dataKey="count"
-            stroke="url(#ff24Gradient)"
-            strokeWidth={4}
+            dataKey="value"
+            stroke="#FF6B00"
+            strokeWidth={3}
             dot={false}
-            activeDot={{
-              r: 8,
-              stroke: "#FF6B00",
-              strokeWidth: 3,
-            }}
+            fill={`url(#${gradientId})`}
           />
         </LineChart>
       </ResponsiveContainer>
