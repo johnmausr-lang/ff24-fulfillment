@@ -1,11 +1,24 @@
-import { MSClient } from "../client";
-import { MSInventoryRow } from "../types";
+import { MSClient } from "@/lib/moysklad/client";
+import { MSInventoryRow } from "@/lib/moysklad/types";
 
 export class InventoryService {
-  constructor(private client: MSClient) {}
+  client: MSClient;
 
+  constructor(client: MSClient) {
+    this.client = client;
+  }
+
+  /**
+   * Получить остатки на складе
+   * @param params { limit?: number }
+   */
   async list(params: { limit?: number } = {}): Promise<MSInventoryRow[]> {
-    const res = await this.client.get("/report/stock/all", params);
-    return res.rows ?? [];
+    const { limit = 200 } = params;
+
+    const res = await this.client.get("/report/stock/all", {
+      limit,
+    });
+
+    return res?.rows ?? [];
   }
 }
