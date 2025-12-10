@@ -3,10 +3,11 @@ import { OrdersService } from "./services/orders";
 import { ProductsService } from "./services/products";
 import { InventoryService } from "./services/inventory";
 import { CounterpartyService } from "./services/counterparties";
+import { SupplyService } from "./services/supply";
 
 export function createMoyskladSDK() {
   const token = process.env.MOYSKLAD_TOKEN;
-  if (!token) throw new Error("MOYSKLAD_TOKEN is missing");
+  if (!token) throw new Error("MOYSKLAD_TOKEN missing");
 
   const client = new MSClient(token);
 
@@ -16,5 +17,6 @@ export function createMoyskladSDK() {
     products: new ProductsService(client),
     inventory: new InventoryService(client),
     counterparties: new CounterpartyService(client),
+    supply: new SupplyService(client), // ← добавили
   };
 }
