@@ -1,4 +1,4 @@
-import { MSClient } from "./client";
+import { MSClient } from "../../client";
 
 export class OrdersService {
   client: MSClient;
@@ -7,20 +7,11 @@ export class OrdersService {
     this.client = client;
   }
 
-  list(limit = 50) {
-    return this.client.request(`/entity/customerorder?limit=${limit}`);
+  async list(limit: number = 50) {
+    return await this.client.get("/entity/customerorder", { limit });
   }
 
-  // 🔥 ДОБАВЛЕН НОВЫЙ МЕТОД
-  getById(id: string) {
-    return this.client.request(`/entity/customerorder/${id}`);
-  }
-
-  // Создание заказа
-  create(payload: any) {
-    return this.client.request(`/entity/customerorder`, {
-      method: "POST",
-      body: JSON.stringify(payload),
-    });
+  async getById(id: string) {
+    return await this.client.get(`/entity/customerorder/${id}`);
   }
 }
