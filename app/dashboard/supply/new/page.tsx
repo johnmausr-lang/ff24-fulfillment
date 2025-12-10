@@ -55,7 +55,7 @@ export default function SupplyCreatePage() {
       {step === 2 && (
         <Step2Packaging
           data={data}
-          onNext={next}
+          onNext={next}   // <— БЕЗ ЛЯМБДА! ТАК НУЖНО!
           onBack={back}
         />
       )}
