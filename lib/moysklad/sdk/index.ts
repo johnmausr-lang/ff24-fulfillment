@@ -1,11 +1,15 @@
 import { MSClient } from "./client";
-import { OrdersService } from "./orders";
-import { ProductsService } from "./products";
-import { InventoryService } from "./inventory";
-import { CounterpartyService } from "./counterparties";
+import { OrdersService } from "./services/orders";
+import { ProductsService } from "./services/products";
+import { InventoryService } from "./services/inventory";
+import { CounterpartyService } from "./services/counterparties";
 
 export function createMoyskladSDK() {
-  const token = process.env.MOYSKLAD_TOKEN!;
+  const token = process.env.MOYSKLAD_TOKEN;
+  if (!token) {
+    throw new Error("MOYSKLAD_TOKEN is missing");
+  }
+
   const client = new MSClient(token);
 
   return {
