@@ -1,119 +1,128 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
+
+type ParallaxState = {
+  x: number;
+  y: number;
+};
 
 export default function HomePage() {
-  const [mounted, setMounted] = useState(false);
+  const [parallax, setParallax] = useState<ParallaxState>({ x: 0, y: 0 });
 
   useEffect(() => {
-    setMounted(true);
+    const handle = (e: MouseEvent) => {
+      const x = (e.clientX / window.innerWidth - 0.5) * 10;
+      const y = (e.clientY / window.innerHeight - 0.5) * 8;
+      setParallax({ x, y });
+    };
+
+    window.addEventListener("mousemove", handle);
+    return () => window.removeEventListener("mousemove", handle);
   }, []);
 
-  return (
-    <main className="relative min-h-screen w-full overflow-hidden bg-[#0B0B0B] text-white">
+  const workerStyle: CSSProperties = {
+    transform: `translate3d(${parallax.x * 2}px, ${parallax.y * 2}px, 0)`,
+  };
 
-      {/* ---------------- HERO BACKGROUND LIGHTS ---------------- */}
-      <div className="absolute inset-0">
-        <div className="hero-light orange"></div>
-        <div className="hero-light purple"></div>
+  const panelStyle: CSSProperties = {
+    transform: `rotateX(${parallax.y * -0.6}deg) rotateY(${parallax.x * 0.6}deg)`,
+    transformStyle: "preserve-3d",
+  };
+
+  function goToLogin() {
+    window.location.href = "/login";
+  }
+
+  return (
+    <main className="ff24-page">
+      {/* Фоновые элементы */}
+      <div className="ff24-hero-grid" />
+      <div className="ff24-hero-lines">
+        <div className="ff24-hero-line" />
+        <div className="ff24-hero-line" />
+        <div className="ff24-hero-line" />
       </div>
 
-      {/* ---------------- 3D FLOATING BOXES ---------------- */}
-      <FloatingBoxes />
-
-      {/* ---------------- HERO CONTENT ---------------- */}
-      <section className="relative z-20 w-full pt-32 pb-28 text-center flex flex-col items-center">
-        
-        {/* FF24 LOGO */}
-        <Image
-          src="/logo-ff24.png"
-          alt="FF24 Logo"
-          width={220}
-          height={80}
-          className="drop-shadow-[0_0_25px_rgba(255,120,0,0.45)] animate-logo-fade"
-        />
-
-        <h1 className="mt-12 text-5xl md:text-6xl font-bold tracking-tight leading-tight max-w-3xl animate-fade-up">
-          Премиальная логистика для маркетплейсов
-        </h1>
-
-        <p className="mt-6 text-lg text-white/70 max-w-2xl animate-fade-up delay-150">
-          Хранение, упаковка, сортировка, контроль остатков и приёмка — всё в одном современном
-          личном кабинете FF24. Максимальная скорость + премиальный сервис.
-        </p>
-
-        <button
-          onClick={() => (window.location.href = "/login")}
-          className="
-            mt-10 px-10 py-4 rounded-2xl text-lg font-semibold bg-gradient-to-r
-            from-[#FF6B00] to-[#FF8C32]
-            shadow-[0_0_25px_rgba(255,107,0,0.45)]
-            hover:shadow-[0_0_40px_rgba(255,107,0,0.7)]
-            hover:-translate-y-1 transition-all
-            animate-fade-up delay-300
-          "
+      <section className="relative z-10 max-w-6xl mx-auto px-6 md:px-10 pt-24 pb-20 md:pt-28 md:pb-28 flex flex-col md:flex-row items-center gap-16 md:gap-20">
+        {/* LEFT: HERO WORKER */}
+        <div
+          className="ff24-hero-worker-wrap ff24-fade-up"
+          style={workerStyle}
         >
-          Войти в кабинет
-        </button>
+          <div className="ff24-hero-worker-glow" />
+          <Image
+            src="/illustrations/worker-ff24.png" // сюда просто положи новый full-body файл
+            alt="FF24 грузчик на складе"
+            width={520}
+            height={720}
+            priority
+            className="ff24-hero-worker-img"
+          />
+        </div>
 
-        {/* Marketplace logos */}
-        <MarketplaceStrip />
+        {/* RIGHT: CONTENT PANEL */}
+        <div
+          className="ff24-hero-panel ff24-fade-up"
+          style={panelStyle}
+        >
+          <div className="ff24-badge mb-5">
+            <span>FF24 · ФУЛФИЛМЕНТ</span>
+          </div>
+
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold leading-tight mb-4">
+            Премиальный фулфилмент
+            <br />
+            для маркетплейсов{" "}
+            <span className="text-[var(--ff24-acid)]">России</span>
+          </h1>
+
+          <p className="text-sm sm:text-base text-[var(--ff24-text-dim)] max-w-xl mb-8">
+            FF24 берёт на себя приёмку, хранение, упаковку и отправку товаров
+            на склады Wildberries, Ozon и других маркетплейсов. Прозрачная
+            аналитика, контроль остатков и доставка «под ключ».
+          </p>
+
+          <div className="flex flex-wrap items-center gap-4 mb-8">
+            <button className="ff24-btn-primary" onClick={goToLogin}>
+              <span>Войти в личный кабинет</span>
+            </button>
+
+            <button className="ff24-btn-secondary">
+              <span>Рассчитать стоимость</span>
+            </button>
+          </div>
+
+          {/* Logos strip */}
+          <div className="space-y-2">
+            <div className="text-xs uppercase tracking-[0.18em] text-[var(--ff24-text-dim)]">
+              Работаем с маркетплейсами
+            </div>
+            <div className="ff24-logos-strip">
+              <div className="ff24-logo-pill">
+                <Image
+                  src="/wb.png"
+                  alt="Wildberries"
+                  width={70}
+                  height={24}
+                />
+              </div>
+              <div className="ff24-logo-pill">
+                <Image src="/ozon.png" alt="Ozon" width={70} height={24} />
+              </div>
+              <div className="ff24-logo-pill">
+                <Image
+                  src="/f24-light.png"
+                  alt="FF24"
+                  width={70}
+                  height={24}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
     </main>
-  );
-}
-
-/* ---------------------------------------------------------
- *  3D FLOATING BOXES
- * -------------------------------------------------------- */
-function FloatingBoxes() {
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      <div className="cube cube1"></div>
-      <div className="cube cube2"></div>
-      <div className="cube cube3"></div>
-      <div className="cube cube4"></div>
-    </div>
-  );
-}
-
-/* ---------------------------------------------------------
- *  MARKETPLACE STRIP
- * -------------------------------------------------------- */
-function MarketplaceStrip() {
-  return (
-    <div className="mt-20 opacity-80 animate-fade-up delay-500">
-      <div className="text-sm text-white/40 mb-3">Работаем с маркетплейсами</div>
-
-      <div className="flex items-center justify-center gap-10 opacity-70">
-        {/* Ozon */}
-        <Image
-          src="/ozon.png"
-          alt="Ozon"
-          width={120}
-          height={40}
-          className="market-logo"
-        />
-
-        {/* Wildberries */}
-        <Image
-          src="/wb.png"
-          alt="Wildberries"
-          width={120}
-          height={40}
-          className="market-logo"
-        />
-
-        {/* FF24 brand */}
-        <Image
-          src="/f24-light.png"
-          alt="FF24"
-          width={120}
-          height={40}
-          className="market-logo"
-        />
-      </div>
-    </div>
   );
 }
