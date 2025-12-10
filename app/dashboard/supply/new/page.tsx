@@ -1,71 +1,71 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import ProductSelector from "@/components/supply/ProductSelector";
-import TruckButtonPrimary from "@/components/ui/buttons/TruckButtonPrimary";
-import { toast } from "sonner";
+import { useState } from "react";
+import Step1Product from "@/components/supply/Step1Product";
+import Step2Packaging from "@/components/supply/Step2Packaging";
+import Step3Confirm from "@/components/supply/Step3Confirm";
 
-export default function SupplyCreatePage() {
-  const [products, setProducts] = useState<any[]>([]);
-  const [comment, setComment] = useState("");
-  const [loading, setLoading] = useState(false);
+export default function SupplyWizardPage() {
+  const [step, setStep] = useState(1);
 
-  async function submitSupply() {
-    if (products.length === 0) {
-      toast.error("Добавьте хотя бы один товар");
-      return;
-    }
+  const [data, setData] = useState({
+    productName: "",
+    article: "",
+    qty: "",
+    image: null,
+    imagePreview: "",
 
-    setLoading(true);
+    packaging: "",
+    marking: false,
+    places: "",
+    comment: "",
+  });
 
-    const res = await fetch("/api/supply/create", {
-      method: "POST",
-      body: JSON.stringify({
-        products: products.map((p) => ({
-          meta: p.meta,
-          qty: p.qty,
-        })),
-        comment,
-      }),
-    });
+  function next(newData) {
+    setData((prev) => ({ ...prev, ...newData }));
+    setStep((s) => s + 1);
+  }
 
-    const data = await res.json();
-    setLoading(false);
-
-    if (!data.success) {
-      toast.error(data.error || "Ошибка создания приёмки");
-      return;
-    }
-
-    toast.success("Приёмка успешно создана!");
+  function back() {
+    setStep((s) => s - 1);
   }
 
   return (
-    <div className="p-8 space-y-8">
-      <h1 className="text-3xl font-bold">Создать приёмку товара</h1>
+    <div className="space-y-10 max-w-3xl mx-auto">
 
-      {/* Выбор товаров */}
-      <ProductSelector
-        selected={products}
-        onChange={setProducts}
-      />
+      <h1 className="text-3xl font-bold text-white">
+        Новая поставка
+      </h1>
 
-      {/* Комментарий */}
-      <div className="bg-white p-6 rounded-2xl shadow-md">
-        <label className="font-semibold">Комментарий</label>
-        <textarea
-          className="w-full mt-2 p-3 border rounded-xl"
-          rows={4}
-          placeholder="Комментарий к поставке"
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-        />
+      {/* ШАГИ */}
+      <div className="flex items-center gap-4">
+        {[1, 2, 3].map((s) => (
+          <div
+            key={s}
+            className={`
+              w-10 h-10 rounded-full flex items-center justify-center text-sm
+              ${step === s
+                ? "bg-[#FF6B00] text-black shadow-[0_0_20px_rgba(255,107,0,0.6)]"
+                : "bg-white/10 text-white/50"}
+            `}
+          >
+            {s}
+          </div>
+        ))}
       </div>
 
-      {/* Кнопка */}
-      <TruckButtonPrimary onClick={submitSupply}>
-        {loading ? "Отправка..." : "Создать приёмку"}
-      </TruckButtonPrimary>
+      {/* КОНТЕНТ */}
+      {step === 1 && (
+        <Step1Product data={data} onNext={next} />
+      )}
+
+      {step === 2 && (
+        <Step2Packaging data={data} onNext={next} onBack={back} />
+      )}
+
+      {step === 3 && (
+        <Step3Confirm data={data} onBack={back} />
+      )}
     </div>
   );
 }
