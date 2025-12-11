@@ -1,5 +1,5 @@
-import { MSClient } from "@/lib/moysklad/client";
-import { MSOrder } from "@/lib/moysklad/types";
+import { MSClient } from "../../client";
+import { MSOrder } from "../../types";
 
 export class OrdersService {
   client: MSClient;
@@ -9,8 +9,7 @@ export class OrdersService {
   }
 
   /**
-   * Список заказов
-   * @param params { limit?: number, expand?: string }
+   * Получить список заказов
    */
   async list(params: { limit?: number; expand?: string } = {}): Promise<MSOrder[]> {
     const { limit = 100, expand } = params;
@@ -24,7 +23,7 @@ export class OrdersService {
   }
 
   /**
-   * Получить один заказ
+   * Получить заказ по ID
    */
   async getById(id: string): Promise<MSOrder | null> {
     return this.client.get(`/entity/customerorder/${id}`);
