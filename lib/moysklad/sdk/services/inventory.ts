@@ -1,5 +1,5 @@
-import { MSClient } from "@/lib/moysklad/client";
-import { MSInventoryRow } from "@/lib/moysklad/types";
+import { MSClient } from "../../client";
+import { MSInventoryRow } from "../../types";
 
 export class InventoryService {
   client: MSClient;
@@ -8,10 +8,6 @@ export class InventoryService {
     this.client = client;
   }
 
-  /**
-   * Получить остатки на складе
-   * @param params { limit?: number }
-   */
   async list(params: { limit?: number } = {}): Promise<MSInventoryRow[]> {
     const { limit = 200 } = params;
 
