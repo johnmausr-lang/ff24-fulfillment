@@ -1,269 +1,115 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* ===========================
+    PREMIUM HERO ENVIRONMENT
+   =========================== */
 
-/* ---------------------------------------------------
-   GLOBAL FF24 RESETS
---------------------------------------------------- */
-
-html,
-body {
-  margin: 0;
-  padding: 0;
-  background: #0A0A0A;
-  color: #fff;
-  font-family: var(--font-inter), sans-serif;
-  overflow-x: hidden;
-}
-
-* {
-  -webkit-tap-highlight-color: transparent;
-}
-
-.ff24-home-wrapper {
+.hero-premium {
+  background: #05020A;
   position: relative;
-  min-height: 100vh;
-  overflow: hidden;
-  padding: 0;
-  margin: 0;
-  background: radial-gradient(circle at 20% 30%, #1a1a1a 0%, #0a0a0a 70%);
+  perspective: 2000px;
 }
 
-/* ---------------------------------------------------
-   PREMIUM GRID (subtle, cinematic)
---------------------------------------------------- */
+/* ====== LAYER 1: moving boxes ====== */
 
-.ff24-hero-grid {
+.layer-boxes {
   position: absolute;
   inset: 0;
-  background-image:
-    linear-gradient(transparent 95%, rgba(255,255,255,0.05) 100%),
-    linear-gradient(90deg, transparent 95%, rgba(255,255,255,0.05) 100%);
-  background-size: 80px 80px;
-  opacity: 0.07;
-  z-index: 1;
-  pointer-events: none;
+  background: url("/illustrations/boxes-parallax.png") center/cover no-repeat;
+  opacity: 0.6;
+  transform: translateZ(80px) scale(1.1);
+  filter: brightness(0.9) blur(1px);
 }
 
-/* ---------------------------------------------------
-   MOVING NEON LINES — Moxion-style
---------------------------------------------------- */
+/* ====== LAYER 2: deep premium warehouse ====== */
 
-.ff24-hero-lines {
+.layer-shelves {
   position: absolute;
   inset: 0;
-  overflow: hidden;
-  z-index: 2;
-  pointer-events: none;
+  background: url("/illustrations/shelves-deep.png") center/cover no-repeat;
+  opacity: 0.45;
+  transform: translateZ(-120px) scale(1.4);
+  filter: brightness(0.7);
 }
 
-.ff24-hero-line {
-  position: absolute;
-  width: 2px;
-  height: 180px;
-  background: linear-gradient(
-    to bottom,
-    rgba(255,219,0,0) 0%,
-    rgba(255,219,0,0.8) 50%,
-    rgba(255,219,0,0) 100%
-  );
-  left: calc(10% + 80px * var(--i));
-  animation: ff24-line-fall 6s linear infinite;
-  filter: drop-shadow(0 0 12px rgba(255,219,0,0.7));
-}
+/* ====== LAYER 3: FF24 neon path ====== */
 
-.ff24-hero-line:nth-child(1) { --i: 1; animation-delay: 0s; }
-.ff24-hero-line:nth-child(2) { --i: 4; animation-delay: 1s; }
-.ff24-hero-line:nth-child(3) { --i: 7; animation-delay: 2.5s; }
-
-@keyframes ff24-line-fall {
-  0% { transform: translateY(-200px); opacity: 0; }
-  10% { opacity: 1; }
-  100% { transform: translateY(120vh); opacity: 0; }
-}
-
-/* ---------------------------------------------------
-   PARALLAX DARK NEON BACK WALL
---------------------------------------------------- */
-
-.ff24-parallax-bg {
+.layer-lights {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(circle at 70% 40%, rgba(40,6,79,0.5) 0%, transparent 55%),
-    radial-gradient(circle at 30% 70%, rgba(255,219,0,0.25) 0%, transparent 55%),
-    #0A0A0A;
-  filter: blur(60px);
-  z-index: 0;
+  background: url("/illustrations/neon-path.png") center/cover no-repeat;
+  opacity: 0.85;
+  animation: neonPulse 6s ease-in-out infinite;
 }
 
-/* ---------------------------------------------------
-   WORKER HERO CHARACTER
---------------------------------------------------- */
-
-.ff24-worker {
-  position: absolute;
-  left: 3%;
-  bottom: 0;
-  width: 750px;
-  max-width: 45vw;
-  z-index: 4;
-  pointer-events: none;
+@keyframes neonPulse {
+  0%, 100% { opacity: 0.8; filter: drop-shadow(0 0 20px #9400ff); }
+  50% { opacity: 1; filter: drop-shadow(0 0 40px #ffe600); }
 }
 
-.ff24-worker-img {
-  width: 100%;
-  height: auto;
-  object-fit: contain;
-  filter:
-    drop-shadow(0 0 40px rgba(255,219,0,0.55))
-    drop-shadow(0 0 90px rgba(40,6,79,0.7));
-  animation: ff24-worker-parallax 6s ease-in-out infinite alternate;
+/* ===== TEXT BLOCK ===== */
+.hero-content {
+  position: relative;
+  z-index: 10;
+  max-width: 550px;
+  margin-left: auto;
+  padding: 140px 120px 0 0;
 }
 
-/* Subtle breathing / parallax motion */
-@keyframes ff24-worker-parallax {
-  0% { transform: translateY(0px) scale(1); }
-  100% { transform: translateY(-12px) scale(1.01); }
+.logo-premium {
+  filter: drop-shadow(0 0 25px rgba(255,255,255,0.4));
 }
 
-/* ---------------------------------------------------
-   HERO CONTENT AREA (RIGHT SIDE)
---------------------------------------------------- */
-
-.ff24-hero-content {
-  position: absolute;
-  right: 6%;
-  top: 18%;
-  width: 40%;
-  max-width: 620px;
-  z-index: 5;
+.hero-title {
+  font-size: 64px;
+  font-weight: 900;
+  color: white;
+  line-height: 1.1;
+  margin: 20px 0 25px;
 }
 
-.ff24-logo {
-  filter: drop-shadow(0 0 14px rgba(255,219,0,0.4));
-  margin-bottom: 30px;
+.hero-title span {
+  color: #FFE600;
+  text-shadow: 0 0 22px rgba(255,230,0,0.55);
 }
 
-.ff24-hero-title {
-  font-size: 3.3rem;
-  font-weight: 800;
-  line-height: 1.15;
-  margin-bottom: 22px;
-  text-shadow:
-    0 0 18px rgba(40,6,79,0.6),
-    0 0 32px rgba(255,219,0,0.4);
+.hero-sub {
+  color: rgba(255,255,255,0.7);
+  font-size: 20px;
+  max-width: 420px;
+  margin-bottom: 35px;
+  line-height: 1.5;
 }
 
-.ff24-title-accent {
-  color: #FFDB00;
-  text-shadow:
-    0 0 22px rgba(255,219,0,0.8),
-    0 0 40px rgba(255,219,0,1);
-}
-
-.ff24-hero-sub {
-  color: #CCCCCC;
-  font-size: 1.15rem;
-  line-height: 1.6;
-  margin-bottom: 40px;
-  max-width: 540px;
-}
-
-/* ---------------------------------------------------
-   BUTTONS (premium)
---------------------------------------------------- */
-
-.ff24-hero-buttons {
+.hero-buttons {
   display: flex;
-  gap: 18px;
-  margin-bottom: 40px;
+  gap: 16px;
 }
 
-.ff24-btn-primary {
-  padding: 14px 28px;
-  background: linear-gradient(90deg, #FFDB00, #FFE866);
+/* Buttons premium */
+
+.btn-primary {
+  padding: 14px 26px;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #FFE600, #FFB800);
   color: #000;
   font-weight: 700;
-  border-radius: 14px;
-  font-size: 1.1rem;
-  transition: 0.3s ease;
-  box-shadow:
-    0 0 14px rgba(255,219,0,0.5),
-    0 0 28px rgba(255,219,0,0.4);
+  box-shadow: 0 0 25px rgba(255,230,0,0.4);
+  transition: 0.25s;
 }
 
-.ff24-btn-primary:hover {
-  transform: translateY(-3px) scale(1.03);
-  box-shadow:
-    0 0 20px rgba(255,219,0,0.7),
-    0 0 40px rgba(255,219,0,0.8);
+.btn-primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0 40px rgba(255,230,0,0.6);
 }
 
-.ff24-btn-secondary {
-  padding: 14px 28px;
-  border: 1px solid rgba(255,219,0,0.4);
-  border-radius: 14px;
-  font-weight: 700;
-  color: #FFDB00;
-  font-size: 1.05rem;
-  transition: 0.3s ease;
+.btn-secondary {
+  padding: 14px 24px;
+  border-radius: 10px;
+  border: 2px solid rgba(255,255,255,0.25);
+  color: white;
+  transition: 0.25s;
 }
 
-.ff24-btn-secondary:hover {
-  border-color: #FFDB00;
-  color: #fff;
-  background: rgba(255,219,0,0.1);
-}
-
-/* ---------------------------------------------------
-   MARKETPLACE ICONS
---------------------------------------------------- */
-
-.ff24-marketplace-row {
-  display: flex;
-  gap: 20px;
-  opacity: 0.85;
-}
-
-.ff24-marketplace-row img {
-  filter: drop-shadow(0 0 12px rgba(255,219,0,0.6));
-}
-
-/* ---------------------------------------------------
-   RESPONSIVE
---------------------------------------------------- */
-
-@media (max-width: 1280px) {
-  .ff24-worker {
-    max-width: 50vw;
-  }
-  .ff24-hero-content {
-    width: 45%;
-  }
-}
-
-@media (max-width: 980px) {
-  .ff24-worker {
-    opacity: 0.25;
-    filter: blur(1px);
-  }
-  .ff24-hero-content {
-    width: 90%;
-    top: 22%;
-    right: 5%;
-  }
-}
-
-@media (max-width: 640px) {
-  .ff24-hero-title {
-    font-size: 2.2rem;
-  }
-  .ff24-worker {
-    display: none;
-  }
-  .ff24-hero-content {
-    width: 92%;
-    top: 18%;
-  }
+.btn-secondary:hover {
+  background: rgba(255,255,255,0.12);
+  border-color: rgba(255,255,255,0.5);
 }
