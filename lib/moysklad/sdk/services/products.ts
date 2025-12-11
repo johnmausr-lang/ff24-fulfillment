@@ -1,15 +1,32 @@
-import { MSClient } from "../client";
-import { MSProduct } from "../types";
+import { MSClient } from "@/lib/moysklad/client";
+import { MSProduct } from "@/lib/moysklad/types";
 
 export class ProductsService {
-  constructor(private client: MSClient) {}
+  client: MSClient;
 
-  async list(params: { limit?: number; search?: string } = {}): Promise<MSProduct[]> {
-    const res = await this.client.get("/entity/product", params);
-    return res.rows ?? [];
+  constructor(client: MSClient) {
+    this.client = client;
   }
 
-  async getById(id: string): Promise<MSProduct> {
-    return await this.client.get(`/entity/product/${id}`);
+  /**
+   * Получить список товаров
+   * @param params { limit?: number, search?: string }
+   */
+  async list(params: { limit?: number; search?: string } = {}): Promise<MSProduct[]> {
+    const { limit = 200, search } = params;
+
+    const res = await this.client.get("/entity/product", {
+      limit,
+      search,
+    });
+
+    return res?.rows ?? [];
+  }
+
+  /**
+   * Получить товар по ID
+   */
+  async getById(id: string): Promise<MSProduct | null> {
+    return this.client.get(`/entity/product/${id}`);
   }
 }
