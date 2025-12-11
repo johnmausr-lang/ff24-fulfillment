@@ -1,5 +1,5 @@
-import { MSClient } from "@/lib/moysklad/client";
-import { MSProduct } from "@/lib/moysklad/types";
+import { MSClient } from "../../client";
+import { MSProduct } from "../../types";
 
 export class ProductsService {
   client: MSClient;
@@ -10,7 +10,6 @@ export class ProductsService {
 
   /**
    * Получить список товаров
-   * @param params { limit?: number, search?: string }
    */
   async list(params: { limit?: number; search?: string } = {}): Promise<MSProduct[]> {
     const { limit = 200, search } = params;
