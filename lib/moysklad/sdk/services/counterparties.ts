@@ -1,5 +1,5 @@
-import { MSClient } from "@/lib/moysklad/client";
-import { MSCounterparty } from "@/lib/moysklad/types";
+import { MSClient } from "../../client";
+import { MSCounterparty } from "../../types";
 
 export class CounterpartyService {
   client: MSClient;
@@ -8,26 +8,16 @@ export class CounterpartyService {
     this.client = client;
   }
 
-  /**
-   * Найти контрагента по email (точное совпадение)
-   */
-  async findByEmail(email: string): Promise<MSCounterparty | null> {
-    const res = await this.client.get("/entity/counterparty", {
-      filter: `email=${email}`,
-      limit: 1,
-    });
-
-    return res?.rows?.[0] ?? null;
+  async getById(id: string): Promise<MSCounterparty | null> {
+    return this.client.get(`/entity/counterparty/${id}`);
   }
 
-  /**
-   * Получить контрагента по ID
-   */
-  async getById(id: string): Promise<MSCounterparty | null> {
-    try {
-      return await this.client.get(`/entity/counterparty/${id}`);
-    } catch {
-      return null;
-    }
+  async findByEmail(email: string): Promise<MSCounterparty | null> {
+    const res = await this.client.get("/entity/counterparty", {
+      search: email,
+      limit: 10,
+    });
+
+    return res?.rows?.find((c: any) => c.email === email) ?? null;
   }
 }
