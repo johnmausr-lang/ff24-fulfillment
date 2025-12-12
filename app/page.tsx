@@ -1,100 +1,55 @@
-"use client";
-
 import Image from "next/image";
-import Link from "next/link";
-import { motion } from "framer-motion";
+
+import AboutFF24 from "@/components/landing/AboutFF24";
+import HowFF24Works from "@/components/landing/HowFF24Works";
+import ContactFF24 from "@/components/landing/ContactFF24";
 
 export default function HomePage() {
   return (
-    <main className="ff24-home-wrapper">
+    <main>
 
-      {/* ---------------------------- */}
-      {/* 0 — GRID + MOVING LINES      */}
-      {/* ---------------------------- */}
-      <div className="ff24-hero-grid" />
+      {/* ================= HERO ================= */}
+      <section className="relative min-h-screen flex items-center overflow-hidden bg-[#040406]">
 
-      <div className="ff24-hero-lines">
-        <div className="ff24-hero-line" />
-        <div className="ff24-hero-line" />
-        <div className="ff24-hero-line" />
-      </div>
-
-      {/* ---------------------------- */}
-      {/* 1 — PARALLAX BACK WALL       */}
-      {/* ---------------------------- */}
-      <motion.div
-        className="ff24-parallax-bg"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.7 }}
-        transition={{ duration: 1 }}
-      />
-
-      {/* ---------------------------- */}
-      {/* 2 — FULL-BODY WORKER         */}
-      {/* ---------------------------- */}
-      <motion.div
-        className="ff24-worker"
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1.3, ease: "easeOut" }}
-      >
+        {/* Worker */}
         <Image
           src="/illustrations/worker-ff24.png"
           alt="FF24 Worker"
-          width={760}
-          height={760}
-          priority
-          className="ff24-worker-img"
-        />
-      </motion.div>
-
-      {/* ---------------------------- */}
-      {/* 3 — RIGHT CONTENT            */}
-      {/* ---------------------------- */}
-      <motion.div
-        className="ff24-hero-content"
-        initial={{ opacity: 0, x: 60 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 1.4, ease: "easeOut" }}
-      >
-        {/* Логотип */}
-        <Image
-          src="/logo-ff24.png"
-          alt="FF24 Logo"
-          width={180}
-          height={180}
-          className="ff24-logo"
+          width={600}
+          height={800}
+          className="absolute bottom-0 left-10 z-10 animate-float-slow pointer-events-none"
         />
 
-        {/* Заголовок */}
-        <h1 className="ff24-hero-title">
-          Инновационный склад<br />
-          <span className="ff24-title-accent">премиального уровня</span>
-        </h1>
-
-        {/* Подзаголовок */}
-        <p className="ff24-hero-sub">
-          Полный цикл фулфилмента: приёмка, хранение, упаковка, контроль остатков, интеграции.
-          Технологичный сервис без компромиссов.
-        </p>
-
-        {/* CTA */}
-        <div className="ff24-hero-buttons">
-          <Link href="/login" className="ff24-btn-primary">
-            Войти в личный кабинет
-          </Link>
-
-          <Link href="/#services" className="ff24-btn-secondary">
-            Услуги FF24
-          </Link>
+        {/* Boxes */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="box box1" />
+          <div className="box box2" />
+          <div className="box box3" />
+          <div className="box box4" />
         </div>
 
-        {/* Маркетплейсы */}
-        <div className="ff24-marketplace-row">
-          <Image src="/wb.png" alt="Wildberries" width={70} height={70} />
-          <Image src="/ozon.png" alt="Ozon" width={70} height={70} />
+        {/* Text */}
+        <div className="relative z-20 max-w-4xl ml-auto mr-20">
+          <h1 className="text-6xl font-extrabold leading-tight mb-6">
+            FF24 <br />
+            <span className="text-[#d6ff00]">Fulfillment</span>
+          </h1>
+          <p className="text-xl text-white/70 max-w-xl">
+            Премиальная складская инфраструктура для бизнеса,
+            который работает на масштаб.
+          </p>
         </div>
-      </motion.div>
+
+      </section>
+
+      {/* ================= ABOUT ================= */}
+      <AboutFF24 />
+
+      {/* ================= HOW IT WORKS ================= */}
+      <HowFF24Works />
+
+      {/* ================= CONTACT ================= */}
+      <ContactFF24 />
 
     </main>
   );
