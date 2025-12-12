@@ -1,5 +1,5 @@
 /* =====================================================
-   FF24 GLOBAL STYLES — PREMIUM INDUSTRIAL
+   FF24 GLOBAL STYLES — PREMIUM INDUSTRIAL (FINAL)
 ===================================================== */
 
 :root {
@@ -22,8 +22,12 @@ body {
   padding: 0;
   background: var(--ff24-bg);
   color: var(--ff24-text);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
-    Inter, sans-serif;
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Inter,
+    sans-serif;
 }
 
 a {
@@ -41,7 +45,7 @@ a {
 }
 
 /* =====================================================
-   HERO
+   HERO (3D-BASED)
 ===================================================== */
 
 .ff24-hero {
@@ -50,18 +54,13 @@ a {
   display: flex;
   align-items: center;
   padding: 0 8vw;
-  background:
-    radial-gradient(
-      800px 400px at 70% 20%,
-      rgba(40, 6, 79, 0.35),
-      transparent 70%
-    ),
-    #050505;
+  background: #050505;
+  overflow: hidden;
 }
 
 .ff24-hero-content {
   max-width: 680px;
-  z-index: 2;
+  z-index: 3;
 }
 
 .ff24-title {
@@ -97,7 +96,7 @@ a {
   color: #000;
   font-weight: 600;
   border-radius: 10px;
-  box-shadow: 0 0 30px rgba(255, 235, 59, 0.4);
+  box-shadow: 0 0 30px rgba(255, 235, 59, 0.35);
 }
 
 .ff24-btn-secondary {
@@ -107,81 +106,53 @@ a {
   color: var(--ff24-text);
 }
 
-.ff24-hero-glow {
+/* =====================================================
+   3D BACKGROUND
+===================================================== */
+
+.ff24-hero-3d {
   position: absolute;
   inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.ff24-hero-3d canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+/* затемнение для читаемости текста */
+.ff24-hero-3d-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
   background:
     radial-gradient(
-      600px 300px at 30% 60%,
-      rgba(138, 43, 226, 0.25),
-      transparent 70%
+      900px 500px at 30% 55%,
+      rgba(0,0,0,0.3),
+      rgba(0,0,0,0.75) 70%
     );
   pointer-events: none;
 }
 
 /* =====================================================
-   BLOCK 4 — SCROLL SCENE
-===================================================== */
-
-.scroll-scene {
-  position: relative;
-  height: 180vh;
-  background: #050505;
-  overflow: hidden;
-  --scroll: 0;
-}
-
-.scene-worker {
-  position: absolute;
-  left: -5%;
-  bottom: -10%;
-  width: 520px;
-  height: 820px;
-  transform:
-    translateY(calc(var(--scroll) * -120px))
-    scale(calc(1 + var(--scroll) * 0.05));
-  filter:
-    drop-shadow(0 0 60px rgba(138,43,226,0.4));
-}
-
-.scene-box {
-  position: absolute;
-  width: 180px;
-  height: 180px;
-  background: linear-gradient(135deg, #2b2b2b, #0f0f0f);
-  border: 1px solid rgba(255,255,255,0.08);
-}
-
-.box-a { right: 15%; bottom: 20%; }
-.box-b { right: 25%; bottom: 40%; }
-.box-c { right: 10%; bottom: 60%; }
-
-.scene-lines {
-  position: absolute;
-  inset: 0;
-  background:
-    repeating-linear-gradient(
-      90deg,
-      rgba(255,255,0,0.03) 0,
-      rgba(255,255,0,0.03) 1px,
-      transparent 1px,
-      transparent 80px
-    );
-}
-
-/* =====================================================
-   ABOUT
+   SECTIONS
 ===================================================== */
 
 .ff24-section {
   padding: 120px 8vw;
 }
 
-.ff24-about h2,
-.ff24-contacts h2 {
+.ff24-section h2 {
   font-size: 42px;
   margin-bottom: 60px;
 }
+
+/* =====================================================
+   ABOUT
+===================================================== */
 
 .ff24-about-grid {
   display: grid;
@@ -191,7 +162,7 @@ a {
 
 .ff24-about-card {
   padding: 32px;
-  background: rgba(255,255,255,0.03);
+  background: rgba(255,255,255,0.035);
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 20px;
 }
@@ -209,37 +180,4 @@ a {
   gap: 16px;
   font-size: 18px;
   color: var(--ff24-muted);
-}
-
-/* =====================================================
-   3D HERO BACKGROUND (R3F)
-   - фон под текстом в HERO
-   - без персонажа
-===================================================== */
-
-.ff24-hero-3d {
-  position: absolute;
-  inset: 0;
-  z-index: 1; /* под контентом (у контента z-index:2) */
-  pointer-events: none;
-}
-
-.ff24-hero-3d canvas {
-  width: 100% !important;
-  height: 100% !important;
-  display: block;
-}
-
-/* слегка затемняем 3D, чтобы текст читался всегда */
-.ff24-hero-3d-overlay {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(
-      800px 420px at 35% 55%,
-      rgba(0,0,0,0.35),
-      rgba(0,0,0,0.72) 70%
-    );
-  z-index: 2;
-  pointer-events: none;
 }
