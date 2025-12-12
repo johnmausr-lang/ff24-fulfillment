@@ -1,56 +1,89 @@
 import Image from "next/image";
-
-import AboutFF24 from "@/components/landing/AboutFF24";
-import HowFF24Works from "@/components/landing/HowFF24Works";
-import ContactFF24 from "@/components/landing/ContactFF24";
+import ScrollScene from "@/components/landing/ScrollScene";
 
 export default function HomePage() {
   return (
-    <main>
-
+    <main className="ff24-root">
       {/* ================= HERO ================= */}
-      <section className="relative min-h-screen flex items-center overflow-hidden bg-[#040406]">
-
-        {/* Worker */}
-        <Image
-          src="/illustrations/worker-ff24.png"
-          alt="FF24 Worker"
-          width={600}
-          height={800}
-          className="absolute bottom-0 left-10 z-10 animate-float-slow pointer-events-none"
-        />
-
-        {/* Boxes */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="box box1" />
-          <div className="box box2" />
-          <div className="box box3" />
-          <div className="box box4" />
-        </div>
-
-        {/* Text */}
-        <div className="relative z-20 max-w-4xl ml-auto mr-20">
-          <h1 className="text-6xl font-extrabold leading-tight mb-6">
-            FF24 <br />
-            <span className="text-[#d6ff00]">Fulfillment</span>
+      <section className="ff24-hero">
+        <div className="ff24-hero-content">
+          <h1 className="ff24-title">
+            FF24 <span>FULFILLMENT</span>
           </h1>
-          <p className="text-xl text-white/70 max-w-xl">
-            Премиальная складская инфраструктура для бизнеса,
-            который работает на масштаб.
+
+          <p className="ff24-subtitle">
+            Премиальный склад и фулфилмент
+            <br />
+            для маркетплейсов нового поколения
           </p>
+
+          <div className="ff24-hero-actions">
+            <a href="/login" className="ff24-btn-primary">
+              Войти в личный кабинет
+            </a>
+            <a href="#about" className="ff24-btn-secondary">
+              О компании
+            </a>
+          </div>
         </div>
 
+        {/* Фоновое свечение */}
+        <div className="ff24-hero-glow" />
       </section>
 
+      {/* ================= SCROLL SCENE (BLOCK 4) ================= */}
+      <ScrollScene />
+
       {/* ================= ABOUT ================= */}
-      <AboutFF24 />
+      <section id="about" className="ff24-section ff24-about">
+        <h2>Почему FF24</h2>
 
-      {/* ================= HOW IT WORKS ================= */}
-      <HowFF24Works />
+        <div className="ff24-about-grid">
+          <div className="ff24-about-card">
+            <h3>Индустриальный стандарт</h3>
+            <p>
+              Современные склады, автоматизация процессов,
+              контроль каждой единицы товара.
+            </p>
+          </div>
 
-      {/* ================= CONTACT ================= */}
-      <ContactFF24 />
+          <div className="ff24-about-card">
+            <h3>Интеграция с МойСклад</h3>
+            <p>
+              Прямая синхронизация остатков, заказов
+              и приёмок в реальном времени.
+            </p>
+          </div>
 
+          <div className="ff24-about-card">
+            <h3>Премиум-подход</h3>
+            <p>
+              Мы работаем не «по количеству»,
+              а по качеству и ответственности.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ================= CONTACTS ================= */}
+      <section className="ff24-section ff24-contacts">
+        <h2>Контакты</h2>
+
+        <div className="ff24-contacts-box">
+          <div>
+            <strong>Email:</strong>
+            <span> support@ff24.ru</span>
+          </div>
+          <div>
+            <strong>Телефон:</strong>
+            <span> +7 (999) 000-00-00</span>
+          </div>
+          <div>
+            <strong>Адрес:</strong>
+            <span> Москва, складской кластер FF24</span>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }
