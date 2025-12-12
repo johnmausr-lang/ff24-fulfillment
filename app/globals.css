@@ -1,89 +1,212 @@
-import Image from "next/image";
-import ScrollScene from "@/components/landing/ScrollScene";
+/* =====================================================
+   FF24 GLOBAL STYLES — PREMIUM INDUSTRIAL
+===================================================== */
 
-export default function HomePage() {
-  return (
-    <main className="ff24-root">
-      {/* ================= HERO ================= */}
-      <section className="ff24-hero">
-        <div className="ff24-hero-content">
-          <h1 className="ff24-title">
-            FF24 <span>FULFILLMENT</span>
-          </h1>
+:root {
+  --ff24-bg: #050505;
+  --ff24-black: #0a0a0a;
+  --ff24-purple: #28064f;
+  --ff24-neon-purple: #8a2be2;
+  --ff24-accent: #ffeb3b;
+  --ff24-text: #eaeaea;
+  --ff24-muted: #9a9a9a;
+}
 
-          <p className="ff24-subtitle">
-            Премиальный склад и фулфилмент
-            <br />
-            для маркетплейсов нового поколения
-          </p>
+* {
+  box-sizing: border-box;
+}
 
-          <div className="ff24-hero-actions">
-            <a href="/login" className="ff24-btn-primary">
-              Войти в личный кабинет
-            </a>
-            <a href="#about" className="ff24-btn-secondary">
-              О компании
-            </a>
-          </div>
-        </div>
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--ff24-bg);
+  color: var(--ff24-text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Inter, sans-serif;
+}
 
-        {/* Фоновое свечение */}
-        <div className="ff24-hero-glow" />
-      </section>
+a {
+  color: inherit;
+  text-decoration: none;
+}
 
-      {/* ================= SCROLL SCENE (BLOCK 4) ================= */}
-      <ScrollScene />
+/* =====================================================
+   ROOT
+===================================================== */
 
-      {/* ================= ABOUT ================= */}
-      <section id="about" className="ff24-section ff24-about">
-        <h2>Почему FF24</h2>
+.ff24-root {
+  width: 100%;
+  overflow-x: hidden;
+}
 
-        <div className="ff24-about-grid">
-          <div className="ff24-about-card">
-            <h3>Индустриальный стандарт</h3>
-            <p>
-              Современные склады, автоматизация процессов,
-              контроль каждой единицы товара.
-            </p>
-          </div>
+/* =====================================================
+   HERO
+===================================================== */
 
-          <div className="ff24-about-card">
-            <h3>Интеграция с МойСклад</h3>
-            <p>
-              Прямая синхронизация остатков, заказов
-              и приёмок в реальном времени.
-            </p>
-          </div>
+.ff24-hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: 0 8vw;
+  background:
+    radial-gradient(
+      800px 400px at 70% 20%,
+      rgba(40, 6, 79, 0.35),
+      transparent 70%
+    ),
+    #050505;
+}
 
-          <div className="ff24-about-card">
-            <h3>Премиум-подход</h3>
-            <p>
-              Мы работаем не «по количеству»,
-              а по качеству и ответственности.
-            </p>
-          </div>
-        </div>
-      </section>
+.ff24-hero-content {
+  max-width: 680px;
+  z-index: 2;
+}
 
-      {/* ================= CONTACTS ================= */}
-      <section className="ff24-section ff24-contacts">
-        <h2>Контакты</h2>
+.ff24-title {
+  font-size: clamp(48px, 6vw, 84px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
 
-        <div className="ff24-contacts-box">
-          <div>
-            <strong>Email:</strong>
-            <span> support@ff24.ru</span>
-          </div>
-          <div>
-            <strong>Телефон:</strong>
-            <span> +7 (999) 000-00-00</span>
-          </div>
-          <div>
-            <strong>Адрес:</strong>
-            <span> Москва, складской кластер FF24</span>
-          </div>
-        </div>
-      </section>
-    </main>
+.ff24-title span {
+  color: var(--ff24-accent);
+}
+
+.ff24-subtitle {
+  margin-top: 24px;
+  font-size: 20px;
+  color: var(--ff24-muted);
+  line-height: 1.6;
+}
+
+.ff24-hero-actions {
+  margin-top: 40px;
+  display: flex;
+  gap: 20px;
+}
+
+.ff24-btn-primary {
+  padding: 16px 28px;
+  background: linear-gradient(
+    135deg,
+    var(--ff24-accent),
+    #ffe066
   );
+  color: #000;
+  font-weight: 600;
+  border-radius: 10px;
+  box-shadow: 0 0 30px rgba(255, 235, 59, 0.4);
+}
+
+.ff24-btn-secondary {
+  padding: 16px 28px;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 10px;
+  color: var(--ff24-text);
+}
+
+.ff24-hero-glow {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      600px 300px at 30% 60%,
+      rgba(138, 43, 226, 0.25),
+      transparent 70%
+    );
+  pointer-events: none;
+}
+
+/* =====================================================
+   BLOCK 4 — SCROLL SCENE
+===================================================== */
+
+.scroll-scene {
+  position: relative;
+  height: 180vh;
+  background: #050505;
+  overflow: hidden;
+  --scroll: 0;
+}
+
+.scene-worker {
+  position: absolute;
+  left: -5%;
+  bottom: -10%;
+  width: 520px;
+  height: 820px;
+  transform:
+    translateY(calc(var(--scroll) * -120px))
+    scale(calc(1 + var(--scroll) * 0.05));
+  filter:
+    drop-shadow(0 0 60px rgba(138,43,226,0.4));
+}
+
+.scene-box {
+  position: absolute;
+  width: 180px;
+  height: 180px;
+  background: linear-gradient(135deg, #2b2b2b, #0f0f0f);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.box-a { right: 15%; bottom: 20%; }
+.box-b { right: 25%; bottom: 40%; }
+.box-c { right: 10%; bottom: 60%; }
+
+.scene-lines {
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(255,255,0,0.03) 0,
+      rgba(255,255,0,0.03) 1px,
+      transparent 1px,
+      transparent 80px
+    );
+}
+
+/* =====================================================
+   ABOUT
+===================================================== */
+
+.ff24-section {
+  padding: 120px 8vw;
+}
+
+.ff24-about h2,
+.ff24-contacts h2 {
+  font-size: 42px;
+  margin-bottom: 60px;
+}
+
+.ff24-about-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px,1fr));
+  gap: 40px;
+}
+
+.ff24-about-card {
+  padding: 32px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
+}
+
+.ff24-about-card h3 {
+  margin-bottom: 12px;
+}
+
+/* =====================================================
+   CONTACTS
+===================================================== */
+
+.ff24-contacts-box {
+  display: grid;
+  gap: 16px;
+  font-size: 18px;
+  color: var(--ff24-muted);
 }
