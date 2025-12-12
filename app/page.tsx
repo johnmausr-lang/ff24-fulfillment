@@ -1,11 +1,17 @@
-import Image from "next/image";
 import ScrollScene from "@/components/landing/ScrollScene";
+import FF24Scene from "@/components/3d/FF24Scene";
 
 export default function HomePage() {
   return (
     <main className="ff24-root">
       {/* ================= HERO ================= */}
       <section className="ff24-hero">
+        {/* 3D фон в HERO */}
+        <div className="ff24-hero-3d" aria-hidden="true">
+          <FF24Scene />
+          <div className="ff24-hero-3d-overlay" />
+        </div>
+
         <div className="ff24-hero-content">
           <h1 className="ff24-title">
             FF24 <span>FULFILLMENT</span>
@@ -42,24 +48,22 @@ export default function HomePage() {
           <div className="ff24-about-card">
             <h3>Индустриальный стандарт</h3>
             <p>
-              Современные склады, автоматизация процессов,
-              контроль каждой единицы товара.
+              Современные склады, автоматизация процессов, контроль каждой единицы
+              товара.
             </p>
           </div>
 
           <div className="ff24-about-card">
             <h3>Интеграция с МойСклад</h3>
             <p>
-              Прямая синхронизация остатков, заказов
-              и приёмок в реальном времени.
+              Прямая синхронизация остатков, заказов и приёмок в реальном времени.
             </p>
           </div>
 
           <div className="ff24-about-card">
             <h3>Премиум-подход</h3>
             <p>
-              Мы работаем не «по количеству»,
-              а по качеству и ответственности.
+              Мы работаем не «по количеству», а по качеству и ответственности.
             </p>
           </div>
         </div>
