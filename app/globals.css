@@ -1,115 +1,86 @@
-/* ===========================
-    PREMIUM HERO ENVIRONMENT
-   =========================== */
+/* ===============================================
+   PREMIUM ABOUT SECTION
+   =============================================== */
 
-.hero-premium {
+.about-premium {
+  width: 100%;
+  padding: 140px 0;
   background: #05020A;
   position: relative;
-  perspective: 2000px;
+  overflow: hidden;
 }
 
-/* ====== LAYER 1: moving boxes ====== */
-
-.layer-boxes {
-  position: absolute;
-  inset: 0;
-  background: url("/illustrations/boxes-parallax.png") center/cover no-repeat;
-  opacity: 0.6;
-  transform: translateZ(80px) scale(1.1);
-  filter: brightness(0.9) blur(1px);
+.about-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 40px;
+  opacity: 0;
+  transform: translateY(60px) scale(0.97);
+  transition: 1.2s ease-out;
+  filter: blur(10px);
 }
 
-/* ====== LAYER 2: deep premium warehouse ====== */
-
-.layer-shelves {
-  position: absolute;
-  inset: 0;
-  background: url("/illustrations/shelves-deep.png") center/cover no-repeat;
-  opacity: 0.45;
-  transform: translateZ(-120px) scale(1.4);
-  filter: brightness(0.7);
+.about-visible .about-container {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: blur(0);
 }
 
-/* ====== LAYER 3: FF24 neon path ====== */
-
-.layer-lights {
-  position: absolute;
-  inset: 0;
-  background: url("/illustrations/neon-path.png") center/cover no-repeat;
-  opacity: 0.85;
-  animation: neonPulse 6s ease-in-out infinite;
-}
-
-@keyframes neonPulse {
-  0%, 100% { opacity: 0.8; filter: drop-shadow(0 0 20px #9400ff); }
-  50% { opacity: 1; filter: drop-shadow(0 0 40px #ffe600); }
-}
-
-/* ===== TEXT BLOCK ===== */
-.hero-content {
-  position: relative;
-  z-index: 10;
-  max-width: 550px;
-  margin-left: auto;
-  padding: 140px 120px 0 0;
-}
-
-.logo-premium {
-  filter: drop-shadow(0 0 25px rgba(255,255,255,0.4));
-}
-
-.hero-title {
-  font-size: 64px;
-  font-weight: 900;
+.about-title {
+  font-size: 52px;
+  font-weight: 800;
   color: white;
-  line-height: 1.1;
-  margin: 20px 0 25px;
+  margin-bottom: 30px;
+  line-height: 1.2;
 }
 
-.hero-title span {
+.about-title span {
   color: #FFE600;
-  text-shadow: 0 0 22px rgba(255,230,0,0.55);
+  text-shadow: 0 0 30px rgba(255,230,0,0.4);
 }
 
-.hero-sub {
-  color: rgba(255,255,255,0.7);
+.about-text {
   font-size: 20px;
-  max-width: 420px;
-  margin-bottom: 35px;
-  line-height: 1.5;
+  color: rgba(255,255,255,0.75);
+  max-width: 800px;
+  line-height: 1.65;
+  margin-bottom: 25px;
 }
 
-.hero-buttons {
-  display: flex;
-  gap: 16px;
+/* GRID CARDS */
+
+.about-grid {
+  margin-top: 60px;
+  display: grid;
+  gap: 30px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 }
 
-/* Buttons premium */
-
-.btn-primary {
-  padding: 14px 26px;
-  border-radius: 10px;
-  background: linear-gradient(90deg, #FFE600, #FFB800);
-  color: #000;
-  font-weight: 700;
-  box-shadow: 0 0 25px rgba(255,230,0,0.4);
-  transition: 0.25s;
+.about-card {
+  padding: 35px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 18px;
+  backdrop-filter: blur(8px);
+  transition: 0.35s;
+  transform: translateZ(0);
 }
 
-.btn-primary:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 0 40px rgba(255,230,0,0.6);
+.about-card h3 {
+  font-size: 36px;
+  font-weight: 900;
+  color: #FFE600;
+  margin-bottom: 10px;
 }
 
-.btn-secondary {
-  padding: 14px 24px;
-  border-radius: 10px;
-  border: 2px solid rgba(255,255,255,0.25);
-  color: white;
-  transition: 0.25s;
+.about-card p {
+  color: rgba(255,255,255,0.7);
+  font-size: 16px;
+  line-height: 1.4;
 }
 
-.btn-secondary:hover {
-  background: rgba(255,255,255,0.12);
-  border-color: rgba(255,255,255,0.5);
+.about-card:hover {
+  transform: translateY(-6px) scale(1.03);
+  border-color: rgba(255,255,255,0.25);
+  box-shadow: 0 0 40px rgba(255,230,0,0.15);
 }
