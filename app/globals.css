@@ -210,3 +210,36 @@ a {
   font-size: 18px;
   color: var(--ff24-muted);
 }
+
+/* =====================================================
+   3D HERO BACKGROUND (R3F)
+   - фон под текстом в HERO
+   - без персонажа
+===================================================== */
+
+.ff24-hero-3d {
+  position: absolute;
+  inset: 0;
+  z-index: 1; /* под контентом (у контента z-index:2) */
+  pointer-events: none;
+}
+
+.ff24-hero-3d canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+/* слегка затемняем 3D, чтобы текст читался всегда */
+.ff24-hero-3d-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      800px 420px at 35% 55%,
+      rgba(0,0,0,0.35),
+      rgba(0,0,0,0.72) 70%
+    );
+  z-index: 2;
+  pointer-events: none;
+}
