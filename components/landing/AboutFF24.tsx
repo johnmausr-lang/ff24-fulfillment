@@ -6,14 +6,16 @@ export default function AboutFF24() {
   const ref = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-
     function onScroll() {
+      const el = ref.current;
+      if (!el) return;
+
       const rect = el.getBoundingClientRect();
       const visible = rect.top < window.innerHeight * 0.8;
 
-      if (visible) el.classList.add("about-visible");
+      if (visible) {
+        el.classList.add("about-visible");
+      }
     }
 
     window.addEventListener("scroll", onScroll);
@@ -25,20 +27,20 @@ export default function AboutFF24() {
   return (
     <section ref={ref} className="about-premium">
       <div className="about-container">
-
         <h2 className="about-title">
           Мы создаём <span>новый стандарт</span> фулфилмента
         </h2>
 
         <p className="about-text">
-          FF24 — технологичная экосистема для бизнеса, где каждый процесс склада 
-          автоматизирован, прозрачен и измерим. Мы объединяем премиальный сервис, 
+          FF24 — технологичная экосистема для бизнеса, где каждый процесс склада
+          автоматизирован, прозрачен и измерим. Мы объединяем премиальный сервис,
           цифровую безопасность и точность исполнения 24/7.
         </p>
 
         <p className="about-text">
-          Наши алгоритмы распределения, отслеживание маршрутов, прогнозирование объёмов 
-          и автоматизация упаковки создают уникальную скорость обработки заказов.
+          Наши алгоритмы распределения, отслеживание маршрутов, прогнозирование
+          объёмов и автоматизация упаковки создают уникальную скорость обработки
+          заказов.
         </p>
 
         <div className="about-grid">
@@ -62,7 +64,6 @@ export default function AboutFF24() {
             <p>полная операционная активность</p>
           </div>
         </div>
-
       </div>
     </section>
   );
