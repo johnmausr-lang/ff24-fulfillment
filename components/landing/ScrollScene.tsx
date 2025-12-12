@@ -4,14 +4,15 @@ import { useEffect, useRef } from "react";
 import Image from "next/image";
 
 export default function ScrollScene() {
-  const sceneRef = useRef<HTMLDivElement>(null);
+  const sceneRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const el = sceneRef.current;
-    if (!el) return;
-
     function onScroll() {
+      const el = sceneRef.current;
+      if (!el) return;
+
       const rect = el.getBoundingClientRect();
+
       const progress = Math.min(
         Math.max(1 - rect.top / window.innerHeight, 0),
         1
@@ -22,19 +23,22 @@ export default function ScrollScene() {
 
     onScroll();
     window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+    };
   }, []);
 
   return (
     <section ref={sceneRef} className="scroll-scene">
-      {/* Грузчик */}
+      {/* Грузчик — часть сцены */}
       <div className="scene-worker">
         <Image
           src="/illustrations/worker-ff24.png"
           alt="FF24 Worker"
           fill
-          className="object-contain"
           priority
+          className="object-contain"
         />
       </div>
 
