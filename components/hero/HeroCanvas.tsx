@@ -2,48 +2,34 @@
 
 import { Canvas } from "@react-three/fiber";
 import { Suspense } from "react";
-import { ContactShadows, Environment } from "@react-three/drei";
-
-import Scene from "./Scene";
-import ScrollRig from "./ScrollRig";
+import { Environment, ContactShadows } from "@react-three/drei";
+import WarehouseScene from "./WarehouseScene";
+import Lights from "./Lights";
 
 export default function HeroCanvas() {
   return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 0,
-        pointerEvents: "none", // HTML кликабелен поверх
-      }}
-    >
+    <div className="absolute inset-0 -z-10">
       <Canvas
-        shadows
+        camera={{ position: [0, 3, 10], fov: 45 }}
         dpr={[1, 1.5]}
-        camera={{
-          position: [0, 1.8, 4],
-          fov: 50,
-          near: 0.1,
-          far: 100,
-        }}
       >
         <Suspense fallback={null}>
-          {/* Камера, управляемая скроллом */}
-          <ScrollRig />
+          <color attach="background" args={["#050505"]} />
 
-          {/* Основная сцена склада */}
-          <Scene />
+          <fog attach="fog" args={["#050505", 8, 18]} />
 
-          {/* Контактные тени под объектами */}
+          <Lights />
+
+          <WarehouseScene />
+
           <ContactShadows
-            position={[0, 0.01, 0]}
-            opacity={0.45}
+            position={[0, -1.5, 0]}
+            opacity={0.35}
             scale={30}
             blur={2.5}
-            far={20}
+            far={6}
           />
 
-          {/* Окружение (мягкий индустриальный свет) */}
           <Environment preset="warehouse" />
         </Suspense>
       </Canvas>
