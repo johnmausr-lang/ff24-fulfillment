@@ -1,22 +1,43 @@
-// src/components/theme-toggle.tsx
-'use client';
+"use client";
 
-import { Moon, Sun } from 'lucide-react';
-import { useTheme } from 'next-themes';
-import { Button } from '@/components/ui/button';
+import { Moon, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 
 export function ThemeToggle() {
   const { setTheme, theme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  // важно для next-themes
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
+  const isDark = theme === "dark";
 
   return (
-    <Button
-      variant="ghost"
-      size="icon"
-      onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+    <button
+      onClick={() => setTheme(isDark ? "light" : "dark")}
+      aria-label="Toggle theme"
+      className="
+        flex items-center justify-center
+        w-10 h-10 rounded-full
+        border border-white/15
+        bg-white/5
+        backdrop-blur-md
+        text-white
+        hover:border-[#FFEB3B]
+        hover:text-[#FFEB3B]
+        transition
+      "
     >
-      <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-      <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-      <span className="sr-only">Переключить тему</span>
-    </Button>
+      {isDark ? (
+        <Sun size={18} />
+      ) : (
+        <Moon size={18} />
+      )}
+    </button>
   );
 }
