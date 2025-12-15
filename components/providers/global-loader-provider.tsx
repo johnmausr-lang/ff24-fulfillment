@@ -1,36 +1,100 @@
-// components/providers/global-loader-provider.tsx
 "use client";
 
-import { TruckFullscreenLoader } from "@/components/ui/truck-fullscreen-loader";
 import { create } from "zustand";
+import { ReactNode } from "react";
 
-// Zustand store
+/* =========================
+   STORE
+========================= */
+
 type LoaderState = {
-  isLoading: boolean;
-  message: string;
-  show: (msg?: string) => void;
+  loading: boolean;
+  show: () => void;
   hide: () => void;
 };
 
 export const useGlobalLoader = create<LoaderState>((set) => ({
-  isLoading: false,
-  message: "Обрабатываем ваш запрос...",
-  show: (msg = "Обрабатываем ваш запрос...") => set({ isLoading: true, message: msg }),
-  hide: () => set({ isLoading: false }),
+  loading: false,
+  show: () => set({ loading: true }),
+  hide: () => set({ loading: false }),
 }));
 
-// Компонент-провайдер — default export
+/* =========================
+   PROVIDER
+========================= */
+
 export default function GlobalLoaderProvider({
   children,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
-  const { isLoading, message } = useGlobalLoader();
+  const loading = useGlobalLoader((s) => s.loading);
 
   return (
     <>
       {children}
-      <TruckFullscreenLoader isLoading={isLoading} message={message} />
+      {loading && <FullscreenLoader />}
     </>
+  );
+}
+
+/* =========================
+   FULLSCREEN LOADER
+========================= */
+
+function FullscreenLoader() {
+  return (
+    <div
+      className="
+        fixed inset-0 z-[9999]
+        bg-black/80 backdrop-blur-xl
+        flex items-center justify-center
+      "
+    >
+      <div className="flex flex-col items-center gap-6">
+        {/* BOXES */}
+        <div className="flex gap-3">
+          <div className="loader-box lb1" />
+          <div className="loader-box lb2" />
+          <div className="loader-box lb3" />
+        </div>
+
+        <div className="text-sm tracking-widest text-[#FFEB3B] opacity-80">
+          FF24 · PROCESSING
+        </div>
+      </div>
+
+      <style jsx>{`
+        .loader-box {
+          width: 22px;
+          height: 22px;
+          background: linear-gradient(135deg, #ffeb3b, #ffe066);
+          border-radius: 4px;
+          animation: pulse 1.2s infinite ease-in-out;
+        }
+
+        .lb2 {
+          animation-delay: 0.15s;
+        }
+        .lb3 {
+          animation-delay: 0.3s;
+        }
+
+        @keyframes pulse {
+          0% {
+            transform: translateY(0);
+            opacity: 0.6;
+          }
+          50% {
+            transform: translateY(-10px);
+            opacity: 1;
+          }
+          100% {
+            transform: translateY(0);
+            opacity: 0.6;
+          }
+        }
+      `}</style>
+    </div>
   );
 }
