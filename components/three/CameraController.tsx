@@ -15,7 +15,7 @@ export default function CameraController() {
       if (y < h * 0.9) targetZ.current = 0;
       else if (y < h * 1.9) targetZ.current = -6;
       else if (y < h * 2.9) targetZ.current = -14;
-      else targetZ.current = -22;
+      else targetZ.current = -24;
     }
 
     window.addEventListener("scroll", onScroll);
@@ -26,12 +26,15 @@ export default function CameraController() {
 
   useFrame(({ mouse }) => {
     camera.position.z +=
-      (10 + targetZ.current - camera.position.z) * 0.05;
+      (10 + targetZ.current - camera.position.z) * 0.04;
 
     camera.position.x +=
-      (mouse.x * 0.6 - camera.position.x) * 0.03;
+      (mouse.x * 0.8 - camera.position.x) * 0.025;
 
-    camera.lookAt(0, 1.8, targetZ.current);
+    camera.position.y +=
+      (2.2 - camera.position.y) * 0.02;
+
+    camera.lookAt(0, 2.2, targetZ.current - 6);
   });
 
   return null;
