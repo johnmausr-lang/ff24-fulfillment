@@ -1,46 +1,61 @@
-import HeroScene from "@/components/landing/HeroScene";
-import LandingHero from "@/components/landing/LandingHero";
+import HeroCanvas from "@/components/three/HeroCanvas";
 
 export default function HomePage() {
   return (
     <main className="ff24-root">
+      {/* 3D Canvas */}
+      <HeroCanvas />
+
       {/* HERO */}
-      <div style={{ position: "relative", height: "100vh" }}>
-        <HeroScene />
-        <LandingHero />
-      </div>
+      <section
+        id="hero"
+        className="ff24-hero"
+        style={{ position: "relative", zIndex: 2 }}
+      >
+        <div className="ff24-hero-content">
+          <h1 className="ff24-title">
+            FF24 <span>Fulfillment</span>
+          </h1>
+          <p className="ff24-subtitle">
+            Инфраструктура хранения, упаковки и логистики
+            нового поколения
+          </p>
 
-      {/* BLOCK 2 — ПРЕИМУЩЕСТВА */}
-      <section className="ff24-section ff24-about" id="how">
-        <h2>Почему FF24</h2>
-
-        <div className="ff24-about-grid">
-          <div className="ff24-about-card">
-            <h3>Enterprise SLA</h3>
-            <p>Гарантированная стабильность и контроль.</p>
-          </div>
-
-          <div className="ff24-about-card">
-            <h3>Интеграция</h3>
-            <p>МойСклад, WB, Ozon, ERP.</p>
-          </div>
-
-          <div className="ff24-about-card">
-            <h3>Масштаб</h3>
-            <p>Готовы к росту без потери качества.</p>
+          <div className="ff24-hero-actions">
+            <a href="/login" className="ff24-btn-primary">
+              Личный кабинет
+            </a>
+            <a href="#about" className="ff24-btn-secondary">
+              Подробнее
+            </a>
           </div>
         </div>
       </section>
 
-      {/* CONTACTS */}
-      <section className="ff24-section ff24-contacts">
-        <h2>Контакты</h2>
+      {/* ABOUT */}
+      <section id="about" className="ff24-section">
+        <h2>О компании</h2>
+        <p>
+          FF24 — технологическая платформа складской логистики
+          для e-commerce и брендов.
+        </p>
+      </section>
 
-        <div className="ff24-contacts-box">
-          <div>📍 Москва</div>
-          <div>✉️ info@ff24.ru</div>
-          <div>📞 +7 (000) 000-00-00</div>
-        </div>
+      {/* ADVANTAGES */}
+      <section id="advantages" className="ff24-section">
+        <h2>Преимущества</h2>
+        <ul>
+          <li>Масштабируемая инфраструктура</li>
+          <li>Прозрачный контроль остатков</li>
+          <li>Интеграция с МойСклад</li>
+        </ul>
+      </section>
+
+      {/* CONTACTS */}
+      <section id="contacts" className="ff24-section">
+        <h2>Контакты</h2>
+        <p>Email: info@ff24.ru</p>
+        <p>Москва</p>
       </section>
     </main>
   );
