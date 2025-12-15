@@ -1,18 +1,30 @@
 /* =====================================================
-   FF24 GLOBAL STYLES — PREMIUM INDUSTRIAL (FINAL)
+   FF24 GLOBAL STYLES — PREMIUM INDUSTRIAL SYSTEM
 ===================================================== */
+
+/* -------------------- THEME -------------------- */
 
 :root {
   --ff24-bg: #050505;
   --ff24-black: #0a0a0a;
+
   --ff24-purple: #28064f;
   --ff24-neon-purple: #8a2be2;
+
   --ff24-accent: #ffeb3b;
+  --ff24-accent-soft: rgba(255, 235, 59, 0.25);
+
   --ff24-text: #eaeaea;
   --ff24-muted: #9a9a9a;
+
+  --ff24-border: rgba(255, 255, 255, 0.12);
 }
 
-* {
+/* -------------------- RESET -------------------- */
+
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -22,12 +34,9 @@ body {
   padding: 0;
   background: var(--ff24-bg);
   color: var(--ff24-text);
-  font-family:
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Inter,
-    sans-serif;
+  font-family: Inter, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 a {
@@ -35,8 +44,19 @@ a {
   text-decoration: none;
 }
 
+button {
+  font-family: inherit;
+  background: none;
+  border: none;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
 /* =====================================================
-   ROOT
+   ROOT LAYOUT
 ===================================================== */
 
 .ff24-root {
@@ -45,7 +65,7 @@ a {
 }
 
 /* =====================================================
-   HERO (3D-BASED)
+   HERO (Landing)
 ===================================================== */
 
 .ff24-hero {
@@ -54,19 +74,38 @@ a {
   display: flex;
   align-items: center;
   padding: 0 8vw;
-  background: #050505;
-  overflow: hidden;
+  background:
+    radial-gradient(
+      800px 400px at 70% 20%,
+      rgba(40, 6, 79, 0.35),
+      transparent 70%
+    ),
+    #050505;
+}
+
+.ff24-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      600px 300px at 30% 60%,
+      rgba(138, 43, 226, 0.25),
+      transparent 70%
+    );
+  pointer-events: none;
 }
 
 .ff24-hero-content {
-  max-width: 680px;
-  z-index: 3;
+  max-width: 720px;
+  z-index: 2;
 }
 
 .ff24-title {
-  font-size: clamp(48px, 6vw, 84px);
+  font-size: clamp(48px, 6vw, 86px);
   font-weight: 800;
   letter-spacing: -0.03em;
+  line-height: 1.05;
 }
 
 .ff24-title span {
@@ -74,20 +113,23 @@ a {
 }
 
 .ff24-subtitle {
-  margin-top: 24px;
+  margin-top: 28px;
   font-size: 20px;
   color: var(--ff24-muted);
   line-height: 1.6;
 }
 
 .ff24-hero-actions {
-  margin-top: 40px;
+  margin-top: 44px;
   display: flex;
   gap: 20px;
+  flex-wrap: wrap;
 }
 
+/* -------------------- BUTTONS -------------------- */
+
 .ff24-btn-primary {
-  padding: 16px 28px;
+  padding: 16px 30px;
   background: linear-gradient(
     135deg,
     var(--ff24-accent),
@@ -95,46 +137,26 @@ a {
   );
   color: #000;
   font-weight: 600;
-  border-radius: 10px;
-  box-shadow: 0 0 30px rgba(255, 235, 59, 0.35);
+  border-radius: 12px;
+  box-shadow: 0 0 30px rgba(255, 235, 59, 0.45);
+  transition: all 0.25s ease;
+}
+
+.ff24-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 44px rgba(255, 235, 59, 0.65);
 }
 
 .ff24-btn-secondary {
-  padding: 16px 28px;
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 10px;
+  padding: 16px 30px;
+  border: 1px solid var(--ff24-border);
+  border-radius: 12px;
   color: var(--ff24-text);
+  transition: border-color 0.25s ease;
 }
 
-/* =====================================================
-   3D BACKGROUND
-===================================================== */
-
-.ff24-hero-3d {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-}
-
-.ff24-hero-3d canvas {
-  width: 100% !important;
-  height: 100% !important;
-  display: block;
-}
-
-/* затемнение для читаемости текста */
-.ff24-hero-3d-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  background:
-    radial-gradient(
-      900px 500px at 30% 55%,
-      rgba(0,0,0,0.3),
-      rgba(0,0,0,0.75) 70%
-    );
-  pointer-events: none;
+.ff24-btn-secondary:hover {
+  border-color: var(--ff24-accent);
 }
 
 /* =====================================================
@@ -146,29 +168,34 @@ a {
 }
 
 .ff24-section h2 {
-  font-size: 42px;
+  font-size: 44px;
   margin-bottom: 60px;
 }
 
-/* =====================================================
-   ABOUT
-===================================================== */
+/* -------------------- ABOUT / ADVANTAGES -------------------- */
 
 .ff24-about-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px,1fr));
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 40px;
 }
 
 .ff24-about-card {
-  padding: 32px;
-  background: rgba(255,255,255,0.035);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 20px;
+  padding: 36px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--ff24-border);
+  border-radius: 22px;
+  backdrop-filter: blur(8px);
 }
 
 .ff24-about-card h3 {
-  margin-bottom: 12px;
+  margin-bottom: 14px;
+  font-size: 20px;
+}
+
+.ff24-about-card p {
+  color: var(--ff24-muted);
+  line-height: 1.6;
 }
 
 /* =====================================================
@@ -177,18 +204,89 @@ a {
 
 .ff24-contacts-box {
   display: grid;
-  gap: 16px;
+  gap: 18px;
   font-size: 18px;
   color: var(--ff24-muted);
 }
+
 /* =====================================================
-   SCROLL DEPTH
+   LOGIN
 ===================================================== */
 
-body {
-  scroll-behavior: smooth;
+.login-form {
+  display: grid;
+  gap: 16px;
 }
 
-.ff24-root {
-  perspective: 1200px;
+.login-label {
+  font-size: 14px;
+  color: var(--ff24-muted);
+}
+
+.login-input {
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--ff24-border);
+  color: var(--ff24-text);
+  outline: none;
+}
+
+.login-input:focus {
+  border-color: var(--ff24-accent);
+}
+
+.login-submit {
+  margin-top: 12px;
+  padding: 16px;
+  border-radius: 14px;
+  background: linear-gradient(
+    135deg,
+    var(--ff24-accent),
+    #ffe066
+  );
+  color: #000;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 0 30px rgba(255, 235, 59, 0.4);
+  transition: all 0.25s ease;
+}
+
+.login-submit:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 42px rgba(255, 235, 59, 0.6);
+}
+
+.login-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* =====================================================
+   DASHBOARD BASE
+===================================================== */
+
+.dashboard-card {
+  padding: 28px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--ff24-border);
+}
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+@media (max-width: 768px) {
+  .ff24-hero {
+    padding: 0 6vw;
+  }
+
+  .ff24-section {
+    padding: 80px 6vw;
+  }
+
+  .ff24-title {
+    font-size: 42px;
+  }
 }
