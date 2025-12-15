@@ -1,28 +1,31 @@
 "use client";
 
 import { useRef } from "react";
-import { Mesh } from "three";
 import { useFrame } from "@react-three/fiber";
+import * as THREE from "three";
 
-export default function PortalFrame({
-  position = [0, 1, 0],
-}: {
-  position?: [number, number, number];
-}) {
-  const frame = useRef<Mesh>(null!);
+export default function PortalFrame() {
+  const frame = useRef<THREE.Mesh>(null!);
 
   useFrame(({ clock }) => {
-    frame.current.material.emissiveIntensity =
+    if (!frame.current) return;
+
+    const material = frame.current
+      .material as THREE.MeshStandardMaterial;
+
+    material.emissiveIntensity =
       1.2 + Math.sin(clock.elapsedTime * 2) * 0.3;
   });
 
   return (
-    <mesh ref={frame} position={position}>
-      <boxGeometry args={[2.8, 3.6, 0.15]} />
+    <mesh ref={frame}>
+      <boxGeometry args={[2.4, 3.6, 0.15]} />
       <meshStandardMaterial
-        color="#000"
+        color="#111111"
         emissive="#8a2be2"
         emissiveIntensity={1.2}
+        metalness={0.8}
+        roughness={0.25}
       />
     </mesh>
   );
