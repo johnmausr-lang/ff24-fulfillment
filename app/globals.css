@@ -181,3 +181,14 @@ a {
   font-size: 18px;
   color: var(--ff24-muted);
 }
+/* =====================================================
+   SCROLL DEPTH
+===================================================== */
+
+body {
+  scroll-behavior: smooth;
+}
+
+.ff24-root {
+  perspective: 1200px;
+}
