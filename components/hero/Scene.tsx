@@ -1,50 +1,40 @@
 "use client";
 
-import { MeshStandardMaterial } from "three";
+import PortalFrame from "./PortalFrame";
 
 export default function Scene() {
   return (
     <group>
       {/* Пол */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-        <planeGeometry args={[30, 30]} />
+        <planeGeometry args={[40, 40]} />
         <meshStandardMaterial color="#0a0a0a" />
       </mesh>
 
       {/* Стеллажи */}
-      {[...Array(6)].map((_, i) => (
+      {[...Array(12)].map((_, i) => (
         <mesh
           key={i}
-          position={[-4 + i * 1.6, 0, -3]}
+          position={[-4 + (i % 6) * 1.6, 1.2, -2 - Math.floor(i / 6) * 6]}
           castShadow
-          receiveShadow
         >
           <boxGeometry args={[1, 2.4, 0.4]} />
           <meshStandardMaterial
             color="#111"
             emissive="#28064f"
-            emissiveIntensity={0.15}
+            emissiveIntensity={0.12}
           />
         </mesh>
       ))}
 
-      {/* Неоновые линии */}
-      <mesh position={[0, 0.01, -1]}>
-        <boxGeometry args={[10, 0.02, 0.02]} />
-        <meshStandardMaterial
-          emissive="#ffeb3b"
-          emissiveIntensity={2}
-          color="#000"
-        />
-      </mesh>
+      {/* Порталы */}
+      <PortalFrame position={[0, 1.8, -6]} />
+      <PortalFrame position={[0, 1.8, -12]} />
+      <PortalFrame position={[0, 1.8, -18]} />
 
       {/* Свет */}
-      <directionalLight
-        position={[5, 8, 5]}
-        intensity={1.2}
-        castShadow
-      />
-      <ambientLight intensity={0.3} />
+      <directionalLight position={[6, 8, 6]} intensity={1.3} castShadow />
+      <ambientLight intensity={0.35} />
     </group>
   );
 }
