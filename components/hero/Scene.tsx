@@ -1,65 +1,50 @@
 "use client";
 
-import { Environment, ContactShadows } from "@react-three/drei";
+import { MeshStandardMaterial } from "three";
 
 export default function Scene() {
   return (
-    <>
-      {/* ТУМАН = ГЛУБИНА */}
-      <fog attach="fog" args={["#050505", 6, 28]} />
+    <group>
+      {/* Пол */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <planeGeometry args={[30, 30]} />
+        <meshStandardMaterial color="#0a0a0a" />
+      </mesh>
 
-      {/* СВЕТ */}
-      <ambientLight intensity={0.3} />
+      {/* Стеллажи */}
+      {[...Array(6)].map((_, i) => (
+        <mesh
+          key={i}
+          position={[-4 + i * 1.6, 0, -3]}
+          castShadow
+          receiveShadow
+        >
+          <boxGeometry args={[1, 2.4, 0.4]} />
+          <meshStandardMaterial
+            color="#111"
+            emissive="#28064f"
+            emissiveIntensity={0.15}
+          />
+        </mesh>
+      ))}
 
-      <directionalLight
-        position={[6, 10, 4]}
-        intensity={1.2}
-      />
-
-      <pointLight
-        position={[-6, 3, -6]}
-        intensity={2}
-        color="#8A2BE2"
-      />
-
-      {/* ПОЛ */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
-        <planeGeometry args={[200, 200]} />
+      {/* Неоновые линии */}
+      <mesh position={[0, 0.01, -1]}>
+        <boxGeometry args={[10, 0.02, 0.02]} />
         <meshStandardMaterial
-          color="#070707"
-          roughness={0.85}
-          metalness={0.1}
+          emissive="#ffeb3b"
+          emissiveIntensity={2}
+          color="#000"
         />
       </mesh>
 
-      {/* ГЛУБИННЫЕ СЛОИ (как складские пролёты) */}
-      <DepthLayer z={-6} />
-      <DepthLayer z={-14} />
-      <DepthLayer z={-24} />
-
-      {/* ТЕНИ */}
-      <ContactShadows
-        position={[0, 0.01, 0]}
-        opacity={0.4}
-        scale={40}
-        blur={2.5}
-        far={30}
+      {/* Свет */}
+      <directionalLight
+        position={[5, 8, 5]}
+        intensity={1.2}
+        castShadow
       />
-
-      {/* ОКРУЖЕНИЕ */}
-      <Environment preset="warehouse" />
-    </>
-  );
-}
-
-function DepthLayer({ z }: { z: number }) {
-  return (
-    <mesh position={[0, 2.5, z]}>
-      <boxGeometry args={[12, 5, 0.4]} />
-      <meshStandardMaterial
-        color="#0a0a0a"
-        roughness={0.6}
-      />
-    </mesh>
+      <ambientLight intensity={0.3} />
+    </group>
   );
 }
