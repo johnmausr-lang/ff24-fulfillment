@@ -2,43 +2,51 @@
 
 import { Canvas } from "@react-three/fiber";
 import { Suspense } from "react";
-import { Environment, ContactShadows } from "@react-three/drei";
-import { EffectComposer, Bloom } from "@react-three/postprocessing";
+import { ContactShadows, Environment } from "@react-three/drei";
+
 import Scene from "./Scene";
-import CameraRig from "./CameraRig";
+import ScrollRig from "./ScrollRig";
 
 export default function HeroCanvas() {
   return (
-    <Canvas
-      shadows
-      dpr={[1, 1.5]}
-      camera={{ position: [0, 1.8, 6], fov: 45 }}
-      style={{ height: "100vh", width: "100vw" }}
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 0,
+        pointerEvents: "none", // HTML кликабелен поверх
+      }}
     >
-      <color attach="background" args={["#050505"]} />
+      <Canvas
+        shadows
+        dpr={[1, 1.5]}
+        camera={{
+          position: [0, 1.8, 4],
+          fov: 50,
+          near: 0.1,
+          far: 100,
+        }}
+      >
+        <Suspense fallback={null}>
+          {/* Камера, управляемая скроллом */}
+          <ScrollRig />
 
-      <Suspense fallback={null}>
-        <CameraRig />
-        <Scene />
+          {/* Основная сцена склада */}
+          <Scene />
 
-        <ContactShadows
-          position={[0, -1.4, 0]}
-          opacity={0.6}
-          scale={10}
-          blur={2.5}
-          far={5}
-        />
+          {/* Контактные тени под объектами */}
+          <ContactShadows
+            position={[0, 0.01, 0]}
+            opacity={0.45}
+            scale={30}
+            blur={2.5}
+            far={20}
+          />
 
-        <Environment preset="warehouse" />
-      </Suspense>
-
-      <EffectComposer>
-        <Bloom
-          intensity={0.6}
-          luminanceThreshold={0.15}
-          luminanceSmoothing={0.9}
-        />
-      </EffectComposer>
-    </Canvas>
+          {/* Окружение (мягкий индустриальный свет) */}
+          <Environment preset="warehouse" />
+        </Suspense>
+      </Canvas>
+    </div>
   );
 }
