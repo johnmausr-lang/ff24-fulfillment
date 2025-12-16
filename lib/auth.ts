@@ -1,75 +1,47 @@
 // lib/auth.ts
+import * as bcrypt from 'bcryptjs';
+import * as jwt from 'jsonwebtoken';
+import { Role } from '@prisma/client'; // Предполагаем, что Role будет экспортирована после миграции
 
-import { NextRequest } from 'next/server';
-import jwt from 'jsonwebtoken';
-import { ApiError } from './ms-client';
+// ⚠️ Убедитесь, что вы установили переменную окружения JWT_SECRET!
+const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_fallback_key_for_development_only';
+const SALT_ROUNDS = 10; // Стандартное количество раундов для bcrypt
 
-// Секрет для JWT
-const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_key';
-
-// Интерфейс данных внутри токена
-export interface TokenPayload {
-    id: string;
-    phone: string;
+// 1. Хэширование пароля
+export async function hashPassword(password: string): Promise<string> {
+  return bcrypt.hash(password, SALT_ROUNDS);
 }
 
-// -------------------------------------------
-// ✅ Генерация JWT токена (исправление ошибки импорта)
-// -------------------------------------------
-export function generateToken(payload: TokenPayload): string {
-    return jwt.sign(payload, JWT_SECRET, {
-        expiresIn: '7d', // токен действует 7 дней
-    });
+// 2. Сравнение пароля
+export async function comparePassword(password: string, hash: string): Promise<boolean> {
+  return bcrypt.compare(password, hash);
 }
 
-// -------------------------------------------
-// 🔍 Проверка токена из заголовка Authorization
-// -------------------------------------------
-export const verifyToken = (req: NextRequest): TokenPayload => {
-    const authHeader = req.headers.get('Authorization');
+/**
+ * Создает JWT-токен с данными пользователя и ролью
+ * @param userId ID пользователя
+ * @param userRole Роль пользователя (CLIENT | ADMIN)
+ * @returns JWT-токен
+ */
+export function createToken(userId: string, userRole: Role): string {
+  return jwt.sign(
+    { userId, role: userRole }, 
+    JWT_SECRET, 
+    { expiresIn: '7d' } // Токен действителен 7 дней
+  );
+}
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        throw new ApiError('Отсутствует токен авторизации', 401);
-    }
-
-    const token = authHeader.split(' ')[1];
-
-    try {
-        const payload = jwt.verify(token, JWT_SECRET) as TokenPayload;
-
-        if (!payload.id) {
-            throw new ApiError('Недействительный токен (отсутствует ID клиента)', 401);
-        }
-
-        return payload;
-    } catch (error) {
-        console.error('JWT Verification Error:', error);
-        throw new ApiError('Недействительный или истекший токен', 401);
-    }
-};
-
-// -------------------------------------------
-// 🔒 Обёртка для защиты API-маршрутов
-// -------------------------------------------
-export const withAuth = (
-    handler: (req: NextRequest, payload: TokenPayload) => Promise<Response>
-) => {
-    return async (req: NextRequest) => {
-        try {
-            const payload = verifyToken(req); // проверяем токен
-            return handler(req, payload);     // вызываем защищённый обработчик
-        } catch (error) {
-            if (error instanceof ApiError) {
-                return new Response(
-                    JSON.stringify({ message: error.message }),
-                    { status: error.status, headers: { 'Content-Type': 'application/json' } }
-                );
-            }
-
-            return new Response(
-                JSON.stringify({ message: 'Внутренняя ошибка сервера' }),
-                { status: 500, headers: { 'Content-Type': 'application/json' } }
-            );
-        }
-    };
-};
+/**
+ * Верифицирует токен и возвращает данные
+ * @param token JWT-токен
+ * @returns { userId: string, role: Role } | null
+ */
+export function verifyToken(token: string): { userId: string, role: Role } | null {
+  try {
+    const payload = jwt.verify(token, JWT_SECRET) as { userId: string, role: Role, iat: number, exp: number };
+    return { userId: payload.userId, role: payload.role };
+  } catch (error) {
+    // Ошибка верификации (истек, неверная подпись и т.д.)
+    return null;
+  }
+}
