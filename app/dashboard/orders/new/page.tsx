@@ -2,13 +2,16 @@
 "use client";
 
 import { useState } from 'react';
-import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card'; 
+// ИСПРАВЛЕНО: Предполагаем, что имя файла компонента Card с заглавной буквы
+import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/Card'; 
 import { Button } from '@/components/ui/button';
 import toast from 'react-hot-toast';
-import { useOrderCreation, CartItem } from '@/hooks/useOrderCreation'; // <-- ИСПРАВЛЕНО: OrderItem заменено на CartItem
+import { useOrderCreation, CartItem } from '@/hooks/useOrderCreation'; 
 import { useRouter } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
 import { Plus, Minus, Trash2 } from 'lucide-react';
+
+// ... (остальной код остается тем же)
 
 // Мок-данные о товарах для поиска
 interface Product {
