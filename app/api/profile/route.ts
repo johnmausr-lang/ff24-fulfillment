@@ -1,74 +1,45 @@
-export const dynamic = "force-dynamic";
-
-import { NextResponse } from "next/server";
-import { verifyJwt } from "@/lib/auth/jwt";
-import { createMoyskladSDK } from "@/lib/moysklad/sdk";
+// app/api/profile/route.ts (Предполагаемый исправленный код)
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { verifyToken } from '@/lib/auth'; // <-- ИСПРАВЛЕНИЕ: Импорт из lib/auth, а не из lib/auth/jwt.ts
 
 export async function GET(req: Request) {
-  try {
-    // -----------------------------
-    // 1) Читаем куку auth_token
-    // -----------------------------
-    const cookieHeader = req.headers.get("cookie") || "";
-    const token = cookieHeader
-      .split("; ")
-      .find((v) => v.startsWith("auth_token="))
-      ?.split("=")[1];
+    // 1. Извлекаем токен из Cookie
+    const token = req.headers.get('cookie')?.split('; ').find(row => row.startsWith('auth_token='))?.split('=')[1];
 
     if (!token) {
-      return NextResponse.json(
-        { success: false, error: "Unauthorized" },
-        { status: 401 }
-      );
+        return NextResponse.json({ message: 'Не авторизован' }, { status: 401 });
     }
 
-    // -----------------------------
-    // 2) Декодируем JWT
-    // -----------------------------
-    const payload = verifyJwt(token);
+    // 2. Верифицируем токен с помощью JOSE
+    const payload = await verifyToken(token); // <-- Используем функцию из lib/auth.ts (JOSE)
 
-    if (!payload || typeof payload === "string") {
-      return NextResponse.json(
-        { success: false, error: "Invalid token" },
-        { status: 401 }
-      );
+    if (!payload || !payload.userId) {
+        return NextResponse.json({ message: 'Недействительный токен' }, { status: 401 });
     }
 
-    // payload = { id, email }
+    try {
+        // 3. Получаем данные пользователя
+        const user = await prisma.user.findUnique({
+            where: { id: payload.userId as string },
+            select: {
+                id: true,
+                email: true,
+                name: true,
+                role: true,
+                createdAt: true,
+            },
+        });
 
-    // -----------------------------
-    // 3) Получаем данные контрагента
-    // -----------------------------
-    const ms = createMoyskladSDK();
+        if (!user) {
+            return NextResponse.json({ message: 'Пользователь не найден' }, { status: 404 });
+        }
 
-    const counterparty = await ms.counterparties.getById(payload.id);
+        // 4. Возвращаем профиль
+        return NextResponse.json({ user });
 
-    if (!counterparty) {
-      return NextResponse.json(
-        { success: false, error: "User not found in MoySklad" },
-        { status: 404 }
-      );
+    } catch (error) {
+        console.error('Profile fetch error:', error);
+        return NextResponse.json({ message: 'Внутренняя ошибка сервера' }, { status: 500 });
     }
-
-    // -----------------------------
-    // 4) Отдаём профиль
-    // -----------------------------
-    return NextResponse.json({
-      success: true,
-      user: {
-        id: counterparty.id,
-        name: counterparty.name,
-        email: counterparty.email ?? payload.email,
-        phone: counterparty.phone ?? null,
-      },
-    });
-  } catch (err: any) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: err?.message || "Server error",
-      },
-      { status: 500 }
-    );
-  }
 }
