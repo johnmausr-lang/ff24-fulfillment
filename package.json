@@ -1,6 +1,6 @@
 {
-  "name": "ff24-fulfillment-platform",
-  "version": "1.0.0",
+  "name": "ff24-lkc",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -10,31 +10,35 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@radix-ui/react-dialog": "^1.0.5",
+    "@radix-ui/react-label": "^2.0.2",
+    "@radix-ui/react-scroll-area": "^1.0.5",
+    "@radix-ui/react-separator": "^1.0.3",
+    "@radix-ui/react-slot": "^1.0.2",
     "@prisma/client": "^5.10.2",
-    "bcryptjs": "^2.4.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "jose": "^5.2.3",
-    "lucide-react": "^0.363.0",
-    "next": "^14.1.4",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-hot-toast": "^2.4.1",
-    "@radix-ui/react-slot": "^1.0.2",
-    "tailwind-merge": "^2.2.2",
-    "zustand": "^4.5.2"
+    "lucide-react": "^0.344.0",
+    "next": "14.2.35",
+    "react": "^18",
+    "react-dom": "^18",
+    "react-hook-form": "^7.51.0",
+    "tailwind-merge": "^2.2.1",
+    "tailwindcss-animate": "^1.0.7",
+    "zustand": "^4.5.2",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
-    "@types/bcryptjs": "^2.4.6",
-    "@types/node": "^20.11.25",
-    "@types/react": "^18.2.64",
-    "@types/react-dom": "^18.2.21",
-    "autoprefixer": "^10.4.18",
-    "eslint": "^8.57.0",
-    "eslint-config-next": "^14.1.4",
-    "postcss": "^8.4.35",
-    "prisma": "^5.10.2",
-    "tailwindcss": "^3.4.1",
-    "typescript": "^5.3.3"
+    "typescript": "^5",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "autoprefixer": "^10.0.1",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.35",
+    "postcss": "^8",
+    "tailwindcss": "^3.3.0",
+    "prisma": "^5.10.2"
   }
 }
