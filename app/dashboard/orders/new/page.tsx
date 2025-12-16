@@ -1,17 +1,15 @@
-// app/dashboard/orders/new/page.tsx
 "use client";
 
 import { useState } from 'react';
-// ИСПРАВЛЕНО: Предполагаем, что имя файла компонента Card с заглавной буквы
-import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/Card'; 
+// ВАЖНО: Убедитесь, что файл называется card.tsx (с маленькой буквы) в папке components/ui
+import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card'; 
 import { Button } from '@/components/ui/button';
 import toast from 'react-hot-toast';
+// ВАЖНО: Импортируем CartItem (а не OrderItem), так как мы экспортировали его именно так в хуке
 import { useOrderCreation, CartItem } from '@/hooks/useOrderCreation'; 
 import { useRouter } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
 import { Plus, Minus, Trash2 } from 'lucide-react';
-
-// ... (остальной код остается тем же)
 
 // Мок-данные о товарах для поиска
 interface Product {
