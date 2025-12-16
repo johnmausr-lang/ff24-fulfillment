@@ -2,9 +2,10 @@
 "use client";
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Package, ShoppingCart, TrendingUp, Settings, FileText, Zap } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation'; // Импортируем useRouter
+import { LayoutDashboard, Package, ShoppingCart, TrendingUp, Settings, FileText, Zap, LogOut } from 'lucide-react'; // Добавляем LogOut
 import { cn } from '@/lib/utils';
+import toast from 'react-hot-toast';
 
 const navItems = [
     { href: '/dashboard', label: 'Дашборд', icon: LayoutDashboard },
@@ -17,6 +18,22 @@ const navItems = [
 
 export default function Sidebar() {
     const pathname = usePathname();
+    const router = useRouter(); // Инициализируем роутер
+
+    const handleLogout = async () => {
+        try {
+            const res = await fetch('/api/auth/logout', { method: 'POST' });
+
+            if (res.ok) {
+                toast.success('Вы успешно вышли из системы.');
+                router.push('/login'); // Перенаправляем на страницу входа
+            } else {
+                toast.error('Ошибка выхода. Попробуйте снова.');
+            }
+        } catch (error) {
+            toast.error('Ошибка сети при попытке выхода.');
+        }
+    };
 
     return (
         <aside className="w-64 bg-gray-900 flex flex-col border-r border-gray-700 h-full fixed top-0 left-0 pt-20">
@@ -48,10 +65,15 @@ export default function Sidebar() {
                 })}
             </nav>
             
-            {/* Дополнительный блок для роли/пользователя */}
+            {/* Блок Выхода */}
             <div className="p-4 border-t border-gray-700">
-                <p className="text-xs text-gray-500">Пользователь: CLIENT</p>
-                <button className="text-xs text-red-500 hover:text-red-400 mt-1">Выход</button>
+                <button 
+                    onClick={handleLogout}
+                    className="flex items-center w-full p-3 rounded-lg text-red-400 hover:bg-red-900/50 transition-colors"
+                >
+                    <LogOut className="h-5 w-5 mr-3" />
+                    Выйти из системы
+                </button>
             </div>
         </aside>
     );
