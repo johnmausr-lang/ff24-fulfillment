@@ -1,8 +1,8 @@
 // app/api/auth/register/route.ts
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { prisma } from '@/lib/prisma'; // <-- ИСПРАВЛЕНИЕ: Именованный импорт { prisma }
-import { createToken } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+import { createToken } from '@/lib/auth'; // <-- Импортируем из нового lib/auth.ts
 
 export async function POST(req: Request) {
     try {
@@ -27,8 +27,8 @@ export async function POST(req: Request) {
             },
         });
 
-        // 2. Генерируем токен
-        const token = createToken(newUser.id, newUser.role); 
+        // 2. Генерируем токен (Теперь с await)
+        const token = await createToken(newUser.id, newUser.role); // <--- ИСПРАВЛЕНИЕ: ДОБАВЛЕН await
 
         // 3. Устанавливаем токен и возвращаем ответ
         const response = NextResponse.json({ 
