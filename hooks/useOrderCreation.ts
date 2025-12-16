@@ -4,19 +4,19 @@
 
 import { create } from 'zustand';
 
-// 1. Определение базовых типов
-interface CartItem {
+// 1. Определение базовых типов (ИСПРАВЛЕНО: ДОБАВЛЕН 'export')
+export interface CartItem { 
   id: string;
   name: string;
   price: number;
   quantity: number;
 }
 
-// 2. Определение состояния (Исправлено: добавлены totalItems и totalPrice)
+// 2. Определение состояния (Теперь включает totalItems и totalPrice)
 interface OrderCreationState {
   items: CartItem[];
-  totalItems: number; // <-- ДОБАВЛЕНО для устранения Type Error
-  totalPrice: number; // <-- ДОБАВЛЕНО для устранения Type Error
+  totalItems: number; 
+  totalPrice: number; 
 
   addItem: (item: CartItem) => void;
   removeItem: (id: string) => void;
