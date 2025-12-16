@@ -1,8 +1,8 @@
 // app/api/auth/login/route.ts
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { prisma } from '@/lib/prisma'; // <-- ИСПРАВЛЕНИЕ: Именованный импорт { prisma }
-import { createToken } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+import { createToken } from '@/lib/auth'; // <-- Импортируем из нового lib/auth.ts
 
 export async function POST(req: Request) {
     try {
@@ -18,7 +18,7 @@ export async function POST(req: Request) {
                 id: true,
                 email: true,
                 password: true,
-                role: true, // Поле должно существовать в schema.prisma
+                role: true, 
                 name: true,
                 createdAt: true,
             }
@@ -28,8 +28,8 @@ export async function POST(req: Request) {
             return NextResponse.json({ message: 'Неверный email или пароль' }, { status: 401 });
         }
 
-        // 2. Генерируем новый токен
-        const token = createToken(user.id, user.role);
+        // 2. Генерируем новый токен (Теперь с await)
+        const token = await createToken(user.id, user.role); // <--- ИСПРАВЛЕНИЕ: ДОБАВЛЕН await
 
         // 3. Устанавливаем токен и возвращаем ответ
         const response = NextResponse.json({ 
