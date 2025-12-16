@@ -1,47 +1,39 @@
-import { NextResponse } from "next/server";
-import { createMoyskladSDK } from "@/lib/moysklad/sdk";
-import { signJwt } from "@/lib/auth/jwt";
+// app/api/auth/login/route.ts
+
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { comparePassword, createToken } from '@/lib/auth';
 
 export async function POST(req: Request) {
   try {
-    const { email } = await req.json();
-    if (!email) {
-      return NextResponse.json(
-        { success: false, error: "Email required" },
-        { status: 400 }
-      );
-    }
+    const { email, password } = await req.json();
 
-    const ms = createMoyskladSDK();
-
-    const user = await ms.counterparties.findByEmail(email);
-
+    const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
-      return NextResponse.json(
-        { success: false, error: "User not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Неверный email или пароль' }, { status: 401 });
     }
 
-    const token = signJwt({
-      id: user.id,
-      email: user.email ?? email,
-      name: user.name,
+    // 1. Сравниваем хэшированный пароль
+    const passwordMatch = await comparePassword(password, user.password);
+    if (!passwordMatch) {
+      return NextResponse.json({ error: 'Неверный email или пароль' }, { status: 401 });
+    }
+
+    // 2. Генерируем новый токен
+    const token = createToken(user.id, user.role);
+
+    // 3. Устанавливаем токен и возвращаем ответ
+    const response = NextResponse.json({ message: 'Вход успешен', user: { id: user.id, email: user.email, role: user.role } });
+    response.cookies.set('auth_token', token, { 
+        httpOnly: true, 
+        secure: process.env.NODE_ENV === 'production', 
+        maxAge: 60 * 60 * 24 * 7, 
+        path: '/' 
     });
 
-    const res = NextResponse.json({ success: true });
-    res.cookies.set("auth_token", token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "lax",
-      path: "/",
-    });
-
-    return res;
-  } catch (err: any) {
-    return NextResponse.json(
-      { success: false, error: err?.message ?? "Server error" },
-      { status: 500 }
-    );
+    return response;
+  } catch (error) {
+    console.error('Ошибка входа:', error);
+    return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 });
   }
 }
