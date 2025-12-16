@@ -1,8 +1,8 @@
 // app/dashboard/page.tsx
-import { Package, Truck, Zap, ShoppingCart } from 'lucide-react';
+import { Package, Truck, Zap, ShoppingCart, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Card, CardHeader, CardContent } from '@/components/ui/card'; // Предполагаем наличие Card компонента
+// УДАЛЕН ИМПОРТ: import { Card, CardHeader, CardContent } from '@/components/ui/card'; // Предполагаем наличие Card компонента
 
 // Временная заглушка для Card (можете использовать свою или создать)
 const Card = ({ children, className = '' }: { children: React.ReactNode, className?: string }) => (
