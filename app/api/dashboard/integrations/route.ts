@@ -1,88 +1,133 @@
 // app/api/dashboard/integrations/route.ts
-
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { encrypt } from '@/lib/encryption';
-import { headers } from 'next/headers';
+import { verifyToken } from '@/lib/auth'; // Используем логику JWT (JOSE)
 
-// Мок-функция для проверки API-ключа Мой Склад
-async function testMoySkladConnection(apiKey: string) {
-  // 💡 В реальном проекте здесь будет fetch к API Мой Склад
-  // для проверки, валидны ли креды. Сейчас просто симулируем успех.
-  return { success: true, message: "Connection successful" }; 
+// ----------------------------------------------------
+// Вспомогательная функция для авторизации
+// ----------------------------------------------------
+
+async function authenticateRequest(req: Request) {
+    const token = req.headers.get('cookie')?.split('; ').find(row => row.startsWith('auth_token='))?.split('=')[1];
+
+    if (!token) {
+        return { error: 'Необходима авторизация', status: 401 };
+    }
+
+    const payload = await verifyToken(token);
+
+    if (!payload || !payload.userId) {
+        return { error: 'Недействительный токен', status: 401 };
+    }
+
+    return { userId: payload.userId as string };
 }
+
+// ----------------------------------------------------
+// GET: Получение статуса интеграции
+// ----------------------------------------------------
+
+export async function GET(req: Request) {
+    const authResult = await authenticateRequest(req);
+    if (authResult.error) {
+        return NextResponse.json({ message: authResult.error }, { status: authResult.status });
+    }
+    const { userId } = authResult;
+
+    try {
+        const integration = await prisma.moySkladIntegration.findUnique({
+            where: { userId },
+            // Не возвращаем зашифрованные логин/пароль!
+            select: {
+                id: true,
+                organizationId: true,
+                storeId: true,
+                priceTypeHref: true,
+                msBrandId: true,
+                createdAt: true,
+            }
+        });
+
+        if (!integration) {
+            return NextResponse.json({ 
+                status: 'inactive', 
+                message: 'Интеграция с Мой Склад не настроена.' 
+            }, { status: 200 });
+        }
+
+        return NextResponse.json({ 
+            status: 'active', 
+            config: integration 
+        }, { status: 200 });
+
+    } catch (error) {
+        console.error('Integration fetch error:', error);
+        return NextResponse.json({ message: 'Внутренняя ошибка сервера при получении интеграции' }, { status: 500 });
+    }
+}
+
+
+// ----------------------------------------------------
+// POST: Сохранение/Обновление интеграции
+// ----------------------------------------------------
 
 export async function POST(req: Request) {
-  const headerList = headers();
-  // Получаем ID пользователя, который был установлен в middleware
-  const userId = headerList.get('X-User-Id'); 
-  
-  if (!userId) {
-    return NextResponse.json({ error: 'Необходимо авторизоваться.' }, { status: 401 });
-  }
-
-  try {
-    const { integrationType, key, companyName } = await req.json();
-
-    if (!integrationType || !key) {
-      return NextResponse.json({ error: 'Тип интеграции и ключ обязательны' }, { status: 400 });
+    const authResult = await authenticateRequest(req);
+    if (authResult.error) {
+        return NextResponse.json({ message: authResult.error }, { status: authResult.status });
     }
-
-    // 1. Проверка ключа (симуляция)
-    const testResult = await testMoySkladConnection(key);
-    if (!testResult.success) {
-      return NextResponse.json({ error: 'Тест интеграции не пройден', details: testResult.message }, { status: 400 });
-    }
-
-    // 2. ✅ Шифрование перед сохранением
-    const encryptedKey = encrypt(key);
+    const { userId } = authResult;
     
-    // 3. Сохранение/обновление зашифрованного ключа
-    const integration = await prisma.integration.upsert({
-      where: { 
-        userId_type: { userId, type: integrationType } 
-      } as any, 
-      update: { 
-        apiKey: encryptedKey, 
-        isEnabled: true,
-        companyName: companyName || null,
-        lastSync: new Date(),
-      },
-      create: { 
-        userId, 
-        type: integrationType, 
-        apiKey: encryptedKey, 
-        isEnabled: true,
-        companyName: companyName || null,
-        lastSync: new Date(),
-      },
-    });
+    try {
+        // Деструктурируем обязательные и необязательные поля
+        const { 
+            msLogin, 
+            msPassword, 
+            organizationId, 
+            storeId, 
+            priceTypeHref,
+            ...optionalFields 
+        } = await req.json();
 
-    return NextResponse.json({ message: 'Интеграция успешно сохранена и активирована.', integration }, { status: 200 });
+        if (!msLogin || !msPassword || !organizationId || !storeId) {
+            return NextResponse.json({ message: 'Обязательные поля Мой Склад не заполнены' }, { status: 400 });
+        }
 
-  } catch (error) {
-    console.error('Ошибка интеграции:', error);
-    return NextResponse.json({ error: 'Ошибка сервера при сохранении ключа или шифровании.' }, { status: 500 });
-  }
-}
+        // 2. Шифрование учетных данных (ЗАГЛУШКА)
+        // В реальном приложении здесь должна быть функция шифрования
+        const encryptedLogin = `ENCRYPTED_${msLogin}`;
+        const encryptedPassword = `ENCRYPTED_${msPassword}`; 
 
-// GET-маршрут для получения статусов интеграций
-export async function GET() {
-  const headerList = headers();
-  const userId = headerList.get('X-User-Id');
-  
-  if (!userId) {
-    return NextResponse.json({ error: 'Необходимо авторизоваться.' }, { status: 401 });
-  }
+        // 3. Сохранение/обновление зашифрованного ключа
+        // ИСПРАВЛЕНИЕ: Используем правильное имя модели 'moySkladIntegration'
+        const data = {
+            msLogin: encryptedLogin,
+            msPassword: encryptedPassword,
+            organizationId,
+            storeId,
+            priceTypeHref,
+            // Распространяем необязательные ID характеристик (msBrandId, msColorId и т.д.)
+            ...optionalFields,
+        };
+        
+        const integration = await prisma.moySkladIntegration.upsert({ 
+            where: { 
+                userId: userId // Уникальная связь по userId
+            },
+            update: data,
+            create: {
+                userId,
+                ...data, // Включаем все поля для создания
+            }
+        });
 
-  try {
-    // Получаем список интеграций, НЕ запрашивая apiKey
-    const integrations = await prisma.integration.findMany({
-      where: { userId },
-      select: { type: true, isEnabled: true, companyName: true, lastSync: true, createdAt: true, },
-    });
-    return NextResponse.json(integrations, { status: 200 });
-  } catch (error) {
-    return NextResponse.json({ error: 'Ошибка сервера при получении данных.' }, { status: 500 });
-  }
+        return NextResponse.json({ 
+            message: 'Интеграция успешно сохранена.', 
+            integrationId: integration.id 
+        }, { status: 200 });
+
+    } catch (error) {
+        console.error('Integration save error:', error);
+        return NextResponse.json({ message: 'Внутренняя ошибка сервера при сохранении интеграции' }, { status: 500 });
+    }
 }
