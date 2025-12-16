@@ -1,292 +1,99 @@
-/* =====================================================
-   FF24 GLOBAL STYLES — PREMIUM INDUSTRIAL SYSTEM
-===================================================== */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-/* -------------------- THEME -------------------- */
+/* ---------------------------------------------------- */
+/* 1. БАЗОВАЯ КОНФИГУРАЦИЯ И ПЕРЕМЕННЫЕ (TAILWIND) */
+/* ---------------------------------------------------- */
 
-:root {
-  --ff24-bg: #050505;
-  --ff24-black: #0a0a0a;
+@layer base {
+  :root {
+    /* Основной фон и текст */
+    --background: 240 10% 3.9%;   /* gray-950 */
+    --foreground: 0 0% 98%;       /* white */
 
-  --ff24-purple: #28064f;
-  --ff24-neon-purple: #8a2be2;
+    /* Акцентный цвет (Фирменный - Accent) */
+    --accent-DEFAULT: 217 90% 64%; /* Синий акцент */
 
-  --ff24-accent: #ffeb3b;
-  --ff24-accent-soft: rgba(255, 235, 59, 0.25);
+    /* Основной цвет (Primary) */
+    --primary-DEFAULT: 222.2 84% 4.9%; /* gray-950 */
+    
+    /* Дополнительные оттенки */
+    --card: 224 71.4% 4.1%; /* gray-900 */
+    --card-foreground: 0 0% 98%;
 
-  --ff24-text: #eaeaea;
-  --ff24-muted: #9a9a9a;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 0 0% 98%;
 
-  --ff24-border: rgba(255, 255, 255, 0.12);
-}
+    --border: 217.2 32.4% 15%; /* gray-800 */
+    --input: 217.2 32.4% 15%;
+    --ring: 217 90% 64%; /* Используем акцентный цвет для фокуса */
 
-/* -------------------- RESET -------------------- */
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
+    --muted: 217.2 32.4% 15%;
+    --muted-foreground: 215 20.2% 65.1%;
 
-html,
-body {
-  margin: 0;
-  padding: 0;
-  background: var(--ff24-bg);
-  color: var(--ff24-text);
-  font-family: Inter, -apple-system, BlinkMacSystemFont,
-    "Segoe UI", sans-serif;
-  -webkit-font-smoothing: antialiased;
-}
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
 
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-button {
-  font-family: inherit;
-  background: none;
-  border: none;
-}
-
-img {
-  max-width: 100%;
-  display: block;
-}
-
-/* =====================================================
-   ROOT LAYOUT
-===================================================== */
-
-.ff24-root {
-  width: 100%;
-  overflow-x: hidden;
-}
-
-/* =====================================================
-   HERO (Landing)
-===================================================== */
-
-.ff24-hero {
-  position: relative;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  padding: 0 8vw;
-  background:
-    radial-gradient(
-      800px 400px at 70% 20%,
-      rgba(40, 6, 79, 0.35),
-      transparent 70%
-    ),
-    #050505;
-}
-
-.ff24-hero::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(
-      600px 300px at 30% 60%,
-      rgba(138, 43, 226, 0.25),
-      transparent 70%
-    );
-  pointer-events: none;
-}
-
-.ff24-hero-content {
-  max-width: 720px;
-  z-index: 2;
-}
-
-.ff24-title {
-  font-size: clamp(48px, 6vw, 86px);
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1.05;
-}
-
-.ff24-title span {
-  color: var(--ff24-accent);
-}
-
-.ff24-subtitle {
-  margin-top: 28px;
-  font-size: 20px;
-  color: var(--ff24-muted);
-  line-height: 1.6;
-}
-
-.ff24-hero-actions {
-  margin-top: 44px;
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-
-/* -------------------- BUTTONS -------------------- */
-
-.ff24-btn-primary {
-  padding: 16px 30px;
-  background: linear-gradient(
-    135deg,
-    var(--ff24-accent),
-    #ffe066
-  );
-  color: #000;
-  font-weight: 600;
-  border-radius: 12px;
-  box-shadow: 0 0 30px rgba(255, 235, 59, 0.45);
-  transition: all 0.25s ease;
-}
-
-.ff24-btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 0 44px rgba(255, 235, 59, 0.65);
-}
-
-.ff24-btn-secondary {
-  padding: 16px 30px;
-  border: 1px solid var(--ff24-border);
-  border-radius: 12px;
-  color: var(--ff24-text);
-  transition: border-color 0.25s ease;
-}
-
-.ff24-btn-secondary:hover {
-  border-color: var(--ff24-accent);
-}
-
-/* =====================================================
-   SECTIONS
-===================================================== */
-
-.ff24-section {
-  padding: 120px 8vw;
-}
-
-.ff24-section h2 {
-  font-size: 44px;
-  margin-bottom: 60px;
-}
-
-/* -------------------- ABOUT / ADVANTAGES -------------------- */
-
-.ff24-about-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 40px;
-}
-
-.ff24-about-card {
-  padding: 36px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--ff24-border);
-  border-radius: 22px;
-  backdrop-filter: blur(8px);
-}
-
-.ff24-about-card h3 {
-  margin-bottom: 14px;
-  font-size: 20px;
-}
-
-.ff24-about-card p {
-  color: var(--ff24-muted);
-  line-height: 1.6;
-}
-
-/* =====================================================
-   CONTACTS
-===================================================== */
-
-.ff24-contacts-box {
-  display: grid;
-  gap: 18px;
-  font-size: 18px;
-  color: var(--ff24-muted);
-}
-
-/* =====================================================
-   LOGIN
-===================================================== */
-
-.login-form {
-  display: grid;
-  gap: 16px;
-}
-
-.login-label {
-  font-size: 14px;
-  color: var(--ff24-muted);
-}
-
-.login-input {
-  padding: 14px 16px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--ff24-border);
-  color: var(--ff24-text);
-  outline: none;
-}
-
-.login-input:focus {
-  border-color: var(--ff24-accent);
-}
-
-.login-submit {
-  margin-top: 12px;
-  padding: 16px;
-  border-radius: 14px;
-  background: linear-gradient(
-    135deg,
-    var(--ff24-accent),
-    #ffe066
-  );
-  color: #000;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 0 30px rgba(255, 235, 59, 0.4);
-  transition: all 0.25s ease;
-}
-
-.login-submit:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 0 42px rgba(255, 235, 59, 0.6);
-}
-
-.login-submit:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* =====================================================
-   DASHBOARD BASE
-===================================================== */
-
-.dashboard-card {
-  padding: 28px;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--ff24-border);
-}
-
-/* =====================================================
-   RESPONSIVE
-===================================================== */
-
-@media (max-width: 768px) {
-  .ff24-hero {
-    padding: 0 6vw;
+    --radius: 0.5rem; /* Закругление углов */
   }
 
-  .ff24-section {
-    padding: 80px 6vw;
+  /* Применяем цвета к тегу body */
+  body {
+    @apply bg-[--background] text-[--foreground];
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+}
+
+
+/* ---------------------------------------------------- */
+/* 2. ПОЛЬЗОВАТЕЛЬСКИЕ УТИЛИТЫ И КОМПОНЕНТЫ */
+/* ---------------------------------------------------- */
+
+@layer utilities {
+  /* Кастомные цвета Tailwind (для удобства использования в классах) */
+  .bg-primary-DEFAULT {
+    background-color: hsl(var(--primary-DEFAULT));
+  }
+  .bg-accent-DEFAULT {
+    background-color: hsl(var(--accent-DEFAULT));
+  }
+  .text-accent-DEFAULT {
+    color: hsl(var(--accent-DEFAULT));
+  }
+  .border-accent-DEFAULT {
+    border-color: hsl(var(--accent-DEFAULT));
   }
 
-  .ff24-title {
-    font-size: 42px;
+  /* Утилита для неоновой тени (ключевой элемент дизайна) */
+  .shadow-neon {
+    box-shadow: 0 0 15px hsl(var(--accent-DEFAULT) / 0.5), 
+                0 0 5px hsl(var(--accent-DEFAULT) / 0.3);
+  }
+  .shadow-neon-sm {
+    box-shadow: 0 0 8px hsl(var(--accent-DEFAULT) / 0.4);
+  }
+  .hover\:shadow-neon-sm:hover {
+    box-shadow: 0 0 8px hsl(var(--accent-DEFAULT) / 0.4);
+  }
+}
+
+/* ---------------------------------------------------- */
+/* 3. SHADCN/UI (ПЕРЕОПРЕДЕЛЕНИЕ КОМПОНЕНТОВ) */
+/* ---------------------------------------------------- */
+
+@layer components {
+  /* Input/Select (оформление по умолчанию для всего проекта) */
+  input[type="text"], 
+  input[type="password"], 
+  input[type="email"], 
+  textarea,
+  select {
+    @apply w-full p-3 rounded-lg bg-gray-800 border border-gray-700 text-white 
+           focus:border-accent-DEFAULT focus:ring-1 focus:ring-accent-DEFAULT 
+           transition-colors duration-200 outline-none;
   }
 }
