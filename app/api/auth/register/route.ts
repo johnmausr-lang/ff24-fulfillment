@@ -1,7 +1,7 @@
 // app/api/auth/register/route.ts
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/prisma'; // <-- ИСПРАВЛЕНИЕ: Именованный импорт
 import { createToken } from '@/lib/auth';
 
 export async function POST(req: Request) {
@@ -24,13 +24,11 @@ export async function POST(req: Request) {
                 email,
                 password: hashedPassword,
                 name,
-                // Роль по умолчанию устанавливается в схеме Prisma (@default(USER))
-                // Если нужна другая логика, ее можно добавить здесь
             },
         });
 
         // 2. Генерируем токен
-        const token = createToken(newUser.id, newUser.role); // Используем newUser.role (полученное из БД)
+        const token = createToken(newUser.id, newUser.role); 
 
         // 3. Устанавливаем токен и возвращаем ответ
         const response = NextResponse.json({ 
