@@ -1,3 +1,5 @@
+/* app/globals.css */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -93,7 +95,7 @@
   textarea,
   select {
     @apply w-full p-3 rounded-lg bg-gray-800 border border-gray-700 text-white 
-           focus:border-accent-DEFAULT focus:ring-1 focus:ring-accent-DEFAULT 
+           focus:border-accent-DEFAULT focus:ring-1 focus:ring-[hsl(var(--ring))] 
            transition-colors duration-200 outline-none;
   }
 }
