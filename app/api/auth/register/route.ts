@@ -1,7 +1,7 @@
 // app/api/auth/register/route.ts
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { prisma } from '@/lib/prisma'; // <-- ИСПРАВЛЕНИЕ: Именованный импорт
+import { prisma } from '@/lib/prisma'; // <-- ИСПРАВЛЕНИЕ: Используется именованный импорт { prisma }
 import { createToken } from '@/lib/auth';
 
 export async function POST(req: Request) {
