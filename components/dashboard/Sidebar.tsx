@@ -1,67 +1,58 @@
+// components/dashboard/Sidebar.tsx
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import Image from "next/image";
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { LayoutDashboard, Package, ShoppingCart, TrendingUp, Settings, FileText, Zap } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+const navItems = [
+    { href: '/dashboard', label: 'Дашборд', icon: LayoutDashboard },
+    { href: '/dashboard/inventory', label: 'Запасы', icon: Package },
+    { href: '/dashboard/orders', label: 'Заказы', icon: ShoppingCart },
+    { href: '/dashboard/reports', label: 'Отчеты', icon: FileText },
+    { href: '/dashboard/analytics', label: 'Аналитика', icon: TrendingUp },
+    { href: '/dashboard/integrations', label: 'Интеграции', icon: Settings },
+];
 
 export default function Sidebar() {
-  const path = usePathname();
+    const pathname = usePathname();
 
-  const links = [
-    { href: "/dashboard", label: "Главная" },
-    { href: "/dashboard/orders", label: "Заказы" },
-    { href: "/dashboard/stock", label: "Остатки" },
-    { href: "/dashboard/supply/new", label: "Приёмка товара" },
-    { href: "/dashboard/profile", label: "Профиль" },
-  ];
-
-  return (
-    <aside
-      className="
-        w-64 bg-black/40 backdrop-blur-xl border-r border-white/10
-        flex flex-col justify-between z-20
-      "
-    >
-      <div>
-        <div className="px-6 py-8 flex items-center gap-3">
-          <Image
-            src="/logo-ff24.png"
-            alt="FF24"
-            width={42}
-            height={42}
-            className="drop-shadow-[0_0_15px_rgba(228,255,0,0.6)]"
-          />
-          <span className="text-xl font-semibold tracking-wide">
-            FF24
-          </span>
-        </div>
-
-        <nav className="mt-4">
-          {links.map((l) => {
-            const active = path === l.href;
-
-            return (
-              <Link
-                key={l.href}
-                href={l.href}
-                className={`
-                  block px-6 py-3 my-1 rounded-md transition
-                  ${active
-                    ? "bg-white/10 text-[var(--ff24-acid)] border-l-4 border-[var(--ff24-acid)]"
-                    : "text-white/70 hover:bg-white/5 hover:text-white"
-                  }
-                `}
-              >
-                {l.label}
-              </Link>
-            );
-          })}
-        </nav>
-      </div>
-
-      <div className="px-6 py-6 text-white/40 text-xs">
-        © 2025 FF24 Fulfillment
-      </div>
-    </aside>
-  );
+    return (
+        <aside className="w-64 bg-gray-900 flex flex-col border-r border-gray-700 h-full fixed top-0 left-0 pt-20">
+            <div className="p-4 flex items-center justify-center">
+                <Zap className="h-6 w-6 text-accent-DEFAULT" />
+                <h1 className="text-xl font-bold text-white ml-2">FF24 ЛКК</h1>
+            </div>
+            
+            <nav className="flex-1 px-4 py-6 space-y-2">
+                {navItems.map((item) => {
+                    const isActive = pathname === item.href;
+                    const Icon = item.icon;
+                    return (
+                        <Link key={item.href} href={item.href}>
+                            <div className={cn(
+                                "flex items-center p-3 rounded-lg transition-colors duration-200 group",
+                                isActive 
+                                    ? "bg-accent-DEFAULT text-gray-900 font-semibold shadow-neon-sm" 
+                                    : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                            )}>
+                                <Icon className={cn(
+                                    "h-5 w-5 mr-3",
+                                    isActive ? "text-gray-900" : "text-gray-500 group-hover:text-accent-DEFAULT"
+                                )} />
+                                {item.label}
+                            </div>
+                        </Link>
+                    );
+                })}
+            </nav>
+            
+            {/* Дополнительный блок для роли/пользователя */}
+            <div className="p-4 border-t border-gray-700">
+                <p className="text-xs text-gray-500">Пользователь: CLIENT</p>
+                <button className="text-xs text-red-500 hover:text-red-400 mt-1">Выход</button>
+            </div>
+        </aside>
+    );
 }
