@@ -1,7 +1,7 @@
 // app/api/auth/login/route.ts
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/prisma'; // <-- ИСПРАВЛЕНИЕ: Именованный импорт
 import { createToken } from '@/lib/auth';
 
 export async function POST(req: Request) {
@@ -14,12 +14,11 @@ export async function POST(req: Request) {
 
         const user = await prisma.user.findUnique({
             where: { email },
-            // ВАЖНО: Явно выбираем поле 'role', чтобы оно было доступно в типе
             select: {
                 id: true,
                 email: true,
                 password: true,
-                role: true, // <--- ИСПРАВЛЕНИЕ: ДОБАВЛЕНО ПОЛЕ ROLE
+                role: true, 
                 name: true,
                 createdAt: true,
             }
@@ -30,7 +29,6 @@ export async function POST(req: Request) {
         }
 
         // 2. Генерируем новый токен
-        // Теперь user.role существует и доступен
         const token = createToken(user.id, user.role);
 
         // 3. Устанавливаем токен и возвращаем ответ
