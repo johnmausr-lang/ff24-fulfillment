@@ -1,83 +1,122 @@
-"use client";
+// app/dashboard/page.tsx
+import { Package, Truck, Zap, ShoppingCart } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { Card, CardHeader, CardContent } from '@/components/ui/card'; // Предполагаем наличие Card компонента
 
-import { useEffect, useState } from "react";
-import StatsCard from "@/components/dashboard/StatsCard";
-import SalesChart from "@/components/dashboard/Charts/SalesChart";
-import StockChart from "@/components/dashboard/Charts/StockChart";
+// Временная заглушка для Card (можете использовать свою или создать)
+const Card = ({ children, className = '' }: { children: React.ReactNode, className?: string }) => (
+    <div className={`rounded-xl bg-gray-800 border border-gray-700 p-6 ${className}`}>
+        {children}
+    </div>
+);
+const CardHeader = ({ children }: { children: React.ReactNode }) => (
+    <div className="mb-4 text-gray-400 text-sm font-semibold">{children}</div>
+);
+const CardContent = ({ children }: { children: React.ReactNode }) => (
+    <div className="text-white text-3xl font-bold">{children}</div>
+);
 
-import { MSOrder, MSInventoryRow } from "@/lib/moysklad/types";
+// Моки данных
+const stats = [
+    { 
+        title: 'Активные Заказы', 
+        value: '145', 
+        icon: ShoppingCart, 
+        color: 'text-accent-DEFAULT', 
+        link: '/dashboard/orders' 
+    },
+    { 
+        title: 'Остаток SKU', 
+        value: '3,120 ед.', 
+        icon: Package, 
+        color: 'text-blue-400', 
+        link: '/dashboard/inventory' 
+    },
+    { 
+        title: 'Средняя скорость сбора', 
+        value: '4.2 мин', 
+        icon: Zap, 
+        color: 'text-yellow-400', 
+        link: '/dashboard/analytics' 
+    },
+    { 
+        title: 'Интеграция с МС', 
+        value: 'Активна', 
+        icon: CheckCircle, 
+        color: 'text-green-500', 
+        link: '/dashboard/integrations' 
+    },
+];
+
+const QuickActions = () => (
+    <div className="col-span-full lg:col-span-1">
+        <h2 className="text-2xl font-bold mb-4 text-white">Быстрые Действия</h2>
+        <div className="space-y-4">
+            <Button size="lg" className="w-full text-lg" asChild>
+                <Link href="/dashboard/orders/new">Создать Новый Заказ</Link>
+            </Button>
+            <Button variant="secondary" size="lg" className="w-full text-lg" asChild>
+                <Link href="/dashboard/inventory/receipt">Оформить Поступление</Link>
+            </Button>
+            <Button variant="secondary" size="lg" className="w-full text-lg">
+                Запустить Принудительную Синхронизацию
+            </Button>
+        </div>
+    </div>
+);
+
 
 export default function DashboardPage() {
-  const [orders, setOrders] = useState<MSOrder[]>([]);
-  const [stock, setStock] = useState<MSInventoryRow[]>([]);
-  const [loading, setLoading] = useState(true);
+    return (
+        <div className="space-y-10">
+            <h1 className="text-4xl font-extrabold text-white">Главный Дашборд</h1>
+            
+            {/* Секция 1: Метрики */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {stats.map((stat) => (
+                    <Card key={stat.title}>
+                        <Link href={stat.link}>
+                            <CardHeader>
+                                <stat.icon className={`h-6 w-6 ${stat.color} mb-2`} />
+                                {stat.title}
+                            </CardHeader>
+                            <CardContent>{stat.value}</CardContent>
+                        </Link>
+                    </Card>
+                ))}
+            </div>
 
-  useEffect(() => {
-    async function load() {
-      try {
-        // Load orders
-        const r1 = await fetch("/api/orders");
-        const d1 = await r1.json();
-        setOrders(d1.data || []);
+            {/* Секция 2: Заказы и Быстрые Действия */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                
+                {/* Таблица последних заказов (Мок) */}
+                <div className="lg:col-span-2">
+                    <h2 className="text-2xl font-bold mb-4 text-white">Последние Заказы (MS Sync)</h2>
+                    <Card className="p-0">
+                        <div className="p-4 border-b border-gray-700 font-semibold text-gray-300 grid grid-cols-4">
+                            <span>ID Заказа</span>
+                            <span>Статус</span>
+                            <span>Маркетплейс</span>
+                            <span>Дата Создания</span>
+                        </div>
+                        <div className="divide-y divide-gray-700">
+                            {[1, 2, 3, 4].map(i => (
+                                <div key={i} className="p-4 grid grid-cols-4 hover:bg-gray-700 transition-colors">
+                                    <span className="text-accent-DEFAULT">#FF24-{1000 + i}</span>
+                                    <span className="text-yellow-400">В сборке</span>
+                                    <span>Wildberries</span>
+                                    <span className="text-gray-400">2025-12-16</span>
+                                </div>
+                            ))}
+                        </div>
+                    </Card>
+                </div>
 
-        // Load stock
-        const r2 = await fetch("/api/inventory");
-        const d2 = await r2.json();
-        setStock(d2.data || []);
-      } finally {
-        setLoading(false);
-      }
-    }
+                {/* Быстрые Действия */}
+                <QuickActions />
+            </div>
 
-    load();
-  }, []);
-
-  // ---------------------------
-  // Charts: sales & stock
-  // ---------------------------
-  const salesData = orders.map((o) => ({
-    name: o.name,
-    value: (o as any).sum ?? Math.floor(Math.random() * 200) + 20, // fallback for demo
-  }));
-
-  const stockData = stock.map((s) => ({
-    name: s.assortment?.name || "—",
-    value: s.stock,
-  }));
-
-  return (
-    <div className="ff24-dashboard-page">
-
-      {/* Title */}
-      <h1 className="text-4xl font-bold tracking-tight mb-10 ff24-title-gradient">
-        Панель управления
-      </h1>
-
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-14">
-        <StatsCard title="Всего заказов" value={orders.length} />
-        <StatsCard title="Позиций на складе" value={stock.length} />
-        <StatsCard title="Последний заказ" value={orders[0]?.name || "—"} />
-      </div>
-
-      {/* Graphs */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-        <div className="ff24-panel p-6">
-          <h2 className="text-xl font-semibold mb-4">График продаж</h2>
-          <SalesChart data={salesData} />
         </div>
-
-        <div className="ff24-panel p-6">
-          <h2 className="text-xl font-semibold mb-4">Складские остатки</h2>
-          <StockChart data={stockData} />
-        </div>
-      </div>
-
-      {loading && (
-        <div className="text-white/50 mt-10 text-center animate-pulse">
-          Загрузка данных...
-        </div>
-      )}
-    </div>
-  );
+    );
 }
