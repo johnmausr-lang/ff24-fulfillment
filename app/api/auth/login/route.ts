@@ -1,7 +1,7 @@
 // app/api/auth/login/route.ts
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { prisma } from '@/lib/prisma'; // <-- ИСПРАВЛЕНИЕ: Именованный импорт
+import { prisma } from '@/lib/prisma'; // <-- ИСПРАВЛЕНИЕ: Используется именованный импорт { prisma }
 import { createToken } from '@/lib/auth';
 
 export async function POST(req: Request) {
@@ -14,11 +14,12 @@ export async function POST(req: Request) {
 
         const user = await prisma.user.findUnique({
             where: { email },
+            // Включаем role для создания токена
             select: {
                 id: true,
                 email: true,
                 password: true,
-                role: true, 
+                role: true,
                 name: true,
                 createdAt: true,
             }
