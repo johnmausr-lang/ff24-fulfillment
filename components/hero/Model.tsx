@@ -1,44 +1,35 @@
 // components/hero/Model.tsx
+// ВРЕМЕННАЯ ЗАГЛУШКА, чтобы пройти компиляцию
 
 import React, { useRef } from 'react';
-import { useGLTF } from '@react-three/drei';
+// Импорт useGLTF здесь не нужен, так как мы не загружаем файл
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
-// ВАЖНО: Замените 'your_model_path.glb' на фактический путь к вашему 3D-файлу
-const MODEL_PATH = '/models/chair.glb'; 
-
-// Если модель использует анимацию, нужно будет добавить useAnimations, но начнем с простого вращения
-
+// Временный компонент Model, который рендерит простой куб
 export function Model(props: any) {
-  // 1. Загрузка модели с помощью useGLTF
-  // Этот хук загружает модель и ее материалы.
-  const { scene } = useGLTF(MODEL_PATH);
-  
-  // 2. Ссылка на модель для управления ее положением
-  const modelRef = useRef<THREE.Group>(null!);
+  const meshRef = useRef<THREE.Mesh>(null!);
 
-  // 3. Анимация: вращение модели каждый кадр (опционально)
+  // Простое вращение для демонстрации
   useFrame((state, delta) => {
-    // Вращение по оси Y для создания эффекта движения
-    if (modelRef.current) {
-      modelRef.current.rotation.y += delta * 0.5; // Скорость вращения
+    if (meshRef.current) {
+      meshRef.current.rotation.y += delta * 0.5;
     }
   });
 
-  // 4. Рендеринг
   return (
-    <group {...props} dispose={null}>
-      <primitive
-        ref={modelRef}
-        object={scene}
-        scale={0.5} // Настройте размер модели
-        position={[0, 0, 0]} // Настройте положение
-      />
-    </group>
+    <mesh
+      {...props}
+      ref={meshRef}
+      scale={1}
+      position={[0, 0, 0]}
+      // Полупрозрачный куб
+    >
+      <boxGeometry args={[1, 1, 1]} /> 
+      <meshStandardMaterial color="#3498db" transparent opacity={0.8} />
+    </mesh>
   );
 }
 
-// 5. Предварительная загрузка для оптимизации
-// Это помогает браузеру загрузить 3D-файл до того, как он понадобится
-useGLTF.preload(MODEL_PATH);
+// Убедитесь, что здесь нет вызова useGLTF.preload, чтобы не вызвать ошибку
+// useGLTF.preload(MODEL_PATH); // Эту строку мы удаляем
