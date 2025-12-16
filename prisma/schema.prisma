@@ -12,30 +12,40 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// 3. ENUM для ролей пользователей
-// Это критически важно для устранения ошибки типизации
+// 3. ENUM для ролей пользователей (для User.role)
 enum UserRole {
   USER      // Основной пользователь ЛКК (продавец)
   MANAGER   // Сотрудник фулфилмента или менеджер
   ADMIN     // Супер-администратор системы
 }
 
-// 4. Модель пользователя
-model User {
-  id        String     @id @default(cuid())
-  email     String     @unique
-  password  String
-  name      String?
-  // Поле 'role' с дефолтным значением 'USER'
-  role      UserRole   @default(USER) 
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-
-  // Интеграция с Мой Склад (MoySkladIntegration)
-  integration MoySkladIntegration?
+// 4. ENUM для статусов заказов (для Order.status)
+enum OrderStatus {
+  NEW           // Новый заказ (поступил из МП)
+  PACKING       // В сборке / Упаковка
+  READY_TO_SHIP // Готов к отгрузке
+  SHIPPED       // Отгружен (передан курьеру/в ПВЗ)
+  DELIVERED     // Доставлен клиенту
+  CANCELLED     // Отменен
 }
 
-// 5. Модель для хранения интеграционных данных Мой Склад
+
+// 5. Модель пользователя
+model User {
+  id              String     @id @default(cuid())
+  email           String     @unique
+  password        String
+  name            String?
+  role            UserRole   @default(USER) 
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  // Связи
+  integration     MoySkladIntegration?
+  orders          Order[]
+}
+
+// 6. Модель для хранения интеграционных данных Мой Склад
 model MoySkladIntegration {
   id              String  @id @default(cuid())
   // Связь с пользователем 1:1
@@ -46,10 +56,10 @@ model MoySkladIntegration {
   msLogin         String
   msPassword      String
   
-  // Константы
+  // Константы для MS
   organizationId  String
   storeId         String
-  priceTypeHref   String
+  priceTypeHref   String? // Может быть необязательным
   
   // ID характеристик (для фильтрации и создания товаров)
   msBrandId       String?
@@ -60,4 +70,25 @@ model MoySkladIntegration {
   
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+}
+
+// 7. Модель заказа
+model Order {
+  id             String      @id @default(cuid())
+  userId         String      // Пользователь, создавший/получивший заказ
+  
+  // Связи
+  user           User        @relation(fields: [userId], references: [id])
+  
+  // Основные данные
+  externalId     String?     // ID из маркетплейса/внешней системы
+  msOrderId      String?     @unique // ID документа в Мой Склад
+  shipmentDate   DateTime?   // Дата отгрузки
+  totalAmount    Float
+  
+  // Статус
+  status         OrderStatus @default(NEW)
+  
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
 }
