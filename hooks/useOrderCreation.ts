@@ -1,78 +1,78 @@
 // hooks/useOrderCreation.ts
+
 "use client";
 
-import { create } from "zustand";
+import { create } from 'zustand';
 
-// Интерфейс для продукта в заказе
-export interface OrderItem {
-  id: string; // ID в БД FF24
-  msId: string; // ID товара в Мой Склад
+// 1. Определение базовых типов
+interface CartItem {
+  id: string;
   name: string;
-  sku: string; // Артикул
-  qty: number; // Количество в этом заказе
-  stockAvailable: number; // Доступно на складе
+  price: number;
+  quantity: number;
 }
 
+// 2. Определение состояния (Исправлено: добавлены totalItems и totalPrice)
 interface OrderCreationState {
-  items: OrderItem[];
-  // Добавляем или увеличиваем количество
-  addItem: (product: { id: string, msId: string, name: string, sku: string, stockAvailable: number }) => void;
-  // Изменяем количество конкретного товара
-  updateItemQty: (id: string, qty: number) => void;
-  // Удаляем товар из заказа
+  items: CartItem[];
+  totalItems: number; // <-- ДОБАВЛЕНО для устранения Type Error
+  totalPrice: number; // <-- ДОБАВЛЕНО для устранения Type Error
+
+  addItem: (item: CartItem) => void;
   removeItem: (id: string) => void;
-  // Очищаем заказ
-  clearOrder: () => void;
+  updateQuantity: (id: string, quantity: number) => void;
+  clearCart: () => void;
 }
 
+// 3. Вспомогательная функция для вычисления итоговых значений
+const getTotals = (items: CartItem[]) => {
+    const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
+    const totalPrice = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    return { totalItems, totalPrice };
+}
+
+// 4. Определение хука Zustand
 export const useOrderCreation = create<OrderCreationState>((set, get) => ({
   items: [],
+  totalItems: 0,
+  totalPrice: 0,
 
-  addItem: (product) => {
-    const { items } = get();
-    const existingItem = items.find((i) => i.id === product.id);
+  addItem: (item) => set(state => {
+    const existingItem = state.items.find(i => i.id === item.id);
+    let newItems;
 
     if (existingItem) {
       // Если товар уже есть, увеличиваем количество
-      set({
-        items: items.map(item =>
-          item.id === product.id
-            ? { ...item, qty: Math.min(item.qty + 1, item.stockAvailable) }
-            : item
-        ),
-      });
+      newItems = state.items.map(i => 
+        i.id === item.id ? { ...i, quantity: i.quantity + item.quantity } : i
+      );
     } else {
-      // Если товара нет, добавляем его (с qty=1)
-      set({
-        items: [
-          ...items,
-          {
-            ...product,
-            qty: 1,
-            // Добавим проверку, чтобы не превысить доступный остаток
-            qty: Math.min(1, product.stockAvailable) 
-          }
-        ]
-      });
+      // Иначе добавляем новый товар
+      newItems = [...state.items, item];
     }
-  },
+    
+    // Обновляем общие значения
+    const { totalItems, totalPrice } = getTotals(newItems);
+    
+    return { items: newItems, totalItems, totalPrice };
+  }),
 
-  updateItemQty: (id: string, qty: number) => {
-    set({
-      items: get().items.map((item) => {
-        if (item.id === id) {
-          // Убедимся, что количество не превышает доступный остаток и не меньше 1
-          return { ...item, qty: Math.max(1, Math.min(qty, item.stockAvailable)) };
-        }
-        return item;
-      }),
-    });
-  },
+  removeItem: (id) => set(state => {
+    const newItems = state.items.filter(i => i.id !== id);
+    const { totalItems, totalPrice } = getTotals(newItems);
+    return { items: newItems, totalItems, totalPrice };
+  }),
 
-  removeItem: (id: string) =>
-    set({
-      items: get().items.filter((i) => i.id !== id)
-    }),
+  updateQuantity: (id, quantity) => set(state => {
+    // Убедимся, что количество не меньше 1
+    const safeQuantity = Math.max(1, quantity); 
+    
+    const newItems = state.items.map(i => 
+      i.id === id ? { ...i, quantity: safeQuantity } : i
+    );
+    const { totalItems, totalPrice } = getTotals(newItems);
+    return { items: newItems, totalItems, totalPrice };
+  }),
 
-  clearOrder: () => set({ items: [] }),
+  clearCart: () => set(() => ({ items: [], totalItems: 0, totalPrice: 0 })),
 }));
