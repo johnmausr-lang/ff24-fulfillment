@@ -1,6 +1,6 @@
-import Sidebar from "@/components/dashboard/Sidebar";
-import DashboardHeader from "@/components/dashboard/DashboardHeader";
-import "@/app/globals.css";
+// app/dashboard/layout.tsx
+import Sidebar from '@/components/dashboard/Sidebar';
+import DashboardHeader from '@/components/dashboard/DashboardHeader';
 
 export default function DashboardLayout({
   children,
@@ -8,30 +8,32 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="dashboard-bg flex min-h-screen text-white">
-      {/* Левое меню */}
+    <div className="flex h-screen bg-gray-950">
+      {/* Sidebar (фиксированный) */}
       <Sidebar />
-
-      {/* Правая часть */}
-      <div className="flex-1 flex flex-col relative overflow-hidden">
-
-        {/* Верхняя панель */}
+      
+      {/* Основной контент (с отступом слева) */}
+      <div className="flex-1 flex flex-col ml-64 overflow-y-auto">
+        {/* Хедер внутри ЛКК */}
         <DashboardHeader />
-
-        {/* Контент */}
-        <main className="relative z-10 px-8 py-10 ff24-fade-up">
+        
+        {/* Тело страницы */}
+        <main className="flex-1 p-8 text-white">
           {children}
         </main>
-
-        {/* НЕОН + линий фон как на главной */}
-        <div className="ff24-hero-grid"></div>
-
-        <div className="ff24-hero-lines pointer-events-none">
-          <div className="ff24-hero-line" />
-          <div className="ff24-hero-line" />
-          <div className="ff24-hero-line" />
-        </div>
       </div>
     </div>
   );
 }
+
+// Дополнительный компонент для хедера внутри дашборда
+const DashboardHeader = () => (
+    <header className="sticky top-0 z-10 bg-gray-950/95 backdrop-blur-sm p-4 border-b border-gray-800 flex justify-end items-center">
+        {/* Здесь будет поиск, уведомления, профиль пользователя */}
+        <div className="text-gray-400 text-sm">
+            <span className="mr-4">🔔</span>
+            <span className="mr-4">🔍</span>
+            <span className="text-accent-DEFAULT">User@company.ru</span>
+        </div>
+    </header>
+);
