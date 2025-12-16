@@ -1,34 +1,63 @@
 // prisma/schema.prisma
+
+// 1. Конфигурация клиента (TypeScript-типов)
 generator client {
   provider = "prisma-client-js"
 }
 
+// 2. Конфигурация источника данных (PostgreSQL или MySQL)
 datasource db {
-  provider = "postgresql"  // Или "sqlite" для теста
+  // Выберите нужного провайдера: "postgresql" | "mysql" | "sqlite" | "sqlserver"
+  provider = "postgresql" 
   url      = env("DATABASE_URL")
 }
 
+// 3. ENUM для ролей пользователей
+// Это критически важно для устранения ошибки типизации
+enum UserRole {
+  USER      // Основной пользователь ЛКК (продавец)
+  MANAGER   // Сотрудник фулфилмента или менеджер
+  ADMIN     // Супер-администратор системы
+}
+
+// 4. Модель пользователя
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
+  id        String     @id @default(cuid())
+  email     String     @unique
+  password  String
   name      String?
-  password  String   // TODO: hash with bcrypt
-  createdAt DateTime @default(now())
-  orders    Order[]
+  // Поле 'role' с дефолтным значением 'USER'
+  role      UserRole   @default(USER) 
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  // Интеграция с Мой Склад (MoySkladIntegration)
+  integration MoySkladIntegration?
 }
 
-model Order {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  moment    String?
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  createdAt DateTime @default(now())
-}
-
-model Inventory {
-  id        String   @id @default(cuid())
-  name      String
-  quantity  Int
-  createdAt DateTime @default(now())
+// 5. Модель для хранения интеграционных данных Мой Склад
+model MoySkladIntegration {
+  id              String  @id @default(cuid())
+  // Связь с пользователем 1:1
+  userId          String  @unique 
+  user            User    @relation(fields: [userId], references: [id])
+  
+  // Зашифрованные данные
+  msLogin         String
+  msPassword      String
+  
+  // Константы
+  organizationId  String
+  storeId         String
+  priceTypeHref   String
+  
+  // ID характеристик (для фильтрации и создания товаров)
+  msBrandId       String?
+  msColorId       String?
+  msLabelInfoId   String?
+  msSizeId        String?
+  msWorksId       String?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
