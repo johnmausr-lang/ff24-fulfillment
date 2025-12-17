@@ -1,80 +1,119 @@
-// components/dashboard/Sidebar.tsx
 "use client";
 
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation'; // Импортируем useRouter
-import { LayoutDashboard, Package, ShoppingCart, TrendingUp, Settings, FileText, Zap, LogOut } from 'lucide-react'; // Добавляем LogOut
-import { cn } from '@/lib/utils';
-import toast from 'react-hot-toast';
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useUserStore } from "@/lib/store";
+import { 
+  LayoutDashboard, 
+  PackageSearch, 
+  Truck, 
+  History, 
+  UserCircle, 
+  LogOut, 
+  Settings,
+  Boxes,
+  ClipboardList
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 
-const navItems = [
-    { href: '/dashboard', label: 'Дашборд', icon: LayoutDashboard },
-    { href: '/dashboard/inventory', label: 'Запасы', icon: Package },
-    { href: '/dashboard/orders', label: 'Заказы', icon: ShoppingCart },
-    { href: '/dashboard/reports', label: 'Отчеты', icon: FileText },
-    { href: '/dashboard/analytics', label: 'Аналитика', icon: TrendingUp },
-    { href: '/dashboard/integrations', label: 'Интеграции', icon: Settings },
+const menuItems = [
+  { 
+    title: "Главная", 
+    href: "/dashboard", 
+    icon: LayoutDashboard 
+  },
+  { 
+    title: "Инвентаризация", 
+    href: "/dashboard/inventory", 
+    icon: Boxes 
+  },
+  { 
+    title: "Новая поставка", 
+    href: "/dashboard/create-order", 
+    icon: PackageSearch 
+  },
+  { 
+    title: "Мои отчеты", 
+    href: "/dashboard/reports", 
+    icon: ClipboardList 
+  },
 ];
 
 export default function Sidebar() {
-    const pathname = usePathname();
-    const router = useRouter(); // Инициализируем роутер
+  const pathname = usePathname();
+  const { userPhone, logout } = useUserStore();
 
-    const handleLogout = async () => {
-        try {
-            const res = await fetch('/api/auth/logout', { method: 'POST' });
+  const handleLogout = () => {
+    logout();
+    window.location.href = "/login";
+  };
 
-            if (res.ok) {
-                toast.success('Вы успешно вышли из системы.');
-                router.push('/login'); // Перенаправляем на страницу входа
-            } else {
-                toast.error('Ошибка выхода. Попробуйте снова.');
-            }
-        } catch (error) {
-            toast.error('Ошибка сети при попытке выхода.');
-        }
-    };
+  return (
+    <aside className="w-72 bg-[#1A0B2E] border-r border-white/5 flex flex-col h-screen sticky top-0">
+      {/* Логотип */}
+      <div className="p-8">
+        <Link href="/dashboard" className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-[#D9FF00] rounded-lg rotate-3 flex items-center justify-center">
+            <Truck size={18} className="text-black -rotate-3" />
+          </div>
+          <span className="text-2xl font-black italic uppercase text-white tracking-tighter">
+            FF24<span className="text-[#D9FF00]">.</span>LK
+          </span>
+        </Link>
+      </div>
 
-    return (
-        <aside className="w-64 bg-gray-900 flex flex-col border-r border-gray-700 h-full fixed top-0 left-0 pt-20">
-            <div className="p-4 flex items-center justify-center">
-                <Zap className="h-6 w-6 text-accent-DEFAULT" />
-                <h1 className="text-xl font-bold text-white ml-2">FF24 ЛКК</h1>
-            </div>
-            
-            <nav className="flex-1 px-4 py-6 space-y-2">
-                {navItems.map((item) => {
-                    const isActive = pathname === item.href;
-                    const Icon = item.icon;
-                    return (
-                        <Link key={item.href} href={item.href}>
-                            <div className={cn(
-                                "flex items-center p-3 rounded-lg transition-colors duration-200 group",
-                                isActive 
-                                    ? "bg-accent-DEFAULT text-gray-900 font-semibold shadow-neon-sm" 
-                                    : "text-gray-300 hover:bg-gray-800 hover:text-white"
-                            )}>
-                                <Icon className={cn(
-                                    "h-5 w-5 mr-3",
-                                    isActive ? "text-gray-900" : "text-gray-500 group-hover:text-accent-DEFAULT"
-                                )} />
-                                {item.label}
-                            </div>
-                        </Link>
-                    );
-                })}
-            </nav>
-            
-            {/* Блок Выхода */}
-            <div className="p-4 border-t border-gray-700">
-                <button 
-                    onClick={handleLogout}
-                    className="flex items-center w-full p-3 rounded-lg text-red-400 hover:bg-red-900/50 transition-colors"
-                >
-                    <LogOut className="h-5 w-5 mr-3" />
-                    Выйти из системы
-                </button>
-            </div>
-        </aside>
-    );
+      {/* Навигация */}
+      <nav className="flex-1 px-4 py-4 space-y-2">
+        <p className="text-[10px] font-black uppercase text-slate-500 mb-4 ml-4 tracking-[0.2em]">Меню управления</p>
+        {menuItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = pathname === item.href;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "flex items-center gap-4 px-4 py-4 rounded-2xl transition-all group relative",
+                isActive 
+                  ? "bg-[#D9FF00] text-black shadow-[0_0_20px_rgba(217,255,0,0.2)]" 
+                  : "text-slate-400 hover:bg-white/5 hover:text-white"
+              )}
+            >
+              <Icon size={20} className={cn(isActive ? "text-black" : "text-slate-500 group-hover:text-[#D9FF00]")} />
+              <span className="font-black uppercase italic text-sm tracking-wide">{item.title}</span>
+              {isActive && (
+                <div className="absolute right-4 w-1.5 h-1.5 bg-black rounded-full" />
+              )}
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* Профиль и выход */}
+      <div className="p-4 mt-auto border-t border-white/5 space-y-4">
+        <Link 
+          href="/dashboard/profile"
+          className={cn(
+            "flex items-center gap-3 p-4 rounded-2xl transition-all",
+            pathname === "/dashboard/profile" ? "bg-white/10 text-white" : "text-slate-400 hover:bg-white/5"
+          )}
+        >
+          <div className="w-10 h-10 rounded-xl bg-[#3A1C5F] flex items-center justify-center text-[#D9FF00] border border-white/10">
+            <UserCircle size={24} />
+          </div>
+          <div className="flex-1 overflow-hidden">
+            <p className="text-[10px] font-black uppercase text-slate-500 leading-none mb-1">Клиент</p>
+            <p className="text-xs font-bold truncate text-white">{userPhone || "Гость"}</p>
+          </div>
+        </Link>
+
+        <button 
+          onClick={handleLogout}
+          className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-red-500/5 text-red-500 hover:bg-red-500 hover:text-white transition-all text-xs font-black uppercase italic border border-red-500/10"
+        >
+          <LogOut size={16} /> Выйти из системы
+        </button>
+      </div>
+    </aside>
+  );
 }
