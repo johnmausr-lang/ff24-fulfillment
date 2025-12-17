@@ -3,30 +3,37 @@ import { msFetch } from '@/lib/moysklad';
 import { cookies } from 'next/headers';
 
 export async function GET() {
-  const phone = cookies().get('token')?.value;
-
   try {
-    // 1. Получаем ID контрагента по телефону
-    const agentData = await msFetch(`/entity/counterparty?filter=phone~${phone}`);
-    if (agentData.rows.length === 0) return NextResponse.json({ items: [] });
-    
-    const agentId = agentData.rows[0].id;
+    const phone = cookies().get('token')?.value;
+    if (!phone) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    // 2. Запрашиваем остатки в разрезе этого контрагента
-    // В МойСклад остатки обычно фильтруются по складам или доп. полям.
-    // Если ты хранишь товар раздельно, мы добавим нужный фильтр.
-    const stock = await msFetch(`/report/stock/all?filter=counterparty=https://api.moysklad.ru/api/remap/1.2/entity/counterparty/${agentId}`);
+    // 1. Ищем контрагента, чтобы получить его данные
+    const agents = await msFetch(`/entity/counterparty?filter=phone~${phone}`);
+    if (agents.rows.length === 0) {
+      return NextResponse.json({ items: [] });
+    }
+    const agent = agents.rows[0];
 
-    const formattedItems = stock.rows.map((row: any) => ({
+    // 2. Получаем расширенный отчет об остатках
+    // Мы запрашиваем остатки (stock), артикул (code) и имя
+    const stockData = await msFetch('/report/stock/all?limit=100');
+
+    // 3. Фильтрация и форматирование
+    // Примечание: В идеале в МойСклад товары должны быть помечены атрибутом клиента.
+    // Если у тебя товары не привязаны к агенту в МС, мы выведем весь доступный сток.
+    const formattedItems = stockData.rows.map((row: any) => ({
       id: row.assortmentId,
       name: row.name,
-      article: row.code,
+      brand: row.article ? row.article.split('-')[0] : "FF24", // Пример парсинга бренда из артикула
+      article: row.code || "Нет SKU",
       stock: row.stock,
-      brand: "МойСклад", // Можно вытянуть из доп. полей товара
+      price: row.price / 100, // МС хранит цены в копейках
     }));
 
     return NextResponse.json({ items: formattedItems });
+
   } catch (error: any) {
+    console.error("Inventory Error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
