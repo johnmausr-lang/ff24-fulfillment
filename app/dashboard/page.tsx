@@ -27,7 +27,7 @@ export default function DashboardPage() {
         }
         const data = await res.json();
         if (res.ok) {
-          setStocks(data.stocks);
+          setStocks(data.stocks || []);
         } else {
           toast.error(data.error || "Ошибка загрузки данных");
         }
@@ -42,19 +42,24 @@ export default function DashboardPage() {
 
   const totalItems = stocks.reduce((sum, item) => sum + item.quantity, 0);
 
+  const handleLogout = () => {
+    document.cookie = "token=; max-age=0; path=/";
+    router.push("/login");
+  };
+
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
       {/* HEADER */}
       <header className="bg-[#3A1C5F] sticky top-0 z-50 shadow-xl border-b-4 border-[#D9FF00]">
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-          <Image src="/logo-ff24.png" alt="FF24" width={140} height={50} className="brightness-200" />
+          <Image src="/logo-ff24.png" alt="FF24" width={140} height={50} className="brightness-200 h-auto w-auto" />
           <div className="flex items-center gap-6">
             <div className="hidden md:block text-right">
               <p className="text-[10px] text-[#D9FF00] font-black uppercase tracking-widest">Статус системы</p>
               <p className="text-white text-xs font-medium italic">Синхронизация с МойСклад: OK</p>
             </div>
             <button 
-              onClick={() => { document.cookie = "token=; max-age=0; path=/"; router.push("/login"); }}
+              onClick={handleLogout}
               className="bg-white/10 hover:bg-white/20 text-white px-5 py-2 rounded-xl text-xs font-bold transition-all border border-white/20"
             >
               ВЫЙТИ
@@ -74,7 +79,7 @@ export default function DashboardPage() {
           </div>
           
           <button className="group relative bg-[#D9FF00] hover:bg-[#3A1C5F] text-[#3A1C5F] hover:text-white font-black px-10 py-5 rounded-2xl transition-all duration-300 shadow-2xl shadow-lime-200 hover:shadow-purple-200 flex items-center gap-3 overflow-hidden">
-            <span className="relative z-10 uppercase tracking-widest">Создать новую поставку</span>
+            <span className="relative z-10 uppercase tracking-widest">Создать новый заказ</span>
             <svg className="w-6 h-6 relative z-10 group-hover:rotate-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4" />
             </svg>
@@ -99,8 +104,8 @@ export default function DashboardPage() {
             <div className="absolute top-0 right-0 p-4 opacity-10">
               <svg className="w-24 h-24 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
             </div>
-            <p className="text-[#D9FF00] text-[10px] font-black uppercase tracking-[0.2em] mb-3">Область</p>
-            <p className="text-white text-2xl font-bold leading-tight">Склад: FF24 Основной</p>
+            <p className="text-[#D9FF00] text-[10px] font-black uppercase tracking-[0.2em] mb-3">Локация</p>
+            <p className="text-white text-2xl font-bold leading-tight uppercase italic">Склад: FF24 Основной</p>
           </div>
         </div>
 
@@ -112,7 +117,7 @@ export default function DashboardPage() {
                 <tr className="bg-slate-50/50">
                   <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Наименование товара</th>
                   <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Артикул / Код</th>
-                  <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Доступно</th>
+                  <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Остаток</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -126,7 +131,9 @@ export default function DashboardPage() {
                   ))
                 ) : stocks.length === 0 ? (
                   <tr>
-                    <td colSpan={3} className="px-10 py-20 text-center text-slate-400 font-medium italic">Остатков пока нет. Оформите первую поставку!</td>
+                    <td colSpan={3} className="px-10 py-20 text-center text-slate-400 font-medium italic">
+                      Товары не найдены. Оформите первую поставку!
+                    </td>
                   </tr>
                 ) : stocks.map((item, idx) => (
                   <tr key={idx} className="group hover:bg-[#D9FF00]/5 transition-colors">
@@ -135,7 +142,7 @@ export default function DashboardPage() {
                       <span className="font-mono text-sm bg-slate-100 text-slate-600 px-3 py-1 rounded-md">{item.code}</span>
                     </td>
                     <td className="px-10 py-6 text-right">
-                      <div className="inline-flex items-center gap-3 bg-white border-2 border-slate-100 px-5 py-2 rounded-2xl shadow-sm">
+                      <div className="inline-flex items-center gap-3 bg-white border-2 border-slate-100 px-5 py-2 rounded-2xl shadow-sm group-hover:border-[#D9FF00] transition-colors">
                         <span className="w-2 h-2 rounded-full bg-[#D9FF00] animate-pulse" />
                         <span className="text-xl font-black text-[#3A1C5F]">{item.quantity}</span>
                         <span className="text-[10px] font-black text-slate-400 uppercase">шт</span>
