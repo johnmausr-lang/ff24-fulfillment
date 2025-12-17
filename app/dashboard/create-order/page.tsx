@@ -1,168 +1,215 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { 
+  Plus, 
+  Trash2, 
+  PackagePlus, 
+  Send, 
+  AlertCircle, 
+  CheckCircle2,
+  Loader2
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-hot-toast";
-import { ArrowLeft, Search, Plus, Trash2, Package, Truck, MoveRight } from "lucide-react";
+import { useRouter } from "next/navigation";
 
-export default function CreateShipmentPage() {
-  const [items, setItems] = useState<any[]>([]);
-  const [search, setSearch] = useState("");
-  const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+interface OrderItem {
+  id: string;
+  brand: string;
+  name: string;
+  article: string;
+  size: string;
+  color: string;
+  quantity: number;
+}
+
+export default function CreateOrderPage() {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [items, setItems] = useState<OrderItem[]>([]);
+  
+  // Поля для нового товара
+  const [newItem, setNewItem] = useState({
+    brand: "",
+    name: "",
+    article: "",
+    size: "O/S",
+    color: "Multi",
+    quantity: 1
+  });
 
-  const handleSearch = async (val: string) => {
-    setSearch(val);
-    if (val.length < 2) { setSearchResults([]); return; }
-    try {
-      const res = await fetch(`/api/products/search?search=${encodeURIComponent(val)}`);
-      const data = await res.json();
-      setSearchResults(data.products || []);
-    } catch (e) {
-      setSearchResults([]);
+  const addItem = () => {
+    if (!newItem.name || !newItem.article) {
+      toast.error("Название и Артикул обязательны");
+      return;
     }
+    setItems([...items, { ...newItem, id: Math.random().toString(36).substr(2, 9) }]);
+    setNewItem({ brand: "", name: "", article: "", size: "O/S", color: "Multi", quantity: 1 });
+    toast.success("Товар добавлен в список");
   };
 
-  const addItem = (p: any) => {
-    if (items.find(i => i.id === p.id)) return;
-    setItems([...items, { ...p, quantity: 1 }]);
-    setSearch("");
-    setSearchResults([]);
+  const removeItem = (id: string) => {
+    setItems(items.filter(item => item.id !== id));
   };
 
-  const handleCreate = async () => {
-    if (items.length === 0) return toast.error("Добавьте хотя бы один товар");
+  const handleSubmit = async () => {
+    if (items.length === 0) {
+      toast.error("Список товаров пуст");
+      return;
+    }
+
     setLoading(true);
     try {
-      const res = await fetch("/api/orders/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          type: "INBOUND", // Тип: Входящая поставка
-          items 
-        }),
+      const response = await fetch('/api/orders/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items }),
       });
-      if (res.ok) {
-        toast.success("Заявка на приемку создана!");
-        router.push("/dashboard");
-      } else { 
-        toast.error("Ошибка при создании"); 
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success(`Заказ ${data.orderId} успешно создан в МойСклад!`);
+        setItems([]); // Очищаем список
+        setTimeout(() => router.push("/dashboard/shipments"), 2000);
+      } else {
+        toast.error(data.error || "Ошибка при создании заказа");
       }
-    } finally { 
-      setLoading(false); 
+    } catch (error) {
+      toast.error("Ошибка сети. Проверьте соединение.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#1A0B2E] p-4 md:p-10 text-white">
-      <div className="max-w-3xl mx-auto">
-        <button 
-          onClick={() => router.back()} 
-          className="mb-8 flex items-center gap-2 text-[#D9FF00] font-black uppercase italic tracking-widest text-sm"
-        >
-          <ArrowLeft size={18} /> Назад
-        </button>
+    <div className="p-6 md:p-10 space-y-8 bg-[#1A0B2E] min-h-screen text-white">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-4xl font-black italic uppercase text-white leading-none">
+            Новая <span className="text-[#D9FF00]">Поставка</span>
+          </h1>
+          <p className="text-slate-400 text-xs font-bold uppercase tracking-[0.2em] mt-2 italic">
+            Формирование заявки на приемку в МойСклад
+          </p>
+        </div>
+      </div>
 
-        <div className="bg-[#2A1445] rounded-[3rem] shadow-2xl overflow-hidden border border-white/5">
-          {/* Header */}
-          <div className="bg-[#3A1C5F] p-8 flex items-center justify-between border-b border-white/5">
-            <div>
-              <h1 className="text-3xl font-black uppercase italic leading-none">Новая поставка</h1>
-              <p className="text-[#D9FF00] text-xs font-bold mt-2 tracking-widest uppercase opacity-80 italic">
-                Передача товара на склад FF24
-              </p>
-            </div>
-            <Truck className="text-[#D9FF00] opacity-20" size={48} />
-          </div>
-
-          <div className="p-8 md:p-12 space-y-8">
-            {/* Поиск товаров клиента */}
-            <div className="relative">
-              <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-2 block ml-2">Найти мой товар в базе</label>
-              <div className="relative">
-                <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+      <div className="grid lg:grid-cols-3 gap-8">
+        {/* Форма добавления */}
+        <div className="lg:col-span-1 space-y-6">
+          <div className="bg-[#2A1445] rounded-[3rem] p-8 border border-white/5 shadow-2xl">
+            <h3 className="text-xl font-black italic uppercase mb-6 flex items-center gap-2 text-[#D9FF00]">
+              <PackagePlus size={24} /> Данные товара
+            </h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="text-[10px] font-black uppercase text-slate-500 ml-2 tracking-widest">Бренд</label>
                 <input 
-                  type="text"
-                  placeholder="Артикул, название или штрихкод..."
-                  className="w-full bg-white/5 border-2 border-white/10 rounded-2xl px-14 py-5 outline-none focus:border-[#D9FF00] transition-all font-medium"
-                  value={search}
-                  onChange={(e) => handleSearch(e.target.value)}
+                  className="w-full bg-[#1A0B2E] border border-white/10 rounded-2xl py-4 px-6 outline-none focus:border-[#D9FF00] transition-all"
+                  placeholder="Напр: Nike"
+                  value={newItem.brand}
+                  onChange={e => setNewItem({...newItem, brand: e.target.value})}
                 />
               </div>
-
-              {searchResults.length > 0 && (
-                <div className="absolute z-50 w-full bg-[#3A1C5F] mt-2 shadow-2xl rounded-2xl border border-white/10 max-h-60 overflow-y-auto backdrop-blur-xl">
-                  {searchResults.map(p => (
-                    <div key={p.id} onClick={() => addItem(p)} className="p-4 hover:bg-[#D9FF00]/10 cursor-pointer flex justify-between items-center border-b border-white/5 last:border-0 transition-colors">
-                      <div>
-                        <p className="font-bold text-white uppercase italic">{p.name}</p>
-                        <p className="text-[10px] text-[#D9FF00] font-mono tracking-tighter">{p.article}</p>
-                      </div>
-                      <div className="bg-[#D9FF00] p-1 rounded-lg text-black"><Plus size={16} /></div>
-                    </div>
-                  ))}
+              <div>
+                <label className="text-[10px] font-black uppercase text-slate-500 ml-2 tracking-widest">Название товара *</label>
+                <input 
+                  className="w-full bg-[#1A0B2E] border border-white/10 rounded-2xl py-4 px-6 outline-none focus:border-[#D9FF00] transition-all"
+                  placeholder="Напр: Кепка черная"
+                  value={newItem.name}
+                  onChange={e => setNewItem({...newItem, name: e.target.value})}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[10px] font-black uppercase text-slate-500 ml-2 tracking-widest">Артикул *</label>
+                  <input 
+                    className="w-full bg-[#1A0B2E] border border-white/10 rounded-2xl py-4 px-6 outline-none focus:border-[#D9FF00] transition-all"
+                    placeholder="SKU-123"
+                    value={newItem.article}
+                    onChange={e => setNewItem({...newItem, article: e.target.value})}
+                  />
                 </div>
-              )}
-            </div>
-
-            {/* Список товаров к отгрузке */}
-            <div className="space-y-4">
-              <h3 className="text-xs font-black uppercase text-slate-400 tracking-widest ml-2">Состав поставки:</h3>
-              {items.length === 0 ? (
-                <div className="text-center py-16 border-2 border-dashed border-white/5 rounded-[3rem] bg-white/[0.02]">
-                   <Package className="mx-auto text-white/5 mb-4" size={64} />
-                   <p className="text-slate-500 font-bold uppercase italic text-sm">Добавьте товары, которые планируете привезти</p>
+                <div>
+                  <label className="text-[10px] font-black uppercase text-slate-500 ml-2 tracking-widest">Кол-во</label>
+                  <input 
+                    type="number"
+                    className="w-full bg-[#1A0B2E] border border-white/10 rounded-2xl py-4 px-6 outline-none focus:border-[#D9FF00] transition-all"
+                    value={newItem.quantity}
+                    onChange={e => setNewItem({...newItem, quantity: parseInt(e.target.value) || 1})}
+                  />
                 </div>
-              ) : (
-                <div className="space-y-3">
-                  {items.map((item, idx) => (
-                    <div key={item.id} className="flex items-center justify-between p-6 bg-white/5 rounded-[2rem] border border-white/5">
-                      <div className="flex-1">
-                        <p className="font-black text-white italic uppercase">{item.name}</p>
-                        <p className="text-[10px] text-[#D9FF00] font-mono mt-1 tracking-widest">{item.article}</p>
-                      </div>
-                      <div className="flex items-center gap-6">
-                        <div className="flex flex-col items-center">
-                           <span className="text-[10px] font-bold text-slate-500 uppercase mb-1">Кол-во</span>
-                           <input 
-                            type="number"
-                            min="1"
-                            className="w-24 bg-[#1A0B2E] border-2 border-white/10 rounded-xl py-2 text-center font-black text-[#D9FF00] focus:border-[#D9FF00] outline-none"
-                            value={item.quantity}
-                            onChange={(e) => {
-                              const newItems = [...items];
-                              newItems[idx].quantity = parseInt(e.target.value) || 1;
-                              setItems(newItems);
-                            }}
-                          />
-                        </div>
-                        <button 
-                          onClick={() => setItems(items.filter(i => i.id !== item.id))} 
-                          className="text-white/20 hover:text-red-500 transition-colors mt-4"
-                        >
-                          <Trash2 size={20} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Итоговая кнопка */}
-            <div className="pt-6">
+              </div>
+              
               <button 
-                onClick={handleCreate}
-                disabled={loading || items.length === 0}
-                className="w-full bg-[#D9FF00] hover:scale-[1.02] disabled:bg-slate-700 disabled:scale-100 text-[#1A0B2E] font-black py-7 rounded-[2rem] text-xl uppercase tracking-widest shadow-[0_20px_40px_rgba(217,255,0,0.15)] transition-all flex items-center justify-center gap-3 italic"
+                onClick={addItem}
+                className="w-full bg-white/5 hover:bg-white/10 text-white font-black py-5 rounded-2xl uppercase italic flex items-center justify-center gap-2 transition-all border border-white/5"
               >
-                {loading ? "Формирование..." : <>Создать заявку на приемку <MoveRight /></>}
+                <Plus size={20} /> Добавить в список
               </button>
-              <p className="text-center text-slate-500 text-[10px] mt-4 uppercase font-bold tracking-widest opacity-50">
-                После создания заявки наш менеджер свяжется с вами для уточнения времени
-              </p>
             </div>
+          </div>
+        </div>
+
+        {/* Список к отправке */}
+        <div className="lg:col-span-2 space-y-6">
+          <div className="bg-[#2A1445] rounded-[3rem] p-8 border border-white/5 shadow-2xl min-h-[500px] flex flex-col">
+            <h3 className="text-xl font-black italic uppercase mb-6 flex items-center gap-2">
+              <CheckCircle2 className="text-[#D9FF00]" size={24} /> Состав поставки ({items.length})
+            </h3>
+
+            <div className="flex-1 space-y-4">
+              <AnimatePresence>
+                {items.length === 0 ? (
+                  <div className="h-full flex flex-col items-center justify-center text-slate-500 py-20">
+                    <AlertCircle size={48} className="mb-4 opacity-20" />
+                    <p className="uppercase font-black italic tracking-widest opacity-20">Список пуст</p>
+                  </div>
+                ) : (
+                  items.map((item) => (
+                    <motion.div 
+                      key={item.id}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      className="bg-[#1A0B2E] p-6 rounded-3xl border border-white/5 flex items-center justify-between group"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-[#D9FF00]/10 rounded-xl flex items-center justify-center text-[#D9FF00] font-black italic">
+                          {item.quantity}
+                        </div>
+                        <div>
+                          <p className="font-black italic uppercase">{item.name}</p>
+                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">
+                            {item.brand} • Арт: {item.article}
+                          </p>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => removeItem(item.id)}
+                        className="p-3 text-slate-600 hover:text-red-500 transition-colors"
+                      >
+                        <Trash2 size={20} />
+                      </button>
+                    </motion.div>
+                  ))
+                )}
+              </AnimatePresence>
+            </div>
+
+            {items.length > 0 && (
+              <button 
+                onClick={handleSubmit}
+                disabled={loading}
+                className="mt-8 w-full bg-[#D9FF00] text-[#1A0B2E] font-black py-6 rounded-[2rem] text-xl uppercase italic flex items-center justify-center gap-4 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_20px_50px_rgba(217,255,0,0.2)] disabled:opacity-50"
+              >
+                {loading ? <Loader2 className="animate-spin" /> : <><Send size={24} /> Отправить в МойСклад</>}
+              </button>
+            )}
           </div>
         </div>
       </div>
