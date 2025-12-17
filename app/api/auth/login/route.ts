@@ -1,57 +1,30 @@
 // app/api/auth/login/route.ts
 import { NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
-import { prisma } from '@/lib/prisma';
-import { createToken } from '@/lib/auth'; // <-- Импортируем из нового lib/auth.ts
 
 export async function POST(req: Request) {
-    try {
-        const { email, password } = await req.json();
-
-        if (!email || !password) {
-            return NextResponse.json({ message: 'Email и пароль обязательны' }, { status: 400 });
+  try {
+    const { email } = await req.json();
+    
+    // Запрос к МойСклад (аналог find_counterparty из вашего python файла)
+    const msResponse = await fetch(
+      `https://api.moysklad.ru/api/remap/1.2/entity/counterparty?filter=email=${email}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${process.env.MOYSKLAD_TOKEN}`,
+          'Accept-Encoding': 'gzip',
         }
+      }
+    );
 
-        const user = await prisma.user.findUnique({
-            where: { email },
-            select: {
-                id: true,
-                email: true,
-                password: true,
-                role: true, 
-                name: true,
-                createdAt: true,
-            }
-        });
+    const data = await msResponse.json();
 
-        if (!user || !(await bcrypt.compare(password, user.password))) {
-            return NextResponse.json({ message: 'Неверный email или пароль' }, { status: 401 });
-        }
-
-        // 2. Генерируем новый токен (Теперь с await)
-        const token = await createToken(user.id, user.role); // <--- ИСПРАВЛЕНИЕ: ДОБАВЛЕН await
-
-        // 3. Устанавливаем токен и возвращаем ответ
-        const response = NextResponse.json({ 
-            message: 'Вход успешен', 
-            user: { 
-                id: user.id, 
-                email: user.email, 
-                role: user.role 
-            } 
-        });
-
-        // Устанавливаем cookie с токеном
-        response.cookies.set('auth_token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            maxAge: 60 * 60 * 24 * 7, // 1 неделя
-            path: '/',
-        });
-
-        return response;
-    } catch (error) {
-        console.error('Login error:', error);
-        return NextResponse.json({ message: 'Внутренняя ошибка сервера' }, { status: 500 });
+    if (data.rows && data.rows.length > 0) {
+      // Пользователь найден. Тут создаем сессию (JWT)
+      return NextResponse.json({ success: true, user: data.rows[0].name });
+    } else {
+      return NextResponse.json({ error: 'Пользователь с таким Email не найден' }, { status: 404 });
     }
+  } catch (error) {
+    return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
+  }
 }
