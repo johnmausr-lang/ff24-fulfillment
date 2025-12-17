@@ -1,48 +1,71 @@
 import { NextResponse } from 'next/server';
 import { msFetch } from '@/lib/moysklad';
 
+// Принудительно динамический роут для работы с куками на Render
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   try {
     const { email } = await request.json();
-    const cleanEmail = email.toLowerCase().trim();
+    
+    if (!email) {
+      return NextResponse.json({ error: "Email не указан" }, { status: 400 });
+    }
 
-    // 1. Ищем клиента
-    let counterparty = await msFetch(`/entity/counterparty?filter=email=${cleanEmail}`);
+    const cleanEmail = email.toLowerCase().trim();
+    console.log("🔍 [BACKEND] Попытка входа/регистрации для:", cleanEmail);
+
+    // 1. Поиск контрагента в МойСклад
+    const filterUrl = `/entity/counterparty?filter=email=${encodeURIComponent(cleanEmail)}`;
+    const searchResult = await msFetch(filterUrl);
+    
     let client;
 
-    if (!counterparty.rows || counterparty.rows.length === 0) {
-      console.log("🆕 Создаем нового клиента:", cleanEmail);
-      // 2. Если нет — создаем нового сразу
+    if (!searchResult.rows || searchResult.rows.length === 0) {
+      console.log("🆕 [BACKEND] Клиент не найден. Создаем нового...");
+      
+      // 2. Автоматическое создание нового контрагента, если его нет
       client = await msFetch('/entity/counterparty', {
         method: 'POST',
         body: JSON.stringify({
           name: `Новый клиент (${cleanEmail})`,
           email: cleanEmail,
-          description: "Создан автоматически при первом входе в ЛК"
+          description: "Создан автоматически через ЛК FF24",
+          // Можно добавить дефолтную группу или тег, если нужно
         })
       });
+      console.log("✅ [BACKEND] Новый клиент создан успешно");
     } else {
-      client = counterparty.rows[0];
+      client = searchResult.rows[0];
+      console.log("👤 [BACKEND] Найден существующий клиент:", client.name);
     }
 
+    // 3. Формируем ответ
     const response = NextResponse.json({ 
       success: true, 
       name: client.name,
       email: cleanEmail 
     });
 
-    // 3. Устанавливаем куку
+    // 4. Установка куки для авторизации
+    // secure: false — позволяет браузеру сохранить куку даже при мелких неточностях SSL на Render
+    // sameSite: 'lax' — стандарт для безопасности и редиректов
     response.cookies.set('token', cleanEmail, { 
       httpOnly: true,
-      secure: true,
+      secure: false, 
+      sameSite: 'lax',
       path: '/',
-      maxAge: 60 * 60 * 24 * 7 
+      maxAge: 60 * 60 * 24 * 7 // 1 неделя
     });
+
+    console.log("🍪 [BACKEND] Кука token установлена для:", cleanEmail);
 
     return response;
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("⛔ [BACKEND] Ошибка в процессе авторизации:", error.message);
+    return NextResponse.json(
+      { error: "Ошибка сервера МойСклад: " + error.message }, 
+      { status: 500 }
+    );
   }
 }
