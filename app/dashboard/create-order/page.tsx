@@ -5,16 +5,16 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 
 export default function CreateOrderPage() {
-  const [items, setItems] = useState<{ id: string; name: string; quantity: number; meta: any }[]>([]);
+  const [items, setItems] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const searchProducts = async (q: string) => {
-    setSearch(q);
-    if (q.length < 3) return;
-    const res = await fetch(`/api/products/search?search=${q}`);
+  const handleSearch = async (val: string) => {
+    setSearch(val);
+    if (val.length < 2) { setSearchResults([]); return; }
+    const res = await fetch(`/api/products/search?search=${val}`);
     const data = await res.json();
     setSearchResults(data.products || []);
   };
@@ -26,87 +26,95 @@ export default function CreateOrderPage() {
     setSearchResults([]);
   };
 
-  const submitOrder = async () => {
-    if (items.length === 0) return toast.error("Добавьте хотя бы один товар");
+  const handleCreate = async () => {
+    if (items.length === 0) return toast.error("Выберите товары");
     setLoading(true);
-    const res = await fetch("/api/orders/create", {
-      method: "POST",
-      body: JSON.stringify({ items }),
-    });
-    if (res.ok) {
-      toast.success("Заказ успешно создан!");
-      router.push("/dashboard");
-    } else {
-      toast.error("Ошибка при отправке заказа");
-    }
-    setLoading(false);
+    try {
+      const res = await fetch("/api/orders/create", {
+        method: "POST",
+        body: JSON.stringify({ items }),
+      });
+      if (res.ok) {
+        toast.success("Поставка успешно создана!");
+        router.push("/dashboard");
+      } else { toast.error("Ошибка при создании"); }
+    } finally { setLoading(false); }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
-      <div className="max-w-4xl mx-auto">
-        <button onClick={() => router.back()} className="mb-6 text-[#3A1C5F] font-bold flex items-center gap-2">
-          ← НАЗАД
+    <div className="min-h-screen bg-[#F8FAFC] p-4 md:p-10">
+      <div className="max-w-3xl mx-auto">
+        <button onClick={() => router.back()} className="mb-8 flex items-center gap-2 text-[#3A1C5F] font-black uppercase italic tracking-widest text-sm">
+          ← Назад в дашборд
         </button>
-        
-        <div className="bg-white rounded-[2.5rem] p-8 shadow-2xl border border-slate-100">
-          <h1 className="text-3xl font-black text-[#3A1C5F] uppercase italic mb-8">Новый заказ в FF24</h1>
-          
-          {/* Поиск товаров */}
-          <div className="relative mb-10">
-            <label className="block text-xs font-black uppercase text-slate-400 mb-2 ml-1">Поиск товара по названию или артикулу</label>
-            <input 
-              type="text" 
-              className="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-[#D9FF00] outline-none transition-all"
-              placeholder="Введите минимум 3 символа..."
-              value={search}
-              onChange={(e) => searchProducts(e.target.value)}
-            />
-            {searchResults.length > 0 && (
-              <div className="absolute z-10 w-full bg-white mt-2 shadow-2xl rounded-2xl border border-slate-100 overflow-hidden">
-                {searchResults.map(p => (
-                  <div key={p.id} onClick={() => addItem(p)} className="p-4 hover:bg-[#D9FF00]/10 cursor-pointer border-b last:border-0 transition-colors">
-                    <p className="font-bold text-[#3A1C5F]">{p.name}</p>
-                    <p className="text-xs text-slate-400">{p.code}</p>
+
+        <div className="bg-white rounded-[3rem] shadow-2xl overflow-hidden border border-slate-100">
+          <div className="bg-[#3A1C5F] p-8 text-white">
+            <h1 className="text-3xl font-black uppercase italic leading-none">Новая поставка</h1>
+            <p className="text-[#D9FF00] text-xs font-bold mt-2 tracking-widest uppercase opacity-80">Добавление товара на склад FF24</p>
+          </div>
+
+          <div className="p-8 md:p-12 space-y-8">
+            {/* SEARCH */}
+            <div className="relative">
+              <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-2 block ml-2">Поиск SKU в базе</label>
+              <input 
+                type="text"
+                placeholder="Введите название или артикул..."
+                className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-4 outline-none focus:border-[#D9FF00] transition-all font-medium"
+                value={search}
+                onChange={(e) => handleSearch(e.target.value)}
+              />
+              {searchResults.length > 0 && (
+                <div className="absolute z-50 w-full bg-white mt-2 shadow-2xl rounded-2xl border border-slate-100 max-h-60 overflow-y-auto">
+                  {searchResults.map(p => (
+                    <div key={p.id} onClick={() => addItem(p)} className="p-4 hover:bg-[#D9FF00]/10 cursor-pointer flex justify-between items-center border-b last:border-0">
+                      <div>
+                        <p className="font-bold text-[#3A1C5F]">{p.name}</p>
+                        <p className="text-xs text-slate-400 uppercase font-mono">{p.article}</p>
+                      </div>
+                      <span className="text-[#3A1C5F] font-black text-xl">+</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* SELECTED ITEMS */}
+            <div className="space-y-3">
+              {items.map((item, idx) => (
+                <div key={item.id} className="flex items-center justify-between p-5 bg-slate-50 rounded-2xl border-2 border-white shadow-sm">
+                  <div className="max-w-[60%]">
+                    <p className="font-bold text-[#3A1C5F] leading-tight">{item.name}</p>
+                    <p className="text-[10px] text-slate-400 font-mono mt-1">{item.article}</p>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Список выбранных */}
-          <div className="space-y-4 mb-10">
-            {items.map((item, idx) => (
-              <div key={item.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                <div>
-                  <p className="font-bold text-[#3A1C5F]">{item.name}</p>
-                  <p className="text-xs text-slate-400">{item.code}</p>
+                  <div className="flex items-center gap-4">
+                    <input 
+                      type="number"
+                      className="w-20 bg-white border-2 border-slate-100 rounded-xl px-2 py-2 text-center font-black text-[#3A1C5F]"
+                      value={item.quantity}
+                      onChange={(e) => {
+                        const newItems = [...items];
+                        newItems[idx].quantity = e.target.value;
+                        setItems(newItems);
+                      }}
+                    />
+                    <button onClick={() => setItems(items.filter(i => i.id !== item.id))} className="text-slate-300 hover:text-red-500 transition-colors">
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-4">
-                  <input 
-                    type="number" 
-                    min="1"
-                    className="w-20 p-2 border-2 border-white rounded-xl text-center font-bold"
-                    value={item.quantity}
-                    onChange={(e) => {
-                      const newItems = [...items];
-                      newItems[idx].quantity = parseInt(e.target.value) || 1;
-                      setItems(newItems);
-                    }}
-                  />
-                  <button onClick={() => setItems(items.filter(i => i.id !== item.id))} className="text-red-400 hover:text-red-600">✕</button>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
 
-          <button 
-            onClick={submitOrder}
-            disabled={loading}
-            className="w-full bg-[#3A1C5F] text-white font-black py-6 rounded-3xl text-xl hover:bg-[#2A1445] transition-all shadow-xl shadow-purple-200"
-          >
-            {loading ? "СОЗДАЕМ..." : "ОТПРАВИТЬ ЗАКАЗ НА СКЛАД"}
-          </button>
+            <button 
+              onClick={handleCreate}
+              disabled={loading || items.length === 0}
+              className="w-full bg-[#3A1C5F] hover:bg-[#2A1445] disabled:bg-slate-200 text-white font-black py-6 rounded-2xl text-lg uppercase tracking-widest shadow-xl shadow-purple-100 transition-all active:scale-[0.98]"
+            >
+              {loading ? "Отправка данных..." : "Оформить поставку"}
+            </button>
+          </div>
         </div>
       </div>
     </div>
