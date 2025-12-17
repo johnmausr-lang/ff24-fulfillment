@@ -1,12 +1,9 @@
+import type { Metadata } from "next";
 import "./globals.css";
-import { Inter } from "next/font/google";
-import { Toaster } from "react-hot-toast";
 
-const inter = Inter({ subsets: ["latin"] });
-
-export const metadata = {
-  title: "FF24 Fulfillment - Личный кабинет",
-  description: "Технологичный фулфилмент для вашего бизнеса",
+export const metadata: Metadata = {
+  title: "FF24 Fulfillment",
+  description: "Личный кабинет клиента",
 };
 
 export default function RootLayout({
@@ -15,13 +12,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ru" className="h-full">
-      <body
-        className={`${inter.className} min-h-screen bg-[#F8FAFC] text-[#1E293B] antialiased overflow-y-auto`}
-      >
-        {children}
-        <Toaster position="top-center" />
-      </body>
+    <html lang="ru">
+      <body>{children}</body>
     </html>
   );
 }
