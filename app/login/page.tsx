@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Mail, ArrowRight, Loader2, ShieldCheck } from "lucide-react";
 import { toast } from "react-hot-toast";
@@ -8,51 +9,39 @@ import { toast } from "react-hot-toast";
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Очистка ввода
     const cleanEmail = email.toLowerCase().trim();
     
-    console.log("🚀 [FRONTEND] Попытка входа с email:", cleanEmail);
-    
     if (!cleanEmail.includes("@")) {
-      toast.error("Пожалуйста, введите корректный адрес почты");
+      toast.error("Введите корректный Email");
       return;
     }
 
     setLoading(true);
     try {
-      console.log("📡 [FRONTEND] Отправка запроса на /api/auth/login...");
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: cleanEmail }),
       });
 
-      console.log("📊 [FRONTEND] Статус ответа API:", res.status);
       const data = await res.json();
-      console.log("📦 [FRONTEND] Получены данные:", data);
 
       if (res.ok) {
-        // Успешный вход или автоматическая регистрация
-        toast.success(`Добро пожаловать, ${data.name || "пользователь"}!`);
-        console.log("🚀 [FRONTEND] Перенаправление в Dashboard через replace...");
-        
-        // Используем replace для очистки истории и принудительного обновления сессии
-        setTimeout(() => {
-          window.location.replace("/dashboard");
-        }, 800);
-        
+        toast.success(`Добро пожаловать, ${data.name}!`);
+        window.location.replace("/dashboard");
+      } else if (res.status === 404) {
+        // Если клиента нет, отправляем на регистрацию
+        toast.info("Email не найден. Пожалуйста, зарегистрируйтесь.");
+        router.push(`/register?email=${encodeURIComponent(cleanEmail)}`);
       } else {
-        // Ошибка (например, если API упал или вернул 500)
-        console.error("❌ [FRONTEND] Ошибка входа:", data.error);
-        toast.error(data.error || "Ошибка доступа. Попробуйте позже.");
+        toast.error(data.error || "Ошибка входа");
       }
     } catch (err) {
-      console.error("🔥 [FRONTEND] Критическая ошибка запроса:", err);
-      toast.error("Ошибка соединения с сервером. Проверьте интернет.");
+      toast.error("Ошибка соединения с сервером");
     } finally {
       setLoading(false);
     }
@@ -60,19 +49,16 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-[#0F051D] flex items-center justify-center p-6 relative overflow-hidden">
-      {/* Декоративный фон (Neon Blur) */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#D9FF00] blur-[150px] opacity-10 rounded-full animate-pulse" />
-      <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-[#7000FF] blur-[120px] opacity-10 rounded-full" />
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#D9FF00] blur-[150px] opacity-10 rounded-full" />
       
       <motion.div 
-        initial={{ opacity: 0, scale: 0.95, y: 10 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
         className="w-full max-w-md z-10"
       >
-        <div className="bg-[#1A0B2E] border border-white/10 rounded-[2.5rem] p-10 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)]">
+        <div className="bg-[#1A0B2E] border border-white/10 rounded-[2.5rem] p-10 shadow-2xl">
           <div className="text-center mb-10">
-            <div className="inline-flex p-4 bg-[#D9FF00]/10 rounded-2xl text-[#D9FF00] mb-6 shadow-[0_0_20px_rgba(217,255,0,0.1)]">
+            <div className="inline-flex p-4 bg-[#D9FF00]/10 rounded-2xl text-[#D9FF00] mb-6">
               <ShieldCheck size={40} />
             </div>
             <h1 className="text-4xl font-black italic uppercase tracking-tighter text-white">
@@ -86,7 +72,7 @@ export default function LoginPage() {
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="relative group">
               <Mail 
-                className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-[#D9FF00] transition-colors" 
+                className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-[#D9FF00] transition-colors pointer-events-none" 
                 size={20} 
               />
               <input 
@@ -95,30 +81,22 @@ export default function LoginPage() {
                 placeholder="Ваш Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-[#0F051D] border border-white/10 rounded-2xl py-5 pl-14 pr-6 outline-none focus:border-[#D9FF00] focus:ring-1 focus:ring-[#D9FF00]/30 transition-all text-white font-medium placeholder:text-slate-600"
+                // pl-14 ПРЕДОТВРАЩАЕТ НАЛОЖЕНИЕ ТЕКСТА НА ИКОНКУ
+                className="w-full bg-[#0F051D] border border-white/10 rounded-2xl py-5 pl-14 pr-6 outline-none focus:border-[#D9FF00] transition-all text-white font-medium"
               />
             </div>
 
             <button 
-              type="submit"
               disabled={loading}
-              className="w-full bg-[#D9FF00] text-black font-black py-5 rounded-2xl uppercase italic flex items-center justify-center gap-3 hover:shadow-[0_0_30px_rgba(217,255,0,0.4)] hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 disabled:hover:scale-100 shadow-xl"
+              className="w-full bg-[#D9FF00] text-black font-black py-5 rounded-2xl uppercase italic flex items-center justify-center gap-3 hover:shadow-[0_0_20px_rgba(217,255,0,0.3)] transition-all disabled:opacity-50"
             >
-              {loading ? (
-                <Loader2 className="animate-spin" size={24} />
-              ) : (
-                <>
-                  Войти в систему <ArrowRight size={20} />
-                </>
-              )}
+              {loading ? <Loader2 className="animate-spin" /> : <>Войти в систему <ArrowRight size={20} /></>}
             </button>
           </form>
 
-          <div className="mt-10 pt-8 border-t border-white/5">
-            <p className="text-center text-[10px] text-slate-600 uppercase font-bold tracking-[0.15em] leading-relaxed">
-              Автоматическая регистрация <br/> для новых пользователей
-            </p>
-          </div>
+          <p className="mt-8 text-center text-[10px] text-slate-600 uppercase font-bold tracking-widest leading-relaxed">
+            Автоматическая проверка доступа
+          </p>
         </div>
       </motion.div>
     </div>
