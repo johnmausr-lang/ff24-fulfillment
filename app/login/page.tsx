@@ -3,37 +3,60 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Phone, ArrowRight, ShieldCheck } from "lucide-react";
+import { Phone, ArrowRight, ShieldCheck, Loader2 } from "lucide-react";
 import { toast } from "react-hot-toast";
+import { useUserStore } from "@/lib/store";
 
 export default function LoginPage() {
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { setUser } = useUserStore();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    // Имитация валидации sanitize_phone из models.py
-    const digits = phone.replace(/\D/g, "");
-    if (digits.length < 10) {
+    // Базовая очистка номера
+    const cleanPhone = phone.replace(/\D/g, "");
+    if (cleanPhone.length < 10) {
       toast.error("Введите корректный номер телефона");
       setLoading(false);
       return;
     }
 
-    // Здесь в будущем будет запрос к API для проверки клиента в БД
-    setTimeout(() => {
-      toast.success("Вход выполнен!");
-      router.push("/dashboard");
+    try {
+      // Вызываем API авторизации
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: cleanPhone }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        // Сохраняем телефон в глобальное состояние (Zustand)
+        setUser(cleanPhone);
+        
+        toast.success("Вход выполнен!");
+        
+        // Важно: refresh обновляет куки в браузере для Middleware
+        router.refresh();
+        setTimeout(() => router.push("/dashboard"), 100);
+      } else {
+        toast.error(data.error || "Ошибка авторизации");
+      }
+    } catch (error) {
+      toast.error("Ошибка соединения с сервером");
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-[#1A0B2E] flex items-center justify-center p-6 overflow-hidden relative">
-      {/* Фоновые эффекты */}
+    <div className="min-h-screen bg-[#1A0B2E] flex items-center justify-center p-6 relative overflow-hidden">
+      {/* Декоративные градиенты */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#D9FF00] blur-[150px] opacity-10 rounded-full" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-[#3A1C5F] blur-[150px] opacity-30 rounded-full" />
 
@@ -47,7 +70,7 @@ export default function LoginPage() {
             FF24<span className="text-[#D9FF00]">.</span>LK
           </h1>
           <p className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.3em] mt-2">
-            Control Center for Sellers
+            Личный кабинет селлера
           </p>
         </div>
 
@@ -65,23 +88,28 @@ export default function LoginPage() {
                   className="w-full bg-[#1A0B2E] border-2 border-white/10 rounded-2xl py-5 pl-14 pr-6 text-white outline-none focus:border-[#D9FF00] transition-all text-lg font-bold"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  required
+                  disabled={loading}
                 />
               </div>
             </div>
 
             <button 
+              type="submit"
               disabled={loading}
-              className="w-full bg-[#D9FF00] hover:scale-[1.02] active:scale-[0.98] text-[#1A0B2E] font-black py-6 rounded-2xl text-lg uppercase tracking-widest shadow-[0_10px_30px_rgba(217,255,0,0.2)] transition-all flex items-center justify-center gap-3 italic"
+              className="w-full bg-[#D9FF00] hover:scale-[1.02] active:scale-[0.98] text-[#1A0B2E] font-black py-6 rounded-2xl text-lg uppercase tracking-widest shadow-[0_10px_30px_rgba(217,255,0,0.2)] transition-all flex items-center justify-center gap-3 italic disabled:opacity-50"
             >
-              {loading ? "Проверка..." : <>Войти в кабинет <ArrowRight /></>}
+              {loading ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                <>Войти в кабинет <ArrowRight size={20} /></>
+              )}
             </button>
           </form>
 
           <div className="mt-8 pt-8 border-t border-white/5 flex items-center justify-center gap-4 text-slate-500">
             <ShieldCheck size={18} />
             <span className="text-[10px] font-black uppercase tracking-widest leading-none">
-              Безопасный вход через реестр FF24
+              Авторизация по номеру телефона
             </span>
           </div>
         </div>
