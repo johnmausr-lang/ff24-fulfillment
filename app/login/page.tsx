@@ -30,7 +30,7 @@ export default function LoginPage() {
         toast.error(data.error || "Ошибка входа");
       }
     } catch (error) {
-      toast.error("Сервер МойСклад недоступен");
+      toast.error("Сервер авторизации недоступен");
     } finally {
       setIsLoading(false);
     }
@@ -38,37 +38,34 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4 bg-[#F1F5F9]">
-      <div className="w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-2xl border border-slate-100">
-        {/* Верхняя декоративная полоса в лимонном цвете */}
-        <div className="h-2 bg-[#D9FF00]" />
+      <div className="w-full max-w-md overflow-hidden rounded-[2.5rem] bg-white shadow-2xl border border-slate-100">
+        <div className="h-3 bg-[#D9FF00]" />
         
-        <div className="p-8 md:p-12">
-          <div className="flex justify-center mb-10">
+        <div className="p-10 md:p-14">
+          <div className="flex justify-center mb-12 transform hover:scale-105 transition-transform">
             <Image 
               src="/logo-ff24.png" 
               alt="FF24 Logo" 
-              width={200} 
-              height={70} 
+              width={220} 
+              height={80} 
               priority 
               className="h-auto w-auto"
             />
           </div>
 
-          <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-[#3A1C5F]">Личный кабинет</h1>
-            <p className="text-slate-500 mt-2">Введите Email для доступа к остаткам</p>
+          <div className="text-center mb-10">
+            <h1 className="text-3xl font-black text-[#3A1C5F] tracking-tight italic">ЛИЧНЫЙ КАБИНЕТ</h1>
+            <div className="h-1 w-12 bg-[#D9FF00] mx-auto mt-2 rounded-full" />
+            <p className="text-slate-500 mt-4 text-sm font-medium">Введите почту вашего аккаунта МойСклад</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2 ml-1">
-                Ваш Email
-              </label>
+            <div className="relative">
               <input
                 type="email"
                 required
                 placeholder="partner@example.com"
-                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-lg transition-all focus:border-[#3A1C5F] focus:ring-4 focus:ring-[#D9FF00]/30 outline-none"
+                className="w-full rounded-2xl border-2 border-slate-100 bg-slate-50 px-6 py-4 text-lg transition-all focus:border-[#3A1C5F] focus:ring-4 focus:ring-[#D9FF00]/40 outline-none"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -77,25 +74,22 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="relative w-full overflow-hidden rounded-2xl bg-[#3A1C5F] py-4 text-lg font-bold text-white transition-all hover:bg-[#2A1445] active:scale-[0.98] disabled:opacity-70 shadow-lg shadow-purple-200"
+              className="w-full rounded-2xl bg-[#3A1C5F] py-5 text-lg font-black uppercase tracking-widest text-white transition-all hover:bg-[#2A1445] active:scale-[0.97] disabled:opacity-70 shadow-xl shadow-purple-200"
             >
               {isLoading ? (
-                <span className="flex items-center justify-center">
-                  <svg className="mr-3 h-5 w-5 animate-spin text-white" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
-                  Сверяем данные...
-                </span>
+                <div className="flex items-center justify-center">
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent mr-3" />
+                  ПРОВЕРКА...
+                </div>
               ) : (
-                "Войти в кабинет"
+                "ВОЙТИ В СИСТЕМУ"
               )}
             </button>
           </form>
 
-          <div className="mt-10 text-center">
-            <p className="text-sm text-slate-400">
-              Данные синхронизированы с системой <span className="font-semibold">МойСклад</span>
+          <div className="mt-12 text-center">
+            <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">
+              Powered by FF24 Technology & MoySklad API
             </p>
           </div>
         </div>
