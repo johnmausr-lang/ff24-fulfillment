@@ -1,160 +1,147 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { toast } from "react-hot-toast";
+import { motion } from "framer-motion";
+import { 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area 
+} from 'recharts';
+import { 
+  Boxes, 
+  Truck, 
+  TrendingUp, 
+  Clock, 
+  ChevronRight,
+  ArrowUpRight
+} from "lucide-react";
+import { Card } from "@/components/ui/card";
+import Link from "next/link";
 
-interface StockItem {
-  name: string;
-  code: string;
-  quantity: number;
-  price: number;
-}
+// Моковые данные для графика движения товара
+const chartData = [
+  { name: '01.12', in: 400, out: 240 },
+  { name: '05.12', in: 300, out: 139 },
+  { name: '10.12', in: 200, out: 980 },
+  { name: '15.12', in: 278, out: 390 },
+  { name: '20.12', in: 189, out: 480 },
+];
 
 export default function DashboardPage() {
-  const [stocks, setStocks] = useState<StockItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
+  const [stats, setStats] = useState({
+    inbound_total: 0,
+    in_stock: 0,
+    active_shipments: 0
+  });
 
   useEffect(() => {
-    async function fetchStock() {
-      try {
-        const res = await fetch("/api/dashboard/stock");
-        if (res.status === 401) {
-          router.push("/login");
-          return;
-        }
-        const data = await res.json();
-        if (res.ok) {
-          setStocks(data.stocks || []);
-        } else {
-          toast.error(data.error || "Ошибка загрузки данных");
-        }
-      } catch (err) {
-        toast.error("Не удалось подключиться к API");
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchStock();
-  }, [router]);
-
-  const totalItems = stocks.reduce((sum, item) => sum + item.quantity, 0);
-
-  const handleLogout = () => {
-    document.cookie = "token=; max-age=0; path=/";
-    router.push("/login");
-  };
+    fetch('/api/dashboard/stats')
+      .then(res => res.json())
+      .then(data => setStats(data));
+  }, []);
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
-      {/* HEADER */}
-      <header className="bg-[#3A1C5F] sticky top-0 z-50 shadow-xl border-b-4 border-[#D9FF00]">
-        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-          <Image src="/logo-ff24.png" alt="FF24" width={140} height={50} className="brightness-200 h-auto w-auto" />
-          <div className="flex items-center gap-6">
-            <div className="hidden md:block text-right">
-              <p className="text-[10px] text-[#D9FF00] font-black uppercase tracking-widest">Статус системы</p>
-              <p className="text-white text-xs font-medium italic">Синхронизация с МойСклад: OK</p>
-            </div>
-            <button 
-              onClick={handleLogout}
-              className="bg-white/10 hover:bg-white/20 text-white px-5 py-2 rounded-xl text-xs font-bold transition-all border border-white/20"
-            >
-              ВЫЙТИ
-            </button>
-          </div>
+    <div className="p-6 md:p-10 space-y-8 bg-[#1A0B2E] min-h-screen text-white">
+      {/* Заголовок */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-4xl font-black italic uppercase text-white leading-none">
+            Обзор <span className="text-[#D9FF00]">Склада</span>
+          </h1>
+          <p className="text-slate-400 text-xs font-bold uppercase tracking-[0.2em] mt-2 italic">
+            Оперативные данные фулфилмента FF24
+          </p>
         </div>
-      </header>
-
-      <main className="container mx-auto px-6 py-10">
-        {/* ВЕРХНЯЯ ПАНЕЛЬ */}
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end mb-12 gap-6">
-          <div>
-            <h1 className="text-4xl font-black text-[#3A1C5F] uppercase italic tracking-tighter">
-              ТОВАРНЫЕ ОСТАТКИ
-            </h1>
-            <div className="h-1.5 w-24 bg-[#D9FF00] mt-2 rounded-full" />
-          </div>
-          
-          <button className="group relative bg-[#D9FF00] hover:bg-[#3A1C5F] text-[#3A1C5F] hover:text-white font-black px-10 py-5 rounded-2xl transition-all duration-300 shadow-2xl shadow-lime-200 hover:shadow-purple-200 flex items-center gap-3 overflow-hidden">
-            <span className="relative z-10 uppercase tracking-widest">Создать новый заказ</span>
-            <svg className="w-6 h-6 relative z-10 group-hover:rotate-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4" />
-            </svg>
+        <Link href="/dashboard/create-order">
+          <button className="bg-[#D9FF00] text-[#1A0B2E] font-black py-4 px-8 rounded-2xl text-sm uppercase italic hover:scale-105 transition-all shadow-[0_0_30px_rgba(217,255,0,0.2)]">
+            + Создать поставку
           </button>
-        </div>
+        </Link>
+      </div>
 
-        {/* ВИДЖЕТЫ */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-          <div className="bg-white p-8 rounded-[2.5rem] border-2 border-slate-50 shadow-sm hover:shadow-md transition-shadow">
-            <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mb-3">Всего единиц</p>
-            <p className="text-5xl font-black text-[#3A1C5F] tabular-nums">
-              {loading ? "..." : totalItems.toLocaleString()}
-            </p>
-          </div>
-          <div className="bg-white p-8 rounded-[2.5rem] border-2 border-slate-50 shadow-sm">
-            <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mb-3">Количество SKU</p>
-            <p className="text-5xl font-black text-[#3A1C5F] tabular-nums">
-              {loading ? "..." : stocks.length}
-            </p>
-          </div>
-          <div className="bg-[#3A1C5F] p-8 rounded-[2.5rem] shadow-xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-10">
-              <svg className="w-24 h-24 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-            </div>
-            <p className="text-[#D9FF00] text-[10px] font-black uppercase tracking-[0.2em] mb-3">Локация</p>
-            <p className="text-white text-2xl font-bold leading-tight uppercase italic">Склад: FF24 Основной</p>
-          </div>
-        </div>
+      {/* Карточки показателей */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {[
+          { label: "Товаров в наличии", value: stats.in_stock, icon: <Boxes />, color: "text-[#D9FF00]" },
+          { label: "Ожидается приемка", value: stats.inbound_total, icon: <Truck />, color: "text-blue-400" },
+          { label: "Активные заявки", value: stats.active_shipments, icon: <Clock />, color: "text-purple-400" },
+        ].map((item, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.1 }}
+          >
+            <Card className="bg-[#2A1445] border-white/5 p-6 rounded-[2.5rem] relative overflow-hidden group">
+              <div className={`absolute right-[-10px] top-[-10px] opacity-5 group-hover:opacity-10 transition-opacity ${item.color}`}>
+                 {item.icon}
+              </div>
+              <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-2">{item.label}</p>
+              <div className="flex items-end gap-2">
+                <h3 className="text-4xl font-black italic">{item.value.toLocaleString()}</h3>
+                <span className="text-[10px] font-bold text-slate-500 mb-2 uppercase">ед.</span>
+              </div>
+            </Card>
+          </motion.div>
+        ))}
+      </div>
 
-        {/* ТАБЛИЦА */}
-        <div className="bg-white rounded-[3rem] border border-slate-100 shadow-2xl shadow-slate-200/50 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-slate-50/50">
-                  <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Наименование товара</th>
-                  <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Артикул / Код</th>
-                  <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Остаток</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {loading ? (
-                  [1,2,3,4].map(i => (
-                    <tr key={i} className="animate-pulse">
-                      <td className="px-10 py-8"><div className="h-5 bg-slate-100 rounded-lg w-64"></div></td>
-                      <td className="px-10 py-8"><div className="h-5 bg-slate-100 rounded-lg w-32"></div></td>
-                      <td className="px-10 py-8"><div className="h-5 bg-slate-100 rounded-lg w-16 ml-auto"></div></td>
-                    </tr>
-                  ))
-                ) : stocks.length === 0 ? (
-                  <tr>
-                    <td colSpan={3} className="px-10 py-20 text-center text-slate-400 font-medium italic">
-                      Товары не найдены. Оформите первую поставку!
-                    </td>
-                  </tr>
-                ) : stocks.map((item, idx) => (
-                  <tr key={idx} className="group hover:bg-[#D9FF00]/5 transition-colors">
-                    <td className="px-10 py-6 font-bold text-[#3A1C5F] text-lg">{item.name}</td>
-                    <td className="px-10 py-6">
-                      <span className="font-mono text-sm bg-slate-100 text-slate-600 px-3 py-1 rounded-md">{item.code}</span>
-                    </td>
-                    <td className="px-10 py-6 text-right">
-                      <div className="inline-flex items-center gap-3 bg-white border-2 border-slate-100 px-5 py-2 rounded-2xl shadow-sm group-hover:border-[#D9FF00] transition-colors">
-                        <span className="w-2 h-2 rounded-full bg-[#D9FF00] animate-pulse" />
-                        <span className="text-xl font-black text-[#3A1C5F]">{item.quantity}</span>
-                        <span className="text-[10px] font-black text-slate-400 uppercase">шт</span>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      <div className="grid lg:grid-cols-3 gap-8">
+        {/* График динамики */}
+        <Card className="lg:col-span-2 bg-[#2A1445] border-white/5 p-8 rounded-[3rem] shadow-2xl">
+          <div className="flex justify-between items-center mb-8">
+            <h3 className="text-xl font-black italic uppercase flex items-center gap-2">
+              <TrendingUp className="text-[#D9FF00]" size={20} /> Движение стока
+            </h3>
           </div>
-        </div>
-      </main>
+          <div className="h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={chartData}>
+                <defs>
+                  <linearGradient id="colorIn" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#D9FF00" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#D9FF00" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ffffff05" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 10}} />
+                <Tooltip 
+                  contentStyle={{backgroundColor: '#1A0B2E', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '15px'}}
+                  itemStyle={{fontSize: '12px', fontWeight: 'bold'}}
+                />
+                <Area type="monotone" dataKey="in" stroke="#D9FF00" fillOpacity={1} fill="url(#colorIn)" strokeWidth={3} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+
+        {/* Последние заявки (Inbound из вашей модели) */}
+        <Card className="bg-[#2A1445] border-white/5 p-8 rounded-[3rem] shadow-2xl">
+          <h3 className="text-xl font-black italic uppercase mb-6 flex items-center gap-2">
+            <Clock className="text-blue-400" size={20} /> Поставки
+          </h3>
+          <div className="space-y-4">
+            {[
+              { id: "ORD-992", date: "Сегодня", status: "Приемка", items: 120 },
+              { id: "ORD-854", date: "Вчера", status: "Ожидание", items: 450 },
+              { id: "ORD-721", date: "20 дек", status: "Завершено", items: 80 },
+            ].map((order, i) => (
+              <div key={i} className="flex items-center justify-between p-4 bg-white/5 rounded-2xl hover:bg-white/10 transition-colors cursor-pointer group">
+                <div>
+                  <p className="text-[10px] font-black text-[#D9FF00] uppercase mb-1">{order.id}</p>
+                  <p className="font-bold text-sm uppercase italic">{order.status}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs font-bold text-white">{order.items} ед.</p>
+                  <p className="text-[10px] text-slate-500 uppercase">{order.date}</p>
+                </div>
+                <ChevronRight size={16} className="text-slate-600 group-hover:text-white ml-2" />
+              </div>
+            ))}
+          </div>
+          <button className="w-full mt-6 py-4 text-[10px] font-black uppercase text-slate-400 tracking-widest hover:text-[#D9FF00] transition-colors border-t border-white/5">
+            Смотреть всю историю
+          </button>
+        </Card>
+      </div>
     </div>
   );
 }
