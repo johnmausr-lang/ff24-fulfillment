@@ -15,9 +15,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ru" className="scroll-smooth">
+    <html lang="ru" className="h-full">
       <body
-        className={`${inter.className} min-h-screen bg-[#F8FAFC] text-[#1E293B] antialiased`}
+        className={`${inter.className} min-h-screen bg-[#F8FAFC] text-[#1E293B] antialiased overflow-y-auto`}
       >
         {children}
         <Toaster position="top-center" />
