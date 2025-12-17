@@ -1,55 +1,58 @@
 "use client";
+import { useEffect, useState } from 'react';
 
-import { Clock, Truck, CheckCircle2, AlertCircle, ChevronRight } from "lucide-react";
-
-const shipments = [
-  { id: "INB-5591", status: "В ПУТИ", date: "17.12.2023", items: 450, color: "text-blue-400" },
-  { id: "INB-5582", status: "ПРИЕМКА", date: "16.12.2023", items: 120, color: "text-[#D9FF00]" },
-  { id: "INB-5540", status: "ЗАВЕРШЕНО", date: "10.12.2023", items: 800, color: "text-slate-500" },
-];
+const getStatusProgress = (status: string) => {
+  const steps: Record<string, number> = {
+    "Новый": 10,
+    "Принято": 30,
+    "На проверке": 50,
+    "Маркировка": 70,
+    "Размещено на складе": 100,
+    "Завершено": 100
+  };
+  return steps[status] || 5;
+};
 
 export default function ShipmentsPage() {
+  const [orders, setOrders] = useState([]);
+
+  useEffect(() => {
+    fetch('/api/orders/list').then(res => res.json()).then(data => setOrders(data.orders));
+  }, []);
+
   return (
-    <div className="p-6 md:p-10 space-y-8 bg-[#1A0B2E] min-h-screen text-white">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-4xl font-black italic uppercase text-white leading-none">История <span className="text-blue-400">Поставок</span></h1>
-          <p className="text-slate-400 text-xs font-bold uppercase tracking-[0.2em] mt-2 italic">Трекинг входящих грузов на склад</p>
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        {shipments.map((s) => (
-          <div key={s.id} className="bg-[#2A1445] p-8 rounded-[2.5rem] border border-white/5 flex flex-col md:flex-row items-center justify-between gap-6 hover:border-white/10 transition-all group">
-            <div className="flex items-center gap-6 w-full md:w-auto">
-              <div className={`p-4 bg-white/5 rounded-2xl ${s.color}`}>
-                <Truck size={32} />
-              </div>
+    <div className="p-8">
+      <h1 className="text-2xl font-bold mb-8 text-white">Мои поставки</h1>
+      
+      <div className="grid gap-6">
+        {orders.map((order: any) => (
+          <div key={order.id} className="bg-[#1A0B2E] border border-white/10 p-6 rounded-3xl">
+            <div className="flex justify-between items-start mb-4">
               <div>
-                <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">ID Поставки</p>
-                <h3 className="text-2xl font-black italic uppercase">{s.id}</h3>
+                <h3 className="text-lg font-bold text-[#D9FF00]">{order.name}</h3>
+                <p className="text-slate-400 text-sm">{new Date(order.date).toLocaleDateString()}</p>
               </div>
+              <span 
+                className="px-4 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
+                style={{ backgroundColor: `${order.statusColor}22`, color: order.statusColor, border: `1px solid ${order.statusColor}` }}
+              >
+                {order.status}
+              </span>
             </div>
 
-            <div className="flex flex-1 justify-around w-full md:w-auto border-y md:border-y-0 md:border-x border-white/5 py-4 md:py-0">
-              <div className="text-center">
-                <p className="text-[10px] font-black text-slate-500 uppercase mb-1">Дата</p>
-                <p className="font-bold">{s.date}</p>
+            {/* Прогресс-бар */}
+            <div className="space-y-2">
+              <div className="flex justify-between text-[10px] uppercase font-bold text-slate-500 tracking-widest">
+                <span>Оформление</span>
+                <span>Приемка</span>
+                <span>На складе</span>
               </div>
-              <div className="text-center">
-                <p className="text-[10px] font-black text-slate-500 uppercase mb-1">Количество</p>
-                <p className="font-bold text-[#D9FF00]">{s.items} ед.</p>
+              <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-[#D9FF00] transition-all duration-1000"
+                  style={{ width: `${getStatusProgress(order.status)}%`, boxShadow: '0 0 15px #D9FF00' }}
+                />
               </div>
-            </div>
-
-            <div className="flex items-center gap-6 w-full md:w-auto justify-between md:justify-end">
-              <div className="text-right">
-                <p className="text-[10px] font-black text-slate-500 uppercase mb-1">Статус</p>
-                <p className={`font-black italic uppercase ${s.color}`}>{s.status}</p>
-              </div>
-              <button className="p-4 bg-white/5 rounded-xl group-hover:bg-[#D9FF00] group-hover:text-black transition-all">
-                <ChevronRight size={20} />
-              </button>
             </div>
           </div>
         ))}
