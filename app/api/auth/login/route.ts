@@ -1,36 +1,42 @@
 import { NextResponse } from 'next/server';
 import { msFetch } from '@/lib/moysklad';
 
+export const dynamic = 'force-dynamic'; // Убирает ошибку сборки Render
+
 export async function POST(request: Request) {
   try {
-    const { phone } = await request.json();
-    const cleanPhone = phone.replace(/\D/g, "");
+    const { email } = await request.json(); // Теперь ждем email
+    const cleanEmail = email.toLowerCase().trim();
 
-    // Ищем контрагента в МойСклад по телефону
-    // Фильтр: находим тех, у кого телефон совпадает (учитываем разные форматы записи)
-    const counterparty = await msFetch(`/entity/counterparty?filter=phone~${cleanPhone}`);
+    // Поиск контрагента в МойСклад по email
+    const counterparty = await msFetch(`/entity/counterparty?filter=email=${cleanEmail}`);
 
-    if (counterparty.rows.length === 0) {
-      return NextResponse.json({ error: "Клиент с таким номером не найден в системе" }, { status: 404 });
+    if (!counterparty.rows || counterparty.rows.length === 0) {
+      return NextResponse.json(
+        { error: "Клиент с такой почтой не найден в системе МойСклад" }, 
+        { status: 404 }
+      );
     }
 
     const client = counterparty.rows[0];
+    
     const response = NextResponse.json({ 
       success: true, 
       name: client.name,
-      phone: cleanPhone 
+      email: cleanEmail 
     });
 
-    // Устанавливаем токен (телефон) в куки для Middleware
-    response.cookies.set('token', cleanPhone, { 
+    // Устанавливаем токен (используем email как идентификатор)
+    response.cookies.set('token', cleanEmail, { 
       httpOnly: true,
       secure: true,
       path: '/',
-      maxAge: 60 * 60 * 24 
+      maxAge: 60 * 60 * 24 * 7 // 7 дней
     });
 
     return response;
   } catch (error: any) {
+    console.error("Login Error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
