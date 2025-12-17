@@ -15,31 +15,53 @@ export async function POST(req: Request) {
 
     const { items, comment } = await req.json();
 
-    // Формируем заказ для МойСклад
-    const orderBody = {
-      organization: { meta: { href: `${MS_API_URL}/entity/organization/${process.env.ORGANIZATION_ID}`, type: "organization", mediaType: "application/json" } },
-      agent: { meta: { href: `${MS_API_URL}/entity/counterparty/${ms_id}`, type: "counterparty", mediaType: "application/json" } },
-      description: comment || "Заказ создан через Личный Кабинет FF24",
+    const body = {
+      organization: { 
+        meta: { 
+          href: `${MS_API_URL}/entity/organization/${process.env.ORGANIZATION_ID}`, 
+          type: "organization", 
+          mediaType: "application/json" 
+        } 
+      },
+      agent: { 
+        meta: { 
+          href: `${MS_API_URL}/entity/counterparty/${ms_id}`, 
+          type: "counterparty", 
+          mediaType: "application/json" 
+        } 
+      },
+      store: {
+        meta: {
+          href: `${MS_API_URL}/entity/store/${process.env.STORE_ID}`,
+          type: "store",
+          mediaType: "application/json"
+        }
+      },
+      description: comment || "Заказ создан через ЛК FF24",
       positions: items.map((item: any) => ({
-        quantity: item.quantity,
-        price: 0, // Цену можно подтягивать из справочника, если нужно
+        quantity: parseFloat(item.quantity),
+        price: 0,
         assortment: { meta: item.meta }
       }))
     };
 
-    const res = await fetch(`${MS_API_URL}/entity/customerorder`, {
+    const res = await fetch(`${MS_API_URL}/entity/supply`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${process.env.MOYSKLAD_TOKEN}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(orderBody),
+      body: JSON.stringify(body),
     });
 
-    if (!res.ok) throw new Error("Ошибка создания в МС");
+    if (!res.ok) {
+      const errData = await res.json();
+      console.error(errData);
+      throw new Error("Ошибка МС");
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    return NextResponse.json({ error: "Сбой при создании заказа" }, { status: 500 });
+    return NextResponse.json({ error: "Не удалось создать поставку" }, { status: 500 });
   }
 }
