@@ -1,33 +1,36 @@
 import { NextResponse } from 'next/server';
+import { msFetch } from '@/lib/moysklad';
 
 export async function POST(request: Request) {
   try {
     const { phone } = await request.json();
-
-    // Санитизация как в вашей модели Python: оставляем только цифры
     const cleanPhone = phone.replace(/\D/g, "");
 
-    if (cleanPhone.length < 10) {
-      return NextResponse.json({ error: "Неверный формат номера" }, { status: 400 });
+    // Ищем контрагента в МойСклад по телефону
+    // Фильтр: находим тех, у кого телефон совпадает (учитываем разные форматы записи)
+    const counterparty = await msFetch(`/entity/counterparty?filter=phone~${cleanPhone}`);
+
+    if (counterparty.rows.length === 0) {
+      return NextResponse.json({ error: "Клиент с таким номером не найден в системе" }, { status: 404 });
     }
 
-    // Здесь можно добавить проверку: существует ли такой клиент в БД
-    
+    const client = counterparty.rows[0];
     const response = NextResponse.json({ 
       success: true, 
+      name: client.name,
       phone: cleanPhone 
     });
 
-    // Устанавливаем куку сессии на 7 дней
-    response.cookies.set('ff24_session', cleanPhone, {
-      httpOnly: true, // Защита от XSS
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 60 * 60 * 24 * 7,
+    // Устанавливаем токен (телефон) в куки для Middleware
+    response.cookies.set('token', cleanPhone, { 
+      httpOnly: true,
+      secure: true,
       path: '/',
+      maxAge: 60 * 60 * 24 
     });
 
     return response;
-  } catch (error) {
-    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
