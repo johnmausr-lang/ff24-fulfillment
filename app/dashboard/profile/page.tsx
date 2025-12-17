@@ -1,136 +1,90 @@
 "use client";
 
-import { useState } from "react";
-import { User, Building2, MapPin, Phone, Mail, Fingerprint, Save, ShieldCheck } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { User, Phone, Mail, MapPin, Fingerprint, ShieldAlert } from "lucide-react";
 
 export default function ProfilePage() {
-  // Данные инициализируются на основе вашей модели ClientData
-  const [profile, setProfile] = useState({
-    full_name: "Иван Иванов",
-    org_type: "ИП",
-    inn: "770012345678",
-    phone: "+7 (999) 000-00-00", // Санитизация будет на стороне API
-    email: "client@example.com",
-    address: "г. Москва, ул. Складская, д. 24",
-  });
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const handleSave = () => {
-    // Здесь будет вызов API для обновления данных
-    console.log("Сохранение данных профиля согласно модели ClientData:", profile);
-  };
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((res) => res.json())
+      .then((data) => {
+        setUser(data);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) return <div className="p-10 text-[#D9FF00] animate-pulse uppercase font-black italic">Загрузка данных...</div>;
 
   return (
-    <div className="p-6 md:p-10 space-y-8 bg-[#1A0B2E] min-h-screen text-white">
-      <div className="flex justify-between items-end">
-        <div>
-          <h1 className="text-4xl font-black italic uppercase text-[#D9FF00] leading-none">Профиль</h1>
-          <p className="text-slate-400 text-xs font-bold uppercase tracking-[0.2em] mt-2">Управление данными контрагента</p>
-        </div>
-        <div className="hidden md:flex items-center gap-2 text-[#D9FF00] bg-[#D9FF00]/10 px-4 py-2 rounded-full border border-[#D9FF00]/20">
-          <ShieldCheck size={16} />
-          <span className="text-[10px] font-black uppercase">Аккаунт проверен</span>
-        </div>
-      </div>
+    <div className="p-8 max-w-4xl mx-auto">
+      <header className="mb-12">
+        <h1 className="text-4xl font-black italic uppercase text-white tracking-tighter">
+          Мой <span className="text-[#D9FF00]">Профиль</span>
+        </h1>
+        <p className="text-slate-500 text-xs font-bold uppercase tracking-[0.3em] mt-2">
+          Данные вашей организации из системы МойСклад
+        </p>
+      </header>
 
-      <div className="grid lg:grid-cols-3 gap-8">
-        {/* Основная информация */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-[#2A1445] rounded-[3rem] p-8 md:p-12 border border-white/5 shadow-2xl">
-            <h3 className="text-xl font-black italic uppercase mb-8 flex items-center gap-3">
-              <Building2 className="text-[#D9FF00]" /> Юридические данные
-            </h3>
-            
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-slate-500 ml-4 tracking-widest">ФИО / Наименование</label>
-                <div className="relative">
-                  <User className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
-                  <input 
-                    className="w-full bg-[#1A0B2E] border border-white/10 rounded-2xl py-4 pl-14 pr-6 outline-none focus:border-[#D9FF00] transition-all"
-                    value={profile.full_name}
-                    onChange={(e) => setProfile({...profile, full_name: e.target.value})}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-slate-500 ml-4 tracking-widest">ИНН (поле из ClientData)</label>
-                <div className="relative">
-                  <Fingerprint className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
-                  <input 
-                    className="w-full bg-[#1A0B2E] border border-white/10 rounded-2xl py-4 pl-14 pr-6 outline-none focus:border-[#D9FF00] transition-all"
-                    value={profile.inn}
-                    onChange={(e) => setProfile({...profile, inn: e.target.value})}
-                  />
-                </div>
-              </div>
-
-              <div className="md:col-span-2 space-y-2">
-                <label className="text-[10px] font-black uppercase text-slate-500 ml-4 tracking-widest">Юридический адрес</label>
-                <div className="relative">
-                  <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
-                  <input 
-                    className="w-full bg-[#1A0B2E] border border-white/10 rounded-2xl py-4 pl-14 pr-6 outline-none focus:border-[#D9FF00] transition-all"
-                    value={profile.address}
-                    onChange={(e) => setProfile({...profile, address: e.target.value})}
-                  />
-                </div>
-              </div>
-            </div>
+      <div className="grid gap-6">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-[#1A0B2E] border border-white/10 rounded-[2.5rem] p-8 relative overflow-hidden"
+        >
+          {/* Декор */}
+          <div className="absolute top-0 right-0 p-8 opacity-5">
+            <User size={120} className="text-white" />
           </div>
 
-          <div className="bg-[#2A1445] rounded-[3rem] p-8 md:p-12 border border-white/5 shadow-2xl">
-            <h3 className="text-xl font-black italic uppercase mb-8 flex items-center gap-3">
-              <Phone className="text-[#D9FF00]" /> Контакты
-            </h3>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-slate-500 ml-4 tracking-widest">Телефон</label>
-                <input 
-                  className="w-full bg-[#1A0B2E] border border-white/10 rounded-2xl py-4 px-6 outline-none focus:border-[#D9FF00] transition-all"
-                  value={profile.phone}
-                  onChange={(e) => setProfile({...profile, phone: e.target.value})}
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-slate-500 ml-4 tracking-widest">Email</label>
-                <input 
-                  className="w-full bg-[#1A0B2E] border border-white/10 rounded-2xl py-4 px-6 outline-none focus:border-[#D9FF00] transition-all"
-                  value={profile.email}
-                  onChange={(e) => setProfile({...profile, email: e.target.value})}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Сайдбар действий */}
-        <div className="space-y-6">
-          <div className="bg-[#D9FF00] rounded-[3rem] p-8 text-[#1A0B2E] shadow-[0_20px_50px_rgba(217,255,0,0.15)]">
-            <h4 className="font-black italic uppercase text-lg mb-4 leading-tight">Сохранить изменения?</h4>
-            <p className="text-sm font-bold opacity-70 mb-8 uppercase tracking-tighter">Все данные будут обновлены в системе фулфилмента</p>
-            <Button 
-              onClick={handleSave}
-              className="w-full bg-[#1A0B2E] text-white hover:bg-black py-8 rounded-[2rem] font-black uppercase italic transition-all flex items-center justify-center gap-2"
-            >
-              <Save size={20} /> Обновить профиль
-            </Button>
-          </div>
-
-          <div className="bg-white/5 border border-white/5 rounded-[2rem] p-6">
-            <p className="text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] mb-4">Тип аккаунта</p>
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-[#3A1C5F] rounded-2xl flex items-center justify-center text-[#D9FF00] font-black italic">
-                {profile.org_type}
+          <div className="space-y-8 relative z-10">
+            {/* Основная инфо */}
+            <div className="flex items-center gap-6 pb-8 border-b border-white/5">
+              <div className="w-20 h-20 rounded-[2rem] bg-[#D9FF00] flex items-center justify-center text-black shadow-[0_0_30px_rgba(217,255,0,0.2)]">
+                <User size={40} />
               </div>
               <div>
-                <p className="font-black uppercase italic text-sm">Селлер FF24</p>
-                <p className="text-[10px] text-slate-500 font-bold uppercase">ID: 882410</p>
+                <h2 className="text-2xl font-black text-white italic uppercase leading-none">{user.name}</h2>
+                <span className="text-[#D9FF00] text-[10px] font-black uppercase tracking-[0.2em] mt-2 inline-block">Верифицированный клиент</span>
               </div>
             </div>
+
+            {/* Сетка данных */}
+            <div className="grid md:grid-cols-2 gap-8">
+              <ProfileItem icon={<Mail size={18} />} label="Email" value={user.email} />
+              <ProfileItem icon={<Phone size={18} />} label="Телефон" value={user.phone} />
+              <ProfileItem icon={<Fingerprint size={18} />} label="ИНН" value={user.inn} />
+              <ProfileItem icon={<MapPin size={18} />} label="Юридический адрес" value={user.legalAddress} />
+            </div>
+
+            {/* Плашка предупреждения */}
+            <div className="mt-8 p-6 bg-white/5 rounded-3xl border border-white/5 flex items-start gap-4">
+              <ShieldAlert className="text-slate-500 shrink-0" size={24} />
+              <p className="text-[11px] text-slate-500 uppercase font-bold leading-relaxed">
+                Редактирование личных данных заблокировано. Если вы хотите изменить ИНН или юридический адрес, 
+                пожалуйста, свяжитесь с вашим персональным менеджером или обновите данные в договоре.
+              </p>
+            </div>
           </div>
-        </div>
+        </motion.div>
+      </div>
+    </div>
+  );
+}
+
+function ProfileItem({ icon, label, value }: { icon: any, label: string, value: string }) {
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2 text-slate-500">
+        <div className="text-[#D9FF00] opacity-70">{icon}</div>
+        <span className="text-[10px] font-black uppercase tracking-widest">{label}</span>
+      </div>
+      <div className="bg-[#0F051D] border border-white/5 p-4 rounded-2xl text-white font-bold text-sm">
+        {value || "—"}
       </div>
     </div>
   );
