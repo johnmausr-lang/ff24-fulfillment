@@ -1,59 +1,65 @@
 "use client";
 
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
-import { Card } from "@/components/ui/card";
-import { TrendingUp, Users, ShoppingBag, DollarSign } from "lucide-react";
+import { FileText, Download, BarChart3, Calendar, Search } from "lucide-react";
+import { motion } from "framer-motion";
 
-const data = [
-  { name: 'Пн', sales: 4000, orders: 24 },
-  { name: 'Вт', sales: 3000, orders: 18 },
-  { name: 'Ср', sales: 2000, orders: 29 },
-  { name: 'Чт', sales: 2780, orders: 23 },
-  { name: 'Пт', sales: 1890, orders: 15 },
-  { name: 'Сб', sales: 2390, orders: 21 },
-  { name: 'Вс', sales: 3490, orders: 30 },
+const reports = [
+  { id: "REP-001", name: "Акт приемки №452", date: "15.12.2023", type: "PDF", size: "1.2 MB" },
+  { id: "REP-002", name: "Отчет по остаткам (мес)", date: "01.12.2023", type: "XLSX", size: "450 KB" },
+  { id: "REP-003", name: "Реестр отгрузок на WB", date: "28.11.2023", type: "PDF", size: "2.1 MB" },
 ];
 
 export default function ReportsPage() {
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-3xl font-black italic uppercase text-[#3A1C5F]">Аналитика продаж</h1>
-      
-      {/* Сводка */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {[
-          { label: "Выручка", value: "450,000 ₽", icon: <DollarSign />, color: "text-green-500" },
-          { label: "Заказы", value: "156", icon: <ShoppingBag />, color: "text-blue-500" },
-          { label: "Возвраты", value: "3", icon: <TrendingUp />, color: "text-red-500" },
-          { label: "Клиенты", value: "89", icon: <Users />, color: "text-[#3A1C5F]" },
-        ].map((stat, i) => (
-          <Card key={i} className="p-6 rounded-[2rem] border-none shadow-sm">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-sm font-bold text-slate-400 uppercase">{stat.label}</p>
-                <h3 className="text-2xl font-black mt-1">{stat.value}</h3>
-              </div>
-              <div className={`p-3 bg-slate-50 rounded-2xl ${stat.color}`}>{stat.icon}</div>
-            </div>
-          </Card>
-        ))}
+    <div className="p-6 md:p-10 space-y-8 bg-[#1A0B2E] min-h-screen text-white">
+      <div className="flex justify-between items-end">
+        <div>
+          <h1 className="text-4xl font-black italic uppercase text-[#D9FF00] leading-none">Отчетность</h1>
+          <p className="text-slate-400 text-xs font-bold uppercase tracking-[0.2em] mt-2 italic">Документы и аналитика по складу</p>
+        </div>
       </div>
 
-      {/* График */}
-      <Card className="p-8 rounded-[3rem] border-none shadow-md overflow-hidden bg-white">
-        <h3 className="text-xl font-black italic uppercase mb-8 text-[#3A1C5F]">Динамика за неделю</h3>
-        <div className="h-[300px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
-              <YAxis hide />
-              <Tooltip cursor={{fill: '#f8fafc'}} contentStyle={{borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)'}} />
-              <Bar dataKey="sales" fill="#3A1C5F" radius={[10, 10, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+      <div className="grid md:grid-cols-3 gap-6">
+        <div className="bg-[#2A1445] p-6 rounded-[2rem] border border-white/5 flex items-center gap-4">
+          <div className="w-12 h-12 bg-[#D9FF00]/10 rounded-xl flex items-center justify-center text-[#D9FF00]"><FileText /></div>
+          <div>
+            <p className="text-2xl font-black">12</p>
+            <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Документов за месяц</p>
+          </div>
         </div>
-      </Card>
+      </div>
+
+      {/* Список отчетов */}
+      <div className="bg-[#2A1445] rounded-[3rem] border border-white/5 overflow-hidden">
+        <div className="p-8 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+           <h3 className="font-black italic uppercase text-lg">Архив документов</h3>
+           <div className="relative">
+             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
+             <input className="bg-[#1A0B2E] border border-white/10 rounded-xl py-2 pl-10 pr-4 text-xs outline-none focus:border-[#D9FF00]" placeholder="Поиск документа..." />
+           </div>
+        </div>
+        
+        <div className="divide-y divide-white/5">
+          {reports.map((report, i) => (
+            <motion.div 
+              key={report.id}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.1 }}
+              className="p-6 hover:bg-white/[0.02] flex items-center justify-between group"
+            >
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-white/5 rounded-xl text-slate-400 group-hover:text-[#D9FF00] transition-colors"><FileText size={20} /></div>
+                <div>
+                  <p className="font-bold uppercase italic text-sm">{report.name}</p>
+                  <p className="text-[10px] text-slate-500 font-bold uppercase">{report.date} • {report.size}</p>
+                </div>
+              </div>
+              <button className="flex items-center gap-2 bg-white/5 hover:bg-[#D9FF00] hover:text-[#1A0B2E] px-4 py-2 rounded-xl transition-all text-[10px] font-black uppercase italic">
+                {report.type} <Download size={14} />
+              </button>
+            </motion.div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
