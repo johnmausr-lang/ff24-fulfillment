@@ -13,29 +13,38 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.includes("@")) {
+    const cleanEmail = email.toLowerCase().trim();
+    
+    console.log("🚀 [FRONTEND] Попытка входа с email:", cleanEmail);
+    
+    if (!cleanEmail.includes("@")) {
       toast.error("Введите корректный Email");
       return;
     }
 
     setLoading(true);
     try {
+      console.log("📡 [FRONTEND] Отправка запроса на /api/auth/login...");
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.toLowerCase().trim() }),
+        body: JSON.stringify({ email: cleanEmail }),
       });
 
+      console.log("📊 [FRONTEND] Статус ответа API:", res.status);
       const data = await res.json();
+      console.log("📦 [FRONTEND] Получены данные:", data);
 
       if (res.ok) {
         toast.success(`Добро пожаловать, ${data.name}!`);
         router.push("/dashboard");
       } else {
+        console.error("❌ [FRONTEND] Ошибка входа:", data.error);
         toast.error(data.error || "Ошибка входа");
       }
     } catch (err) {
-      toast.error("Ошибка сервера");
+      console.error("🔥 [FRONTEND] Критическая ошибка запроса:", err);
+      toast.error("Ошибка соединения с сервером");
     } finally {
       setLoading(false);
     }
@@ -43,12 +52,11 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-[#0F051D] flex items-center justify-center p-6 relative overflow-hidden">
-      {/* Декоративные элементы */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#D9FF00] blur-[150px] opacity-10 rounded-full animate-pulse" />
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#D9FF00] blur-[150px] opacity-10 rounded-full" />
       
       <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
         className="w-full max-w-md z-10"
       >
         <div className="bg-[#1A0B2E] border border-white/10 rounded-[2.5rem] p-10 shadow-2xl">
@@ -79,14 +87,14 @@ export default function LoginPage() {
 
             <button 
               disabled={loading}
-              className="w-full bg-[#D9FF00] text-black font-black py-5 rounded-2xl uppercase italic flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 shadow-[0_15px_30px_rgba(217,255,0,0.2)]"
+              className="w-full bg-[#D9FF00] text-black font-black py-5 rounded-2xl uppercase italic flex items-center justify-center gap-3 hover:shadow-[0_0_20px_rgba(217,255,0,0.3)] transition-all disabled:opacity-50"
             >
               {loading ? <Loader2 className="animate-spin" /> : <>Войти в систему <ArrowRight size={20} /></>}
             </button>
           </form>
 
-          <p className="mt-8 text-center text-[10px] text-slate-600 uppercase font-bold tracking-widest">
-            Нет доступа? Обратитесь к вашему менеджеру
+          <p className="mt-8 text-center text-[10px] text-slate-600 uppercase font-bold tracking-widest leading-relaxed">
+            Нет доступа? <br/> Обратитесь к вашему менеджеру
           </p>
         </div>
       </motion.div>
