@@ -1,51 +1,37 @@
-// app/api/auth/register/route.ts
-import { NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
-import { prisma } from '@/lib/prisma';
-import { createToken } from '@/lib/auth'; // <-- Импортируем из нового lib/auth.ts
+import { NextResponse } from "next/server";
 
-export async function POST(req: Request) {
-    try {
-        const { email, password, name } = await req.json();
+const MS_API_URL = "https://api.moysklad.ru/api/remap/1.2";
 
-        if (!email || !password) {
-            return NextResponse.json({ message: 'Email и пароль обязательны' }, { status: 400 });
-        }
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    const { email, inn, name, phone, address } = body;
 
-        const existingUser = await prisma.user.findUnique({ where: { email } });
-        if (existingUser) {
-            return NextResponse.json({ message: 'Пользователь с таким email уже существует' }, { status: 409 });
-        }
+    // Создаем контрагента в МойСклад
+    const msResponse = await fetch(`${MS_API_URL}/entity/counterparty`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.MOYSKLAD_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: name || email,
+        email: email,
+        inn: inn,
+        phone: phone,
+        actualAddress: address,
+        description: "Регистрация из ЛК Фулфилмента",
+      }),
+    });
 
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        const newUser = await prisma.user.create({
-            data: {
-                email,
-                password: hashedPassword,
-                name,
-            },
-        });
-
-        // 2. Генерируем токен (Теперь с await)
-        const token = await createToken(newUser.id, newUser.role); // <--- ИСПРАВЛЕНИЕ: ДОБАВЛЕН await
-
-        // 3. Устанавливаем токен и возвращаем ответ
-        const response = NextResponse.json({ 
-            message: 'Регистрация успешна', 
-            user: { id: newUser.id, email: newUser.email, role: newUser.role } 
-        });
-
-        response.cookies.set('auth_token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            maxAge: 60 * 60 * 24 * 7,
-            path: '/',
-        });
-
-        return response;
-    } catch (error) {
-        console.error('Registration error:', error);
-        return NextResponse.json({ message: 'Внутренняя ошибка сервера' }, { status: 500 });
+    if (!msResponse.ok) {
+      const errorData = await msResponse.json();
+      return NextResponse.json({ error: "Ошибка МойСклад", details: errorData }, { status: 400 });
     }
+
+    const newClient = await msResponse.json();
+    return NextResponse.json({ success: true, id: newClient.id });
+  } catch (error) {
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
+  }
 }
