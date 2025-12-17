@@ -1,99 +1,60 @@
 // app/login/page.tsx
 "use client";
-
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Zap } from 'lucide-react';
-import toast from 'react-hot-toast'; // Используем Sonner/toast
+import { useState } from "react";
+import Image from "next/image";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        toast.success('Вход выполнен! Перенаправление...');
-        router.push('/dashboard');
-      } else {
-        toast.error(data.error || 'Ошибка входа. Проверьте данные.');
-      }
-    } catch (error) {
-      toast.error('Ошибка сети. Попробуйте позже.');
-    } finally {
-      setIsLoading(false);
-    }
+    setLoading(true);
+    // Логика: POST на /api/auth/login с проверкой email в МойСклад
+    console.log("Вход для:", email);
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-4">
-      <div className="w-full max-w-md bg-primary-DEFAULT p-8 rounded-2xl shadow-neon border border-accent-DEFAULT/30">
-        <div className="flex justify-center mb-6">
-          <Zap className="h-10 w-10 text-accent-DEFAULT" />
+    <div className="flex min-h-screen flex-col items-center justify-center p-6 bg-[#F8FAFC]">
+      <div className="w-full max-w-[400px] bg-white rounded-2xl shadow-xl p-8 border border-slate-100">
+        <div className="flex justify-center mb-8">
+          <Image src="/logo-ff24.png" alt="FF24 Logo" width={180} height={60} priority />
         </div>
-        <h1 className="text-3xl font-bold text-center mb-2">Вход в FF24 Dashboard</h1>
-        <p className="text-center text-gray-400 mb-8">Используйте учетные данные вашей компании.</p>
+        
+        <h1 className="text-2xl font-bold text-center text-[#3A1C5F] mb-2">Личный кабинет</h1>
+        <p className="text-slate-500 text-center mb-8 text-sm">
+          Введите Email, указанный при регистрации
+        </p>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-1" htmlFor="email">Email</label>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1 ml-1">
+              Email адрес
+            </label>
             <input
-              id="email"
               type="email"
+              required
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#D9FF00] focus:border-[#3A1C5F] transition-all outline-none"
+              placeholder="example@mail.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:border-accent-DEFAULT focus:ring-accent-DEFAULT"
-              placeholder="your@company.ru"
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-400 mb-1" htmlFor="password">Пароль</label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:border-accent-DEFAULT focus:ring-accent-DEFAULT"
-              placeholder="••••••••"
-            />
-          </div>
-          
-          <div className="flex justify-end text-sm">
-            <Link href="/reset-password" className="text-gray-400 hover:text-accent-DEFAULT transition-colors">
-              Забыли пароль?
-            </Link>
           </div>
 
-          <Button type="submit" className="w-full py-3 text-lg" disabled={isLoading}>
-            {isLoading ? 'Вход...' : 'Войти'}
-          </Button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-[#3A1C5F] hover:bg-[#2A1445] text-white font-bold py-3 rounded-xl transition-all transform active:scale-[0.98] shadow-lg shadow-purple-200"
+          >
+            {loading ? "Проверка..." : "Войти в систему"}
+          </button>
         </form>
 
-        <p className="mt-8 text-center text-gray-400">
-          Нет аккаунта?{' '}
-          <Link href="/register" className="text-accent-DEFAULT hover:underline">
-            Зарегистрироваться
-          </Link>
-        </p>
+        <div className="mt-8 pt-6 border-t border-slate-100 text-center">
+          <p className="text-xs text-slate-400">
+            Нет доступа? Обратитесь к вашему менеджеру FF24
+          </p>
+        </div>
       </div>
     </div>
   );
