@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 
 const MS_API_URL = "https://api.moysklad.ru/api/remap/1.2";
 
@@ -8,8 +7,10 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const query = searchParams.get("search") || "";
 
+    if (query.length < 2) return NextResponse.json({ products: [] });
+
     const res = await fetch(
-      `${MS_API_URL}/entity/product?search=${encodeURIComponent(query)}&limit=10`,
+      `${MS_API_URL}/entity/product?search=${encodeURIComponent(query)}&limit=15`,
       {
         headers: {
           Authorization: `Bearer ${process.env.MOYSKLAD_TOKEN}`,
@@ -22,7 +23,7 @@ export async function GET(req: Request) {
     const products = (data.rows || []).map((p: any) => ({
       id: p.id,
       name: p.name,
-      code: p.article || p.code,
+      article: p.article || p.code || "—",
       meta: p.meta
     }));
 
