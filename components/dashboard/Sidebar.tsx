@@ -7,50 +7,39 @@ import {
   LayoutDashboard, 
   PackageSearch, 
   Truck, 
-  History, 
   UserCircle, 
   LogOut, 
-  Settings,
   Boxes,
   ClipboardList
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const menuItems = [
-  { 
-    title: "Главная", 
-    href: "/dashboard", 
-    icon: LayoutDashboard 
-  },
-  { 
-    title: "Инвентаризация", 
-    href: "/dashboard/inventory", 
-    icon: Boxes 
-  },
-  { 
-    title: "Новая поставка", 
-    href: "/dashboard/create-order", 
-    icon: PackageSearch 
-  },
-  { 
-    title: "Мои отчеты", 
-    href: "/dashboard/reports", 
-    icon: ClipboardList 
-  },
+  { title: "Главная", href: "/dashboard", icon: LayoutDashboard },
+  { title: "Инвентаризация", href: "/dashboard/inventory", icon: Boxes },
+  { title: "Новая поставка", href: "/dashboard/create-order", icon: PackageSearch },
+  { title: "Лента событий", href: "/dashboard/history", icon: ClipboardList },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
   const { userPhone, logout } = useUserStore();
 
-  const handleLogout = () => {
-    logout();
-    window.location.href = "/login";
+  const handleLogout = async () => {
+    try {
+      // Сначала чистим куки на сервере
+      await fetch("/api/auth/logout", { method: "POST" });
+      // Затем чистим стейт
+      logout();
+      // Уходим на логин
+      window.location.href = "/login";
+    } catch (err) {
+      window.location.href = "/login";
+    }
   };
 
   return (
     <aside className="w-72 bg-[#1A0B2E] border-r border-white/5 flex flex-col h-screen sticky top-0">
-      {/* Логотип */}
       <div className="p-8">
         <Link href="/dashboard" className="flex items-center gap-2">
           <div className="w-8 h-8 bg-[#D9FF00] rounded-lg rotate-3 flex items-center justify-center">
@@ -62,7 +51,6 @@ export default function Sidebar() {
         </Link>
       </div>
 
-      {/* Навигация */}
       <nav className="flex-1 px-4 py-4 space-y-2">
         <p className="text-[10px] font-black uppercase text-slate-500 mb-4 ml-4 tracking-[0.2em]">Меню управления</p>
         {menuItems.map((item) => {
@@ -89,7 +77,6 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* Профиль и выход */}
       <div className="p-4 mt-auto border-t border-white/5 space-y-4">
         <Link 
           href="/dashboard/profile"
@@ -103,7 +90,7 @@ export default function Sidebar() {
           </div>
           <div className="flex-1 overflow-hidden">
             <p className="text-[10px] font-black uppercase text-slate-500 leading-none mb-1">Клиент</p>
-            <p className="text-xs font-bold truncate text-white">{userPhone || "Гость"}</p>
+            <p className="text-xs font-bold truncate text-white">{userPhone || "Загрузка..."}</p>
           </div>
         </Link>
 
