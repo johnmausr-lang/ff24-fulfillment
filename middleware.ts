@@ -1,47 +1,45 @@
-// middleware.ts (Обновленная версия с проверкой ролей)
+// middleware.ts
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { verifyToken } from '@/lib/auth'; // Убедитесь, что путь верный
 
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import { verifyToken } from "./lib/auth"; // Импортируем нашу функцию верификации
-
-export function middleware(req: NextRequest) {
-  const token = req.cookies.get("auth_token")?.value;
-  const isDashboard = req.nextUrl.pathname.startsWith("/dashboard");
-  const isAdminRoute = req.nextUrl.pathname.startsWith("/dashboard/admin");
-  const isLogin = req.nextUrl.pathname.startsWith("/login");
-  const isRegister = req.nextUrl.pathname.startsWith("/register");
+export async function middleware(req: NextRequest) {
+  const token = req.cookies.get('token')?.value;
   
-  const verifiedToken = token ? verifyToken(token) : null;
+  // ИСПРАВЛЕНИЕ 1: Добавляем await, так как верификация токена обычно асинхронна
+  // ИСПРАВЛЕНИЕ 2: Приводим тип к "any" или вашему интерфейсу, чтобы TS видел .role
+  const verifiedToken = token ? await verifyToken(token) : null;
+  
   const isAuthenticated = !!verifiedToken;
-  const userRole = verifiedToken?.role;
+  
+  // Приводим к типу, содержащему role, чтобы избежать ошибки Property 'role' does not exist
+  const payload = verifiedToken as any; 
+  const userRole = payload?.role;
+
+  const { pathname } = req.nextUrl;
+  const isLogin = pathname === '/login';
+  const isRegister = pathname === '/register';
+  const isDashboard = pathname.startsWith('/dashboard');
 
   // 1. Если пользователь авторизован, не пускаем его на страницы входа/регистрации
   if ((isLogin || isRegister) && isAuthenticated) {
-    return NextResponse.redirect(new URL("/dashboard", req.url));
+    return NextResponse.redirect(new URL('/dashboard', req.url));
   }
 
-  // 2. Защита ЛКК: Если не авторизован и пытается попасть в dashboard → отправляем на login
+  // 2. Если пользователь НЕ авторизован и пытается зайти в админку
   if (isDashboard && !isAuthenticated) {
-    return NextResponse.redirect(new URL("/login", req.url));
+    return NextResponse.redirect(new URL('/login', req.url));
   }
 
-  // 3. ✅ Защита Админ-маршрутов: Проверка по Роли
-  if (isAdminRoute && isAuthenticated && userRole !== 'ADMIN') {
-    // Перенаправляем не-админов в обычный dashboard
-    return NextResponse.redirect(new URL("/dashboard", req.url));
-  }
-  
-  // Добавляем роль пользователя в заголовки для использования в серверных компонентах
-  const response = NextResponse.next();
-  if (verifiedToken) {
-    response.headers.set('X-User-Role', userRole || 'CLIENT');
-    response.headers.set('X-User-Id', verifiedToken.userId);
-  }
+  // 3. Дополнительная проверка ролей (если нужно)
+  // if (pathname.startsWith('/dashboard/admin') && userRole !== 'ADMIN') {
+  //   return NextResponse.redirect(new URL('/dashboard', req.url));
+  // }
 
-  return response;
+  return NextResponse.next();
 }
 
+// Указываем, на каких путях должен работать middleware
 export const config = {
-  // Теперь защищены: все в dashboard, login, register
-  matcher: ["/dashboard/:path*", "/login", "/register"],
+  matcher: ['/dashboard/:path*', '/login', '/register'],
 };
