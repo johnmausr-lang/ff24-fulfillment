@@ -9,10 +9,11 @@ export async function POST(request: Request) {
     const { email } = await request.json();
 
     if (!email) {
-      return NextResponse.json({ error: "Email обязателен" }, { status: 400 });
+      return NextResponse.json({ error: "Укажите Email" }, { status: 400 });
     }
 
-    // 1. Ищем контрагента в МойСклад по Email
+    // 1. Ищем контрагента в МойСклад
+    // Мы используем фильтр по email, который вы указали в ТЗ ключевым
     const msResponse = await fetch(
       `${MS_API_URL}/entity/counterparty?filter=email=${encodeURIComponent(email)}`,
       {
@@ -21,43 +22,39 @@ export async function POST(request: Request) {
           Authorization: `Bearer ${process.env.MOYSKLAD_TOKEN}`,
           "Content-Type": "application/json",
         },
+        next: { revalidate: 0 } // Не кэшируем запрос
       }
     );
 
-    if (!msResponse.ok) {
-      throw new Error("Ошибка запроса к МойСклад");
-    }
-
     const msData = await msResponse.json();
 
-    // 2. Проверяем, найден ли клиент
+    // 2. Если такого email нет в контрагентах
     if (!msData.rows || msData.rows.length === 0) {
       return NextResponse.json(
-        { error: "Клиент с таким Email не зарегистрирован в системе FF24" },
+        { error: "Доступ запрещен. Email не найден в базе FF24." },
         { status: 401 }
       );
     }
 
     const client = msData.rows[0];
 
-    // 3. Создаем JWT токен (авторизация на 7 дней)
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET || "default_secret");
+    // 3. Создаем защищенную сессию (JWT)
+    const secret = new TextEncoder().encode(process.env.JWT_SECRET || "ff24_default_secret_32_chars");
     const token = await new SignJWT({ 
-      id: client.id, 
+      ms_id: client.id, // ID контрагента из МойСклад
       email: email, 
-      name: client.name,
-      role: "CLIENT" 
+      name: client.name 
     })
       .setProtectedHeader({ alg: "HS256" })
       .setExpirationTime("7d")
       .sign(secret);
 
-    // 4. Устанавливаем куку
+    // 4. Сохраняем куку в браузере
     cookies().set("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: true,
       sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7, // 7 дней
+      maxAge: 60 * 60 * 24 * 7,
       path: "/",
     });
 
@@ -66,10 +63,10 @@ export async function POST(request: Request) {
       name: client.name,
     });
 
-  } catch (error: any) {
-    console.error("Login Error:", error);
+  } catch (error) {
+    console.error("Critical Login Error:", error);
     return NextResponse.json(
-      { error: "Внутренняя ошибка сервера" },
+      { error: "Сбой связи с МойСклад" },
       { status: 500 }
     );
   }
