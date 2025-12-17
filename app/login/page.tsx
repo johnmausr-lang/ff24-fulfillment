@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Mail, ArrowRight, Loader2, ShieldCheck } from "lucide-react";
 import { toast } from "react-hot-toast";
@@ -9,7 +8,6 @@ import { toast } from "react-hot-toast";
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +35,10 @@ export default function LoginPage() {
 
       if (res.ok) {
         toast.success(`Добро пожаловать, ${data.name}!`);
-        router.push("/dashboard");
+        console.log("🚀 [FRONTEND] Перенаправление в Dashboard...");
+        
+        // Используем жесткий редирект для гарантированного прохождения Middleware
+        window.location.href = "/dashboard";
       } else {
         console.error("❌ [FRONTEND] Ошибка входа:", data.error);
         toast.error(data.error || "Ошибка входа");
@@ -52,6 +53,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-[#0F051D] flex items-center justify-center p-6 relative overflow-hidden">
+      {/* Фоновое свечение */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#D9FF00] blur-[150px] opacity-10 rounded-full" />
       
       <motion.div 
@@ -86,6 +88,7 @@ export default function LoginPage() {
             </div>
 
             <button 
+              type="submit"
               disabled={loading}
               className="w-full bg-[#D9FF00] text-black font-black py-5 rounded-2xl uppercase italic flex items-center justify-center gap-3 hover:shadow-[0_0_20px_rgba(217,255,0,0.3)] transition-all disabled:opacity-50"
             >
